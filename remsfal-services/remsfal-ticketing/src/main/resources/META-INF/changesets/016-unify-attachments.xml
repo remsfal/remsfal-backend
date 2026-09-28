@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog-ext
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="remsfal-ticketing-016-unify-attachments" author="alexander.stanik@htw-berlin.de">
+        <comment>Store every file of an issue once in issue_attachments (with the uploader's context) and
+                 let quotation requests, quotations and order placements reference them by id instead of
+                 keeping copies in a separate order_attachments table.</comment>
+        <sql>ALTER TABLE REMSFAL.issue_attachments ADD uploader_context TEXT;</sql>
+        <sql>ALTER TABLE REMSFAL.quotation_requests ADD attachment_ids LIST&lt;UUID&gt;;</sql>
+        <sql>ALTER TABLE REMSFAL.quotations ADD attachment_ids LIST&lt;UUID&gt;;</sql>
+        <sql>ALTER TABLE REMSFAL.order_placements ADD attachment_ids LIST&lt;UUID&gt;;</sql>
+        <sql>DROP TABLE IF EXISTS REMSFAL.order_attachments;</sql>
+        <rollback>
+            <sql>ALTER TABLE REMSFAL.issue_attachments DROP uploader_context;</sql>
+            <sql>ALTER TABLE REMSFAL.quotation_requests DROP attachment_ids;</sql>
+            <sql>ALTER TABLE REMSFAL.quotations DROP attachment_ids;</sql>
+            <sql>ALTER TABLE REMSFAL.order_placements DROP attachment_ids;</sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

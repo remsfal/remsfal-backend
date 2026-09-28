@@ -12,6 +12,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
 
 import de.remsfal.common.util.UUIDv7;
 import de.remsfal.core.json.eventing.IssueEventJson.IssueEventType;
+import de.remsfal.core.model.UserContext;
 import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
@@ -68,7 +69,6 @@ public abstract class AbstractTicketingTest extends AbstractTest {
         cqlSession.execute("TRUNCATE quotation_requests");
         cqlSession.execute("TRUNCATE quotations");
         cqlSession.execute("TRUNCATE order_placements");
-        cqlSession.execute("TRUNCATE order_attachments");
         cqlSession.execute("TRUNCATE tenant_timelines");
         cqlSession.execute("TRUNCATE contractor_timelines");
         cqlSession.execute("TRUNCATE issue_requests");
@@ -166,24 +166,18 @@ public abstract class AbstractTicketingTest extends AbstractTest {
 
     protected void insertAttachment(UUID issueId, UUID attachmentId, String fileName,
             String contentType, String objectName, UUID uploaderId) {
-        String insertAttachmentCql = "INSERT INTO remsfal.issue_attachments "
-            + "(issue_id, attachment_id, file_name, content_type, object_name, uploader_id, uploaded_by,"
-            + " created_at, modified_at) "
-            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        cqlSession.execute(insertAttachmentCql,
-            issueId, attachmentId, fileName, contentType, objectName, uploaderId,
-            TicketingTestData.USER_NAME, Instant.now(), Instant.now());
+        insertAttachment(issueId, attachmentId, fileName, contentType, objectName, uploaderId, UserContext.MANAGER);
     }
 
-    protected void insertOrderAttachment(String processPhase, UUID processId, UUID attachmentId, String fileName,
-            String contentType, String objectName, UUID uploaderId) {
-        String insertAttachmentCql = "INSERT INTO remsfal.order_attachments "
-            + "(process_phase, process_id, attachment_id, file_name, content_type, object_name, uploader_id,"
-            + " uploaded_by, created_at, modified_at) "
+    protected void insertAttachment(UUID issueId, UUID attachmentId, String fileName,
+            String contentType, String objectName, UUID uploaderId, UserContext uploaderContext) {
+        String insertAttachmentCql = "INSERT INTO remsfal.issue_attachments "
+            + "(issue_id, attachment_id, file_name, content_type, object_name, uploader_id, uploaded_by,"
+            + " uploader_context, created_at, modified_at) "
             + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         cqlSession.execute(insertAttachmentCql,
-            processPhase, processId, attachmentId, fileName, contentType, objectName, uploaderId,
-            TicketingTestData.USER_NAME, Instant.now(), Instant.now());
+            issueId, attachmentId, fileName, contentType, objectName, uploaderId,
+            TicketingTestData.USER_NAME, uploaderContext.name(), Instant.now(), Instant.now());
     }
 
     /**

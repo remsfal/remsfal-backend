@@ -15,7 +15,6 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
-import de.remsfal.core.api.ticketing.OrderAttachmentEndpoint;
 import de.remsfal.core.json.ticketing.OrderPlacementJson;
 import de.remsfal.core.json.ticketing.OrderPlacementListJson;
 
@@ -65,8 +64,5 @@ public interface OrderPlacementEndpoint {
         @PathParam("placementId") @NotNull UUID placementId,
         @Parameter(description = "Updated status field (CONFIRMED or REJECTED)", required = true)
         @NotNull OrderPlacementJson body);
-
-    @Path("/{processId}/" + OrderAttachmentEndpoint.SERVICE)
-    OrderAttachmentEndpoint getAttachmentResource();
 
 }

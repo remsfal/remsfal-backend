@@ -83,6 +83,6 @@ public abstract class OrderProcessJson implements OrderProcessModel {
     public abstract Instant getModifiedAt();
 
     @Nullable
-    public abstract List<OrderAttachmentJson> getAttachments();
+    public abstract List<IssueAttachmentJson> getAttachments();
 
 }

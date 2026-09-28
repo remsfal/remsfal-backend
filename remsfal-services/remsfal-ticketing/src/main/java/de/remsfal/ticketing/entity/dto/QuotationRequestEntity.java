@@ -88,6 +88,9 @@ public class QuotationRequestEntity extends AbstractEntity implements QuotationR
     @Column("tenants")
     private List<String> tenantsJson;
 
+    @Column("attachment_ids")
+    private List<UUID> attachmentIds;
+
     @Override
     public UUID getId() {
         return getRequestId();
@@ -343,6 +346,14 @@ public class QuotationRequestEntity extends AbstractEntity implements QuotationR
         } catch (JsonProcessingException e) {
             throw new IllegalStateException("Failed to serialize tenants", e);
         }
+    }
+
+    public List<UUID> getAttachmentIds() {
+        return attachmentIds;
+    }
+
+    public void setAttachmentIds(final List<UUID> attachmentIds) {
+        this.attachmentIds = attachmentIds;
     }
 
 }

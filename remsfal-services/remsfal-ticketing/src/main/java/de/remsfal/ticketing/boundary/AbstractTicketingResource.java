@@ -4,20 +4,32 @@ import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.jboss.resteasy.plugins.providers.multipart.InputPart;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
+
 import de.remsfal.common.boundary.AbstractResource;
+import de.remsfal.common.boundary.MultipartAttachmentProcessor;
+import de.remsfal.core.json.ticketing.IssueAttachmentJson;
 import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
 import de.remsfal.core.model.OrganizationEmployeeModel.PermissionType;
+import de.remsfal.core.model.UserContext;
 import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 import de.remsfal.core.model.ticketing.ActivityFeedModel;
 import de.remsfal.core.model.ticketing.IssueModel;
+import de.remsfal.ticketing.control.AttachmentController;
 import de.remsfal.ticketing.control.IssueController;
+import de.remsfal.ticketing.entity.dto.IssueAttachmentEntity;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -28,6 +40,9 @@ public class AbstractTicketingResource extends AbstractResource {
 
     @Inject
     protected IssueController issueController;
+
+    @Inject
+    protected AttachmentController attachmentController;
 
     /**
      * Checks if the current user has sufficient permissions to create an issue in the given project.
@@ -117,6 +132,47 @@ public class AbstractTicketingResource extends AbstractResource {
             .filter(e -> e.getValue().isPrivileged(PermissionType.WRITE))
             .map(Map.Entry::getKey)
             .collect(Collectors.toSet());
+    }
+
+    /**
+     * Uploads all {@code attachment} parts of the multipart request to the issue and returns their ids.
+     */
+    protected List<UUID> collectAttachmentIds(final UUID issueId, final MultipartFormDataInput input,
+        final UserContext uploaderContext) {
+        final List<InputPart> fileParts = input.getFormDataMap().get("attachment");
+        if (fileParts == null || fileParts.isEmpty()) {
+            return List.of();
+        }
+        return MultipartAttachmentProcessor.processAttachmentParts(fileParts,
+            fileData -> attachmentController.addAttachment(principal, uploaderContext, issueId, fileData)
+                .getAttachmentId());
+    }
+
+    /**
+     * Resolves the referenced attachment ids of an issue; ids of meanwhile deleted attachments are skipped.
+     */
+    protected List<IssueAttachmentJson> resolveAttachments(final UUID issueId, final List<UUID> attachmentIds) {
+        if (attachmentIds == null || attachmentIds.isEmpty()) {
+            return List.of();
+        }
+        return attachmentController.getAttachments(issueId).stream()
+            .filter(attachment -> attachmentIds.contains(attachment.getAttachmentId()))
+            .map(IssueAttachmentJson::valueOf)
+            .toList();
+    }
+
+    protected Response streamAttachment(final IssueAttachmentEntity attachment) {
+        final InputStream fileStream = attachmentController.downloadAttachment(attachment.getObjectName());
+        return Response.ok((StreamingOutput) output -> {
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = fileStream.read(buffer)) != -1) {
+                output.write(buffer, 0, bytesRead);
+            }
+        })
+            .type(MediaType.APPLICATION_OCTET_STREAM)
+            .header("Content-Disposition", "attachment; filename=\"" + attachment.getFileName() + "\"")
+            .build();
     }
 
     /**

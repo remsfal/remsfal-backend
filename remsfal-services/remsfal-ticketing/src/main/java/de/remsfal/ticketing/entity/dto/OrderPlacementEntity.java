@@ -7,6 +7,7 @@ import jakarta.nosql.Entity;
 import jakarta.nosql.Id;
 
 import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 @Entity("order_placements")
@@ -59,6 +60,9 @@ public class OrderPlacementEntity extends AbstractEntity implements OrderPlaceme
 
     @Column("confirmed_by")
     private String confirmedBy;
+
+    @Column("attachment_ids")
+    private List<UUID> attachmentIds;
 
     @Override
     public UUID getId() {
@@ -239,6 +243,14 @@ public class OrderPlacementEntity extends AbstractEntity implements OrderPlaceme
 
     public void setConfirmedBy(final String confirmedBy) {
         this.confirmedBy = confirmedBy;
+    }
+
+    public List<UUID> getAttachmentIds() {
+        return attachmentIds;
+    }
+
+    public void setAttachmentIds(final List<UUID> attachmentIds) {
+        this.attachmentIds = attachmentIds;
     }
 
 }

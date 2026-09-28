@@ -3,11 +3,9 @@ package de.remsfal.ticketing.boundary;
 import de.remsfal.common.boundary.MultipartAttachmentProcessor;
 import de.remsfal.core.json.ticketing.ContractorTimelineJson;
 import de.remsfal.core.json.ticketing.ContractorTimelineListJson;
-import de.remsfal.core.json.ticketing.OrderAttachmentJson;
-import de.remsfal.core.model.ticketing.OrderProcessPhase;
+import de.remsfal.core.json.ticketing.IssueAttachmentJson;
 import de.remsfal.core.model.UserContext;
 import de.remsfal.ticketing.control.ContractorTimelineController;
-import de.remsfal.ticketing.control.OrderAttachmentController;
 import de.remsfal.ticketing.entity.dto.ContractorTimelineEntity;
 import de.remsfal.ticketing.entity.dto.QuotationRequestEntity;
 
@@ -16,43 +14,37 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
+/**
+ * Shared logic for the manager- and contractor-facing contractor timeline endpoints. Attachments are
+ * referenced exactly like in the tenant timeline: each entry keeps the ids of issue attachments.
+ */
 public abstract class AbstractContractorTimelineResource extends AbstractTicketingResource {
 
     @Inject
     ContractorTimelineController contractorTimelineController;
 
-    @Inject
-    OrderAttachmentController orderAttachmentController;
-
     protected ContractorTimelineListJson getTimelineEntries(final QuotationRequestEntity request) {
-        final List<OrderAttachmentJson> requestAttachments =
-            fetchRequestAttachments(List.of(request.getRequestId()));
+        final List<IssueAttachmentJson> issueAttachments = fetchIssueAttachments(request.getIssueId());
 
         return ContractorTimelineListJson.valueOf(
             contractorTimelineController.getTimelineEntries(
                 request.getIssueId(), request.getOrganizationId()).stream()
-                .map(entry -> withAttachments(entry, requestAttachments))
+                .map(entry -> withAttachments(entry, issueAttachments))
                 .toList());
     }
 
-    protected ContractorTimelineListJson getTimelineEntries(final UUID issueId,
-        final List<QuotationRequestEntity> requests) {
-        final List<UUID> requestIds = requests.stream().map(QuotationRequestEntity::getRequestId).toList();
-        final List<OrderAttachmentJson> requestAttachments = fetchRequestAttachments(requestIds);
+    protected ContractorTimelineListJson getAllTimelineEntries(final UUID issueId) {
+        final List<IssueAttachmentJson> issueAttachments = fetchIssueAttachments(issueId);
 
         return ContractorTimelineListJson.valueOf(
             contractorTimelineController.getTimelineEntries(issueId).stream()
-                .map(entry -> withAttachments(entry, requestAttachments))
+                .map(entry -> withAttachments(entry, issueAttachments))
                 .toList());
     }
 
@@ -62,51 +54,36 @@ public abstract class AbstractContractorTimelineResource extends AbstractTicketi
         final ContractorTimelineJson timeline = MultipartAttachmentProcessor.extractJsonPart(
             input, "timeline", ContractorTimelineJson.class);
         final QuotationRequestEntity request = requestResolver.apply(timeline.getOrganizationId());
-        final List<OrderAttachmentJson> uploadedAttachments = collectAttachments(request.getRequestId(), input);
-        final List<UUID> attachmentIds = uploadedAttachments.stream()
-            .map(OrderAttachmentJson::getAttachmentId)
-            .toList();
+        final List<UUID> attachmentIds = collectAttachmentIds(request.getIssueId(), input, senderRole);
 
         final ContractorTimelineEntity created = contractorTimelineController.createTimelineEntry(
             request.getIssueId(), request.getOrganizationId(),
             principal, senderRole, timeline,
             attachmentIds.isEmpty() ? null : attachmentIds);
 
+        final List<IssueAttachmentJson> issueAttachments = fetchIssueAttachments(request.getIssueId());
+
         final URI location = uri.getAbsolutePathBuilder().path(created.getTimelineId().toString()).build();
         return Response.created(location)
             .type(MediaType.APPLICATION_JSON)
-            .entity(ContractorTimelineJson.valueOf(created).withAttachments(uploadedAttachments))
+            .entity(withAttachments(created, issueAttachments))
             .build();
     }
 
-    private List<OrderAttachmentJson> fetchRequestAttachments(final List<UUID> requestIds) {
-        return orderAttachmentController.getAttachments(OrderProcessPhase.QUOTATION_REQUEST, requestIds).stream()
-            .map(OrderAttachmentJson::valueOf)
+    private List<IssueAttachmentJson> fetchIssueAttachments(final UUID issueId) {
+        return attachmentController.getAttachments(issueId).stream()
+            .map(IssueAttachmentJson::valueOf)
             .toList();
     }
 
-    private List<OrderAttachmentJson> collectAttachments(final UUID requestId, final MultipartFormDataInput input) {
-        final Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
-        final List<InputPart> fileParts = formDataMap.get("attachment");
-        if (fileParts == null || fileParts.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        return MultipartAttachmentProcessor.processAttachmentParts(
-            fileParts,
-            fileData -> OrderAttachmentJson.valueOf(
-                orderAttachmentController.addAttachment(
-                    principal, OrderProcessPhase.QUOTATION_REQUEST, requestId, fileData)));
-    }
-
     private ContractorTimelineJson withAttachments(final ContractorTimelineEntity entry,
-        final List<OrderAttachmentJson> requestAttachments) {
+        final List<IssueAttachmentJson> issueAttachments) {
         final ContractorTimelineJson json = ContractorTimelineJson.valueOf(entry);
         if (entry.getAttachmentIds() == null || entry.getAttachmentIds().isEmpty()) {
             return json.withAttachments(List.of());
         }
 
-        final List<OrderAttachmentJson> attachments = requestAttachments.stream()
+        final List<IssueAttachmentJson> attachments = issueAttachments.stream()
             .filter(attachment -> entry.getAttachmentIds().contains(attachment.getAttachmentId()))
             .collect(Collectors.toList());
         return json.withAttachments(attachments);

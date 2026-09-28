@@ -22,7 +22,6 @@ import de.remsfal.core.json.ticketing.QuotationRequestJson;
 import de.remsfal.core.model.UserContext;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.MessagePurpose;
-import de.remsfal.core.model.ticketing.OrderProcessPhase;
 import de.remsfal.core.model.ticketing.OrderPlacementModel.OrderPlacementStatus;
 import de.remsfal.core.model.AddressModel;
 import de.remsfal.core.model.UserModel;
@@ -33,7 +32,6 @@ import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dao.OrderPlacementRepository;
 import de.remsfal.ticketing.entity.dao.QuotationRepository;
 import de.remsfal.ticketing.entity.dao.QuotationRequestRepository;
-import de.remsfal.ticketing.entity.dto.IssueAttachmentEntity;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.OrderPlacementEntity;
 import de.remsfal.ticketing.entity.dto.QuotationEntity;
@@ -41,7 +39,9 @@ import de.remsfal.ticketing.entity.dto.QuotationKey;
 import de.remsfal.ticketing.entity.dto.QuotationRequestEntity;
 import de.remsfal.ticketing.entity.dto.QuotationRequestKey;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -86,9 +86,6 @@ public class OrderManagementController {
     @Inject
     AttachmentController attachmentController;
 
-    @Inject
-    OrderAttachmentController orderAttachmentController;
-
     private IssueModel findIssue(final UUID issueId) {
         return issueRepository.findByIssueId(issueId).orElse(null);
     }
@@ -97,21 +94,21 @@ public class OrderManagementController {
         final CreateQuotationRequestJson createRequest) {
         IssueEntity issue = issueRepository.findByIssueId(issueId)
             .orElseThrow(() -> new NotFoundException("Issue not found"));
-        // resolve all attachments up front so an unknown ID fails before any request is created
-        final List<IssueAttachmentEntity> attachments = createRequest.getAttachmentIds() == null ? List.of()
+        // verify all attachments up front so an unknown ID fails before any request is created
+        final List<UUID> attachmentIds = createRequest.getAttachmentIds() == null ? List.of()
             : createRequest.getAttachmentIds().stream().distinct()
-                .map(attachmentId -> attachmentController.getAttachment(issueId, attachmentId))
+                .map(attachmentId -> attachmentController.getAttachment(issueId, attachmentId).getAttachmentId())
                 .toList();
         final List<QuotationRequestEntity> existingRequests = quotationRequestRepository.findByIssueId(issueId);
         return createRequest.getContractors().stream().distinct()
             .map(contractor -> createRequestForQuotation(issue, existingRequests, contractor, user,
-                createRequest.getScopeOfWork(), attachments))
+                createRequest.getScopeOfWork(), attachmentIds))
             .toList();
     }
 
     private QuotationRequestEntity createRequestForQuotation(final IssueEntity issue,
         final List<QuotationRequestEntity> existingRequests, final ContractorJson contractor, final UserModel user,
-        final String scopeOfWork, final List<IssueAttachmentEntity> attachments) {
+        final String scopeOfWork, final List<UUID> attachmentIds) {
         withdrawOpenRequests(issue, existingRequests, contractor, user);
         QuotationRequestEntity request = new QuotationRequestEntity();
         request.generateId();
@@ -125,12 +122,12 @@ public class OrderManagementController {
         request.setScopeOfWork(scopeOfWork);
         request.setRentalUnitType(issue.getRentalUnitType());
         request.setStatus(RequestStatus.REQUESTED);
+        request.setAttachmentIds(attachmentIds.isEmpty() ? null : attachmentIds);
         final QuotationRequestEntity inserted = quotationRequestRepository.insert(request);
-        orderAttachmentController.copyIssueAttachments(user, OrderProcessPhase.QUOTATION_REQUEST,
-            inserted.getRequestId(), attachments);
         issueEventProducer.sendQuotationRequestCreated(issue, QuotationRequestJson.valueOf(inserted), user);
         writeContractorTimelineEntry(issue.getId(), inserted.getOrganizationId(), user, UserContext.MANAGER,
-            MessagePurpose.QUOTATION_REQUESTED, scopeOfWork != null ? scopeOfWork : "");
+            MessagePurpose.QUOTATION_REQUESTED, scopeOfWork != null ? scopeOfWork : "",
+            inserted.getAttachmentIds());
         return inserted;
     }
 
@@ -251,6 +248,22 @@ public class OrderManagementController {
             .orElseThrow(() -> new NotFoundException(QUOTATION_REQUEST_NOT_FOUND));
     }
 
+    /**
+     * Attachments are only visible to a contractor if they are referenced by the contractor timeline,
+     * or by a quotation request, quotation or order placement of the contractor's organization for the issue.
+     */
+    public Set<UUID> getVisibleAttachmentIds(final UUID issueId, final UUID organizationId) {
+        final Set<UUID> visible = new HashSet<>(
+            contractorTimelineController.getVisibleAttachmentIds(issueId, organizationId));
+        collectAttachmentIds(visible, quotationRequestRepository.findByIssueId(issueId), organizationId,
+            QuotationRequestEntity::getOrganizationId, QuotationRequestEntity::getAttachmentIds);
+        collectAttachmentIds(visible, quotationRepository.findByIssueId(issueId), organizationId,
+            QuotationEntity::getOrganizationId, QuotationEntity::getAttachmentIds);
+        collectAttachmentIds(visible, orderPlacementRepository.findByIssueId(issueId), organizationId,
+            OrderPlacementEntity::getOrganizationId, OrderPlacementEntity::getAttachmentIds);
+        return visible;
+    }
+
     public QuotationEntity createQuotationByContractor(final Set<UUID> organizationIds, final UUID requestId,
         final QuotationJson body) {
         final QuotationRequestEntity request = findByOrganizationIds(organizationIds,
@@ -258,7 +271,16 @@ public class OrderManagementController {
             r -> requestId.equals(r.getRequestId()),
             () -> new NotFoundException(QUOTATION_REQUEST_NOT_FOUND));
 
-        final QuotationEntity inserted = quotationRepository.insert(buildQuotation(request, body));
+        final QuotationEntity quotation = buildQuotation(request, body);
+        if (body.getAttachmentIds() != null && !body.getAttachmentIds().isEmpty()) {
+            final List<UUID> attachmentIds = body.getAttachmentIds().stream().distinct().toList();
+            if (!getVisibleAttachmentIds(request.getIssueId(), request.getOrganizationId())
+                .containsAll(attachmentIds)) {
+                throw new BadRequestException("Quotation references attachments not shared with the contractor");
+            }
+            quotation.setAttachmentIds(attachmentIds);
+        }
+        final QuotationEntity inserted = quotationRepository.insert(quotation);
         issueEventProducer.sendQuotationCreated(findIssue(request.getIssueId()), QuotationJson.valueOf(inserted),
             principal);
         return inserted;
@@ -447,7 +469,18 @@ public class OrderManagementController {
         orderPlacement.setContractorName(quotation.getContractorName());
         orderPlacement.setOrganizationId(quotation.getOrganizationId());
         orderPlacement.setStatus(OrderPlacementStatus.PLACED);
+        orderPlacement.setAttachmentIds(quotation.getAttachmentIds());
         return orderPlacement;
+    }
+
+    private <T> void collectAttachmentIds(final Set<UUID> target, final List<T> processes,
+        final UUID organizationId, final Function<T, UUID> organizationIdOf,
+        final Function<T, List<UUID>> attachmentIdsOf) {
+        processes.stream()
+            .filter(process -> organizationId.equals(organizationIdOf.apply(process)))
+            .map(attachmentIdsOf)
+            .filter(Objects::nonNull)
+            .forEach(target::addAll);
     }
 
     private <T> List<T> findAllByOrganizationIds(final Set<UUID> organizationIds,
@@ -474,6 +507,12 @@ public class OrderManagementController {
     private void writeContractorTimelineEntry(final UUID issueId, final UUID organizationId,
         final UserModel sender, final UserContext senderRole,
         final MessagePurpose purpose, final String message) {
+        writeContractorTimelineEntry(issueId, organizationId, sender, senderRole, purpose, message, null);
+    }
+
+    private void writeContractorTimelineEntry(final UUID issueId, final UUID organizationId,
+        final UserModel sender, final UserContext senderRole,
+        final MessagePurpose purpose, final String message, final List<UUID> attachmentIds) {
         if (organizationId == null) {
             return;
         }
@@ -481,7 +520,8 @@ public class OrderManagementController {
             .purpose(purpose)
             .message(message)
             .build();
-        contractorTimelineController.createTimelineEntry(issueId, organizationId, sender, senderRole, entry, null);
+        contractorTimelineController.createTimelineEntry(issueId, organizationId, sender, senderRole, entry,
+            attachmentIds);
     }
 
 }

@@ -48,7 +48,8 @@ public interface ContractorIssueRequestEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Create a new request to the tenant about an issue.",
         description = "Records the request, optionally with file attachments, in both the contractor's and the"
-            + " tenant's timeline for the issue. Attachments are copied so the tenant can download them.")
+            + " tenant's timeline for the issue. Attachments are stored once on the issue and referenced"
+            + " from both timelines.")
     @RequestBody(
         required = true,
         content = @Content(
@@ -78,7 +79,7 @@ public interface ContractorIssueRequestEndpoint {
         @Parameter(hidden = true) MultipartFormDataInput input);
 
     @DELETE
-    @Path("/{issueRequestId}")
+    @Path("/{requestId}")
     @Operation(summary = "Delete a request the calling contractor has sent to the tenant about an issue.")
     @APIResponse(responseCode = "204", description = "Request deleted successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
@@ -88,6 +89,6 @@ public interface ContractorIssueRequestEndpoint {
         @Parameter(description = "ID of the issue", required = true)
         @PathParam("issueId") @NotNull UUID issueId,
         @Parameter(description = "ID of the request", required = true)
-        @PathParam("issueRequestId") @NotNull UUID issueRequestId);
+        @PathParam("requestId") @NotNull UUID requestId);
 
 }

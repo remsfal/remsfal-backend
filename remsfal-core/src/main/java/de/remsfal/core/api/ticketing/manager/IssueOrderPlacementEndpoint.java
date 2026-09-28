@@ -14,7 +14,6 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
-import de.remsfal.core.api.ticketing.OrderAttachmentEndpoint;
 import de.remsfal.core.json.ticketing.OrderPlacementJson;
 import de.remsfal.core.json.ticketing.OrderPlacementListJson;
 
@@ -62,8 +61,5 @@ public interface IssueOrderPlacementEndpoint {
         @PathParam("issueId") @NotNull UUID issueId,
         @Parameter(description = "ID of the order placement", required = true)
         @PathParam("orderId") @NotNull UUID orderId);
-
-    @Path("/{processId}/" + OrderAttachmentEndpoint.SERVICE)
-    OrderAttachmentEndpoint getAttachmentResource();
 
 }

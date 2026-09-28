@@ -1,12 +1,13 @@
 package de.remsfal.ticketing.control;
 
-import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 
 import org.jboss.logging.Logger;
 
 import de.remsfal.common.model.FileUploadData;
+import de.remsfal.core.model.UserContext;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 import de.remsfal.ticketing.entity.dao.IssueAttachmentRepository;
@@ -18,7 +19,11 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-@RequestScoped
+/**
+ * Every file of an issue is stored exactly once in {@code issue_attachments}. Tenants and contractors
+ * only see the attachments that their timelines or order processes reference by id.
+ */
+@ApplicationScoped
 public class AttachmentController {
 
     @Inject
@@ -30,10 +35,10 @@ public class AttachmentController {
     @Inject
     FileStorageController fileStorageController;
 
-    public IssueAttachmentEntity addAttachment(
-        final UserModel user, final UUID issueId, final FileUploadData fileData) {
-        logger.infov("Adding attachment to issue (issueId={0}, fileName={1})",
-            issueId, fileData.getFileName());
+    public IssueAttachmentEntity addAttachment(final UserModel user, final UserContext uploaderContext,
+        final UUID issueId, final FileUploadData fileData) {
+        logger.infov("Adding attachment to issue (issueId={0}, uploaderContext={1}, fileName={2})",
+            issueId, uploaderContext, fileData.getFileName());
 
         IssueAttachmentEntity attachment = new IssueAttachmentEntity();
         attachment.generateId();
@@ -42,6 +47,7 @@ public class AttachmentController {
         attachment.setMediaType(fileData.getMediaType());
         attachment.setUploaderId(user.getId());
         attachment.setUploadedBy(user.getName());
+        attachment.setUploaderContext(uploaderContext);
         attachment.setCreatedAt(Instant.now());
 
         String objectFileName = generateUniqueFileName(
@@ -78,6 +84,8 @@ public class AttachmentController {
 
     public void deleteAllAttachments(final UUID issueId) {
         logger.infov("Deleting all attachments for issue (issueId={0})", issueId);
+        attachmentRepository.findByIssueId(issueId)
+            .forEach(attachment -> fileStorageController.deleteFile(attachment.getObjectName()));
         attachmentRepository.deleteByIssueId(issueId);
     }
 

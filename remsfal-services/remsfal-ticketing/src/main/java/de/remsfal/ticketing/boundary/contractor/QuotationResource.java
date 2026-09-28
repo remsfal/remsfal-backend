@@ -2,22 +2,17 @@ package de.remsfal.ticketing.boundary.contractor;
 
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
-import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
 import java.util.Set;
 import java.util.UUID;
 
-import de.remsfal.core.api.ticketing.OrderAttachmentEndpoint;
 import de.remsfal.core.api.ticketing.contractor.QuotationEndpoint;
-import de.remsfal.core.json.ticketing.OrderAttachmentJson;
 import de.remsfal.core.json.ticketing.QuotationJson;
 import de.remsfal.core.json.ticketing.QuotationListJson;
-import de.remsfal.core.model.ticketing.OrderProcessPhase;
 import de.remsfal.ticketing.boundary.AbstractTicketingResource;
-import de.remsfal.ticketing.boundary.OrderAttachmentResource;
-import de.remsfal.ticketing.control.OrderAttachmentController;
 import de.remsfal.ticketing.control.OrderManagementController;
+import de.remsfal.ticketing.entity.dto.QuotationEntity;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -29,12 +24,6 @@ public class QuotationResource extends AbstractTicketingResource implements Quot
     @Inject
     OrderManagementController orderManagementController;
 
-    @Inject
-    OrderAttachmentController orderAttachmentController;
-
-    @Inject
-    Instance<OrderAttachmentResource> attachmentResource;
-
     @Override
     public QuotationListJson getQuotations() {
         final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
@@ -45,18 +34,10 @@ public class QuotationResource extends AbstractTicketingResource implements Quot
     @Override
     public QuotationJson getQuotation(final UUID quotationId) {
         final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
-        final QuotationJson json = QuotationJson.valueOf(
-            orderManagementController.getQuotationForOrganization(eligibleOrgIds, quotationId));
-        return json.withAttachments(orderAttachmentController
-            .getAttachments(OrderProcessPhase.QUOTATION, quotationId).stream()
-            .map(OrderAttachmentJson::valueOf)
-            .toList());
-    }
-
-    @Override
-    public OrderAttachmentEndpoint getAttachmentResource() {
-        return resourceContext.initResource(attachmentResource.get())
-            .configure(OrderProcessPhase.QUOTATION);
+        final QuotationEntity quotation =
+            orderManagementController.getQuotationForOrganization(eligibleOrgIds, quotationId);
+        return QuotationJson.valueOf(quotation)
+            .withAttachments(resolveAttachments(quotation.getIssueId(), quotation.getAttachmentIds()));
     }
 
 }

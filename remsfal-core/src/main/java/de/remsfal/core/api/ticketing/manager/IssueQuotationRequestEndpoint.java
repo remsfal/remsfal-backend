@@ -20,7 +20,6 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
-import de.remsfal.core.api.ticketing.OrderAttachmentEndpoint;
 import de.remsfal.core.json.ticketing.CreateQuotationRequestJson;
 import de.remsfal.core.json.ticketing.QuotationRequestJson;
 import de.remsfal.core.json.ticketing.QuotationRequestListJson;
@@ -87,8 +86,5 @@ public interface IssueQuotationRequestEndpoint {
         @PathParam("requestId") @NotNull UUID requestId,
         @Parameter(description = "Updated fields (status, scopeOfWork)", required = true)
         @NotNull QuotationRequestJson body);
-
-    @Path("/{processId}/" + OrderAttachmentEndpoint.SERVICE)
-    OrderAttachmentEndpoint getAttachmentResource();
 
 }

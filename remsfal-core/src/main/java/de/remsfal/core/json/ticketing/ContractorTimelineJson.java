@@ -50,7 +50,7 @@ public abstract class ContractorTimelineJson extends AbstractTimelineJson implem
     @Nullable
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @Schema(readOnly = true)
-    public abstract List<OrderAttachmentJson> getAttachments();
+    public abstract List<IssueAttachmentJson> getAttachments();
 
     public static ContractorTimelineJson valueOf(final ContractorTimelineModel model) {
         final ImmutableContractorTimelineJson.Builder builder = ImmutableContractorTimelineJson.builder()
@@ -74,6 +74,6 @@ public abstract class ContractorTimelineJson extends AbstractTimelineJson implem
         return builder.build();
     }
 
-    public abstract ContractorTimelineJson withAttachments(final Iterable<? extends OrderAttachmentJson> attachments);
+    public abstract ContractorTimelineJson withAttachments(final Iterable<? extends IssueAttachmentJson> attachments);
 
 }

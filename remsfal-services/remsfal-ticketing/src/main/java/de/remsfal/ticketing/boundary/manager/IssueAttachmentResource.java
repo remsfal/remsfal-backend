@@ -2,12 +2,9 @@ package de.remsfal.ticketing.boundary.manager;
 
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
-import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.StreamingOutput;
 
-import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -18,9 +15,8 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import de.remsfal.common.boundary.MultipartAttachmentProcessor;
 import de.remsfal.core.api.ticketing.manager.IssueAttachmentEndpoint;
 import de.remsfal.core.json.ticketing.IssueAttachmentJson;
+import de.remsfal.core.model.UserContext;
 import de.remsfal.ticketing.boundary.AbstractTicketingResource;
-import de.remsfal.ticketing.control.AttachmentController;
-import de.remsfal.ticketing.entity.dto.IssueAttachmentEntity;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -29,25 +25,10 @@ import de.remsfal.ticketing.entity.dto.IssueAttachmentEntity;
 @RequestScoped
 public class IssueAttachmentResource extends AbstractTicketingResource implements IssueAttachmentEndpoint {
 
-    @Inject
-    AttachmentController attachmentController;
-
     @Override
     public Response downloadAttachment(final UUID issueId, final UUID attachmentId, final String filename) {
         checkProjectIssueAccessPermissions(issueId);
-        IssueAttachmentEntity attachment = attachmentController.getAttachment(issueId, attachmentId);
-        InputStream fileStream = attachmentController.downloadAttachment(attachment.getObjectName());
-
-        return Response.ok((StreamingOutput) output -> {
-            byte[] buffer = new byte[8192];
-            int bytesRead;
-            while ((bytesRead = fileStream.read(buffer)) != -1) {
-                output.write(buffer, 0, bytesRead);
-            }
-        })
-            .type(MediaType.APPLICATION_OCTET_STREAM)
-            .header("Content-Disposition", "attachment; filename=\"" + attachment.getFileName() + "\"")
-            .build();
+        return streamAttachment(attachmentController.getAttachment(issueId, attachmentId));
     }
 
     @Override
@@ -63,7 +44,8 @@ public class IssueAttachmentResource extends AbstractTicketingResource implement
         List<InputPart> fileParts = formDataMap.get("attachment");
         List<IssueAttachmentJson> attachments = MultipartAttachmentProcessor.processAttachmentParts(
             fileParts,
-            fileData -> IssueAttachmentJson.valueOf(attachmentController.addAttachment(principal, issueId, fileData)));
+            fileData -> IssueAttachmentJson.valueOf(
+                attachmentController.addAttachment(principal, UserContext.MANAGER, issueId, fileData)));
 
         return Response.ok()
             .type(MediaType.APPLICATION_JSON)

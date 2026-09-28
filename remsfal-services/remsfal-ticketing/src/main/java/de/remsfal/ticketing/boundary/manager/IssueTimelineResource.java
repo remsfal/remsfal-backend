@@ -2,6 +2,7 @@ package de.remsfal.ticketing.boundary.manager;
 
 import de.remsfal.core.api.ticketing.TenantTimelineEndpoint;
 import de.remsfal.core.json.ticketing.TenantTimelineListJson;
+import de.remsfal.core.model.UserContext;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.ticketing.boundary.AbstractTimelineResource;
 
@@ -29,7 +30,7 @@ public class IssueTimelineResource extends AbstractTimelineResource implements T
     @Override
     public Response createTimelineEntryWithAttachments(final UUID issueId, final MultipartFormDataInput input) {
         final IssueModel issue = checkProjectIssueAccessPermissions(issueId);
-        return super.createTimelineEntryWithAttachments(issue, input);
+        return super.createTimelineEntryWithAttachments(issue, input, UserContext.MANAGER);
     }
 
 }

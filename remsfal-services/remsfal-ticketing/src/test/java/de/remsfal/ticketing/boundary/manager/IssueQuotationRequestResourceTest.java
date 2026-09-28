@@ -91,7 +91,7 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void createRequestsForQuotation_SUCCESS_copiesIssueAttachments() throws Exception {
+    void createRequestsForQuotation_SUCCESS_referencesIssueAttachments() throws Exception {
         final String issueJson = "{ \"projectId\":\"" + TicketingTestData.PROJECT_ID + "\","
             + "\"title\":\"" + TicketingTestData.ISSUE_TITLE + "\","
             + "\"type\":\"TASK\","
@@ -140,7 +140,7 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
                 .statusCode(200)
                 .body("attachments", hasSize(1))
                 .body("attachments[0].fileName", equalTo(TicketingTestData.ATTACHMENT_FILE_PATH_1))
-                .body("attachments[0].processId", equalTo(requestId));
+                .body("attachments[0].attachmentId", equalTo(attachmentId.toString()));
         }
     }
 

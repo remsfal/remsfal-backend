@@ -1,5 +1,6 @@
 package de.remsfal.core.json.ticketing;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -7,10 +8,12 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.ticketing.QuotationModel;
 import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.NotNull;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -48,6 +51,12 @@ public abstract class QuotationJson extends OrderProcessJson implements Quotatio
     @Override
     public abstract Instant getValidUntil();
 
+    @Nullable
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @Schema(description = "IDs of attachments visible to the contractor for this issue (e.g. uploaded via the"
+        + " contractor timeline) to reference from the quotation")
+    public abstract List<@NotNull UUID> getAttachmentIds();
+
     public static QuotationJson valueOf(final QuotationModel model) {
         return ImmutableQuotationJson.builder()
             .id(model.getId())
@@ -71,6 +80,6 @@ public abstract class QuotationJson extends OrderProcessJson implements Quotatio
             .build();
     }
 
-    public abstract QuotationJson withAttachments(final Iterable<? extends OrderAttachmentJson> attachments);
+    public abstract QuotationJson withAttachments(final Iterable<? extends IssueAttachmentJson> attachments);
 
 }

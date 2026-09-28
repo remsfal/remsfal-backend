@@ -4,8 +4,8 @@ import de.remsfal.common.boundary.MultipartAttachmentProcessor;
 import de.remsfal.core.json.ticketing.IssueAttachmentJson;
 import de.remsfal.core.json.ticketing.TenantTimelineJson;
 import de.remsfal.core.json.ticketing.TenantTimelineListJson;
+import de.remsfal.core.model.UserContext;
 import de.remsfal.core.model.ticketing.IssueModel;
-import de.remsfal.ticketing.control.AttachmentController;
 import de.remsfal.ticketing.control.TenantTimelineController;
 import de.remsfal.ticketing.entity.dto.TenantTimelineEntity;
 
@@ -15,12 +15,9 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
 /**
@@ -33,9 +30,6 @@ public abstract class AbstractTimelineResource extends AbstractTicketingResource
 
     @Inject
     TenantTimelineController timelineController;
-
-    @Inject
-    AttachmentController attachmentController;
 
     protected TenantTimelineListJson getTimelineEntries(final IssueModel issue) {
         if (issue.getAgreementId() == null) {
@@ -52,13 +46,19 @@ public abstract class AbstractTimelineResource extends AbstractTicketingResource
             .toList());
     }
 
-    protected Response createTimelineEntryWithAttachments(final IssueModel issue, final MultipartFormDataInput input) {
+    /**
+     * A new timeline entry only ever references attachments uploaded in this same request; there
+     * is no way to reference a pre-existing attachment by id, so manager and tenant behave
+     * identically here apart from the recorded uploader context.
+     */
+    protected Response createTimelineEntryWithAttachments(final IssueModel issue, final MultipartFormDataInput input,
+        final UserContext uploaderContext) {
         if (issue.getAgreementId() == null) {
             throw new BadRequestException("Timeline requires issue agreementId");
         }
 
         final TenantTimelineJson timeline = extractTenantTimelineJson(input);
-        final List<UUID> attachmentIds = collectAttachmentIds(issue.getId(), input);
+        final List<UUID> attachmentIds = collectAttachmentIds(issue.getId(), input, uploaderContext);
 
         final TenantTimelineEntity created = timelineController.createTimelineEntry(
             issue.getAgreementId(),
@@ -85,29 +85,6 @@ public abstract class AbstractTimelineResource extends AbstractTicketingResource
 
     private TenantTimelineJson extractTenantTimelineJson(final MultipartFormDataInput input) {
         return MultipartAttachmentProcessor.extractJsonPart(input, "timeline", TenantTimelineJson.class);
-    }
-
-    /**
-     * A new timeline entry only ever references attachments uploaded in this same request; there
-     * is no way to reference a pre-existing attachment by id, so manager and tenant behave
-     * identically here.
-     */
-    private List<UUID> collectAttachmentIds(final UUID issueId, final MultipartFormDataInput input) {
-        final Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
-        final List<InputPart> fileParts = formDataMap.get("attachment");
-        if (fileParts == null || fileParts.isEmpty()) {
-            return List.of();
-        }
-
-        final List<IssueAttachmentJson> uploadedAttachments = MultipartAttachmentProcessor.processAttachmentParts(
-            fileParts,
-            fileData -> IssueAttachmentJson.valueOf(attachmentController.addAttachment(principal, issueId, fileData)));
-
-        final List<UUID> attachmentIds = new ArrayList<>();
-        for (IssueAttachmentJson attachment : uploadedAttachments) {
-            attachmentIds.add(attachment.getAttachmentId());
-        }
-        return attachmentIds;
     }
 
     private TenantTimelineJson withAttachments(final TenantTimelineEntity entry,
