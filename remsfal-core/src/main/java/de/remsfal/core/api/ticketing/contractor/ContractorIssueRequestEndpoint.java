@@ -48,7 +48,8 @@ public interface ContractorIssueRequestEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Create a new request to the tenant about an issue.",
         description = "Records the request, optionally with file attachments, in both the contractor's and the"
-            + " tenant's timeline for the issue. Attachments are stored once on the issue and referenced from both timelines.")
+            + " tenant's timeline for the issue. Attachments are stored once on the issue and referenced"
+            + " from both timelines.")
     @RequestBody(
         required = true,
         content = @Content(
