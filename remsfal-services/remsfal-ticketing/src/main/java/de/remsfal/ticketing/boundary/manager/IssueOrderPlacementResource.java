@@ -2,19 +2,14 @@ package de.remsfal.ticketing.boundary.manager;
 
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
-import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 
 import java.util.UUID;
 
 import de.remsfal.core.api.ticketing.manager.IssueOrderPlacementEndpoint;
-import de.remsfal.core.json.ticketing.OrderAttachmentJson;
 import de.remsfal.core.json.ticketing.OrderPlacementJson;
 import de.remsfal.core.json.ticketing.OrderPlacementListJson;
-import de.remsfal.core.model.ticketing.OrderProcessPhase;
 import de.remsfal.ticketing.boundary.AbstractTicketingResource;
-import de.remsfal.ticketing.boundary.OrderAttachmentResource;
-import de.remsfal.ticketing.control.OrderAttachmentController;
 import de.remsfal.ticketing.control.OrderManagementController;
 import de.remsfal.ticketing.entity.dto.OrderPlacementEntity;
 
@@ -28,12 +23,6 @@ public class IssueOrderPlacementResource extends AbstractTicketingResource imple
     @Inject
     OrderManagementController orderManagementController;
 
-    @Inject
-    OrderAttachmentController orderAttachmentController;
-
-    @Inject
-    Instance<OrderAttachmentResource> attachmentResource;
-
     @Override
     public OrderPlacementListJson getOrders(final UUID issueId) {
         checkProjectIssueOrderPermissions(issueId);
@@ -45,22 +34,14 @@ public class IssueOrderPlacementResource extends AbstractTicketingResource imple
         checkProjectIssueOrderPermissions(issueId);
         final OrderPlacementEntity placement = orderManagementController.getOrderPlacementForIssue(
             issueId, orderId);
-        return OrderPlacementJson.valueOf(placement).withAttachments(orderAttachmentController
-            .getAttachments(OrderProcessPhase.ORDER_PLACEMENT, placement.getId()).stream()
-            .map(OrderAttachmentJson::valueOf)
-            .toList());
+        return OrderPlacementJson.valueOf(placement)
+            .withAttachments(resolveAttachments(issueId, placement.getAttachmentIds()));
     }
 
     @Override
     public void withdrawOrderPlacement(final UUID issueId, final UUID orderId) {
         checkProjectIssueOrderPermissions(issueId);
         orderManagementController.withdrawOrderPlacement(issueId, orderId);
-    }
-
-    @Override
-    public OrderAttachmentResource getAttachmentResource() {
-        return resourceContext.initResource(attachmentResource.get())
-            .configure(OrderProcessPhase.ORDER_PLACEMENT);
     }
 
 }

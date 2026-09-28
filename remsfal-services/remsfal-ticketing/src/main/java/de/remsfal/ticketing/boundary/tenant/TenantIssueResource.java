@@ -9,30 +9,25 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.StreamingOutput;
 
-import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
 import de.remsfal.common.boundary.MultipartAttachmentProcessor;
 import de.remsfal.core.api.ticketing.tenant.TenantIssueEndpoint;
-import de.remsfal.core.json.ticketing.IssueAttachmentJson;
 import de.remsfal.core.json.ticketing.tenant.TenantIssueJson;
 import de.remsfal.core.json.ticketing.tenant.TenantIssueListJson;
+import de.remsfal.core.model.UserContext;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.ticketing.boundary.AbstractTicketingResource;
 import de.remsfal.ticketing.boundary.manager.IssueResource;
-import de.remsfal.ticketing.control.AttachmentController;
 import de.remsfal.ticketing.control.TenantTimelineController;
-import de.remsfal.ticketing.entity.dto.IssueAttachmentEntity;
 import io.quarkus.security.Authenticated;
 
 /**
@@ -50,9 +45,6 @@ public class TenantIssueResource extends AbstractTicketingResource implements Te
 
     @Inject
     Validator validator;
-
-    @Inject
-    AttachmentController attachmentController;
 
     @Inject
     TenantTimelineController timelineController;
@@ -81,16 +73,7 @@ public class TenantIssueResource extends AbstractTicketingResource implements Te
         }
         final IssueModel createdIssue = issueController.createTenancyIssue(principal, issue, projectId);
 
-        final Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
-        final List<InputPart> fileParts = formDataMap.get("attachment");
-        final List<IssueAttachmentJson> attachments = MultipartAttachmentProcessor.processAttachmentParts(
-            fileParts,
-            fileData -> IssueAttachmentJson.valueOf(
-                attachmentController.addAttachment(principal, createdIssue.getId(), fileData)));
-
-        final List<UUID> attachmentIds = attachments.stream()
-            .map(IssueAttachmentJson::getAttachmentId)
-            .toList();
+        final List<UUID> attachmentIds = collectAttachmentIds(createdIssue.getId(), input, UserContext.TENANT);
         timelineController.createTimelineEntry(createdIssue.getAgreementId(), createdIssue.getId(),
             createdIssue.getProjectId(), principal,
             MessagePurpose.ISSUE_CREATED, createdIssue.getDescription(),
@@ -134,19 +117,7 @@ public class TenantIssueResource extends AbstractTicketingResource implements Te
             throw new ForbiddenException(FORBIDDEN_MESSAGE);
         }
 
-        final IssueAttachmentEntity attachment = attachmentController.getAttachment(issueId, attachmentId);
-        final InputStream fileStream = attachmentController.downloadAttachment(attachment.getObjectName());
-
-        return Response.ok((StreamingOutput) output -> {
-            byte[] buffer = new byte[8192];
-            int bytesRead;
-            while ((bytesRead = fileStream.read(buffer)) != -1) {
-                output.write(buffer, 0, bytesRead);
-            }
-        })
-            .type(MediaType.APPLICATION_OCTET_STREAM)
-            .header("Content-Disposition", "attachment; filename=\"" + attachment.getFileName() + "\"")
-            .build();
+        return streamAttachment(attachmentController.getAttachment(issueId, attachmentId));
     }
 
     @Override

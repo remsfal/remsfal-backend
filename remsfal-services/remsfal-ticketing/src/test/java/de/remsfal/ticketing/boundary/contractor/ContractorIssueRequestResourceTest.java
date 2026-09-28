@@ -3,7 +3,6 @@ package de.remsfal.ticketing.boundary.contractor;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.not;
 
 import java.util.List;
 import java.util.Map;
@@ -156,7 +155,8 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
             .body("timelines[1].purpose", equalTo("REQUEST_CREATED"))
             .body("timelines[1].attachments", hasSize(1))
             .body("timelines[1].attachments[0].fileName", equalTo("plan.pdf"))
-            .body("timelines[1].attachments[0].attachmentId", not(equalTo(attachmentIds.get(0))));
+            .body("timelines[1].attachments[0].attachmentId", equalTo(attachmentIds.get(0)))
+            .body("timelines[1].attachments[0].uploaderContext", equalTo("CONTRACTOR"));
     }
 
     @Test

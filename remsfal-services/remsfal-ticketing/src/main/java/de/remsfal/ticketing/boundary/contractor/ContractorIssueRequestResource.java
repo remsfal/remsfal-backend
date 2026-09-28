@@ -4,11 +4,9 @@ import de.remsfal.common.boundary.MultipartAttachmentProcessor;
 import de.remsfal.core.api.ticketing.contractor.ContractorIssueRequestEndpoint;
 import de.remsfal.core.json.ticketing.IssueRequestJson;
 import de.remsfal.core.json.ticketing.IssueRequestListJson;
-import de.remsfal.core.json.ticketing.OrderAttachmentJson;
-import de.remsfal.core.model.ticketing.OrderProcessPhase;
+import de.remsfal.core.model.UserContext;
 import de.remsfal.ticketing.boundary.AbstractTicketingResource;
 import de.remsfal.ticketing.control.IssueRequestController;
-import de.remsfal.ticketing.control.OrderAttachmentController;
 import de.remsfal.ticketing.control.OrderManagementController;
 import de.remsfal.ticketing.entity.dto.IssueRequestEntity;
 import de.remsfal.ticketing.entity.dto.QuotationRequestEntity;
@@ -21,12 +19,10 @@ import jakarta.validation.Validator;
 import jakarta.ws.rs.BadRequestException;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
 /**
@@ -42,9 +38,6 @@ public class ContractorIssueRequestResource extends AbstractTicketingResource
 
     @Inject
     OrderManagementController orderManagementController;
-
-    @Inject
-    OrderAttachmentController orderAttachmentController;
 
     @Inject
     Validator validator;
@@ -68,27 +61,25 @@ public class ContractorIssueRequestResource extends AbstractTicketingResource
             input, "request", IssueRequestJson.class);
         validateRequest(request);
 
-        final UUID requestId = quotationRequest.getRequestId();
-        final List<UUID> attachmentIds = collectAttachmentIds(requestId, input);
+        final List<UUID> attachmentIds = collectAttachmentIds(issueId, input, UserContext.CONTRACTOR);
         try {
             final IssueRequestEntity created = issueRequestController.createRequest(issueId,
                 quotationRequest.getOrganizationId(), principal, request,
                 attachmentIds.isEmpty() ? null : attachmentIds);
             return IssueRequestJson.valueOf(created);
         } catch (final RuntimeException e) {
-            attachmentIds.forEach(id -> orderAttachmentController.deleteAttachment(
-                OrderProcessPhase.QUOTATION_REQUEST, requestId, id));
+            attachmentIds.forEach(id -> attachmentController.deleteAttachment(issueId, id));
             throw e;
         }
     }
 
     @Override
-    public void deleteRequest(final UUID issueId, final UUID issueRequestId) {
+    public void deleteRequest(final UUID issueId, final UUID requestId) {
         final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
         final QuotationRequestEntity quotationRequest =
             orderManagementController.getRequestForIssueByOrganizationIds(eligibleOrgIds, issueId);
 
-        issueRequestController.deleteRequest(issueId, quotationRequest.getOrganizationId(), issueRequestId);
+        issueRequestController.deleteRequest(issueId, quotationRequest.getOrganizationId(), requestId);
     }
 
     private void validateRequest(final IssueRequestJson request) {
@@ -99,21 +90,6 @@ public class ContractorIssueRequestResource extends AbstractTicketingResource
                 .collect(Collectors.joining("; "));
             throw new BadRequestException("Invalid request data provided: " + errorMessages);
         }
-    }
-
-    private List<UUID> collectAttachmentIds(final UUID requestId, final MultipartFormDataInput input) {
-        final Map<String, List<InputPart>> formDataMap = input.getFormDataMap();
-        final List<InputPart> fileParts = formDataMap.get("attachment");
-        if (fileParts == null || fileParts.isEmpty()) {
-            return List.of();
-        }
-
-        final List<OrderAttachmentJson> uploaded = MultipartAttachmentProcessor.processAttachmentParts(
-            fileParts,
-            fileData -> OrderAttachmentJson.valueOf(orderAttachmentController.addAttachment(
-                principal, OrderProcessPhase.QUOTATION_REQUEST, requestId, fileData)));
-
-        return uploaded.stream().map(OrderAttachmentJson::getAttachmentId).toList();
     }
 
 }

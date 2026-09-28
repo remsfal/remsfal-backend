@@ -26,10 +26,10 @@ import de.remsfal.core.json.eventing.ImmutableProjectEventJson;
 import de.remsfal.core.json.eventing.ProjectEventJson;
 import de.remsfal.core.json.eventing.ProjectEventJson.ProjectEventType;
 import de.remsfal.test.TestData;
+import de.remsfal.ticketing.control.AttachmentController;
 import de.remsfal.ticketing.entity.dao.ActivityFeedRepository;
 import de.remsfal.ticketing.entity.dao.ChatMessageRepository;
 import de.remsfal.ticketing.entity.dao.ContractorTimelineRepository;
-import de.remsfal.ticketing.entity.dao.IssueAttachmentRepository;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dao.OrderPlacementRepository;
 import de.remsfal.ticketing.entity.dao.QuotationRepository;
@@ -61,7 +61,7 @@ class ProjectEventConsumerTest {
     IssueRepository issueRepository;
 
     @InjectMock
-    IssueAttachmentRepository issueAttachmentRepository;
+    AttachmentController attachmentController;
 
     @InjectMock
     OrderPlacementRepository orderPlacementRepository;
@@ -145,7 +145,7 @@ class ProjectEventConsumerTest {
         consumer.consume(Message.of(event)).toCompletableFuture().join();
 
         for (final UUID issueId : List.of(issueId1, issueId2)) {
-            verify(issueAttachmentRepository).deleteByIssueId(issueId);
+            verify(attachmentController).deleteAllAttachments(issueId);
             verify(orderPlacementRepository).deleteByIssueId(issueId);
             verify(quotationRepository).deleteByIssueId(issueId);
             verify(quotationRequestRepository).deleteByIssueId(issueId);
@@ -161,7 +161,7 @@ class ProjectEventConsumerTest {
     void testConsume_nullPayload_acksWithoutAction() {
         consumer.consume(Message.of((ProjectEventJson) null)).toCompletableFuture().join();
 
-        verifyNoInteractions(issueRepository, issueAttachmentRepository, orderPlacementRepository,
+        verifyNoInteractions(issueRepository, attachmentController, orderPlacementRepository,
             quotationRepository, quotationRequestRepository, chatMessageRepository, contractorTimelineRepository,
             tenantTimelineRepository, activityFeedRepository);
     }

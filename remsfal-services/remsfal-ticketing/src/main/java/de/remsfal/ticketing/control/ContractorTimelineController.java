@@ -16,7 +16,10 @@ import org.jboss.logging.Logger;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class ContractorTimelineController {
@@ -36,6 +39,18 @@ public class ContractorTimelineController {
     public List<ContractorTimelineEntity> getTimelineEntries(final UUID issueId) {
         logger.infov("Retrieving contractor timeline entries (issueId={0})", issueId);
         return contractorTimelineRepository.findByIssueIdOnly(issueId);
+    }
+
+    /**
+     * Attachments are only visible to a contractor if they are referenced by some
+     * {@link ContractorTimelineEntity} of the contractor's organization for the issue — this computes that set.
+     */
+    public Set<UUID> getVisibleAttachmentIds(final UUID issueId, final UUID organizationId) {
+        return getTimelineEntries(issueId, organizationId).stream()
+            .map(ContractorTimelineEntity::getAttachmentIds)
+            .filter(Objects::nonNull)
+            .flatMap(List::stream)
+            .collect(Collectors.toSet());
     }
 
     @Transactional

@@ -1,6 +1,5 @@
 package de.remsfal.ticketing.control;
 
-import de.remsfal.common.model.FileUploadData;
 import de.remsfal.common.util.UUIDv7;
 import de.remsfal.core.json.ticketing.ContractorTimelineJson;
 import de.remsfal.core.json.ticketing.ImmutableContractorTimelineJson;
@@ -8,15 +7,11 @@ import de.remsfal.core.json.ticketing.IssueRequestJson;
 import de.remsfal.core.model.UserContext;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.ticketing.MessagePurpose;
-import de.remsfal.core.model.ticketing.OrderProcessPhase;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dao.IssueRequestRepository;
-import de.remsfal.ticketing.entity.dto.IssueAttachmentEntity;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.IssueRequestEntity;
 import de.remsfal.ticketing.entity.dto.IssueRequestKey;
-import de.remsfal.ticketing.entity.dto.OrderAttachmentEntity;
-import de.remsfal.ticketing.entity.dto.QuotationRequestEntity;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -26,11 +21,8 @@ import jakarta.ws.rs.NotFoundException;
 
 import org.jboss.logging.Logger;
 
-import java.io.InputStream;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -54,15 +46,6 @@ public class IssueRequestController {
     @Inject
     TenantTimelineController tenantTimelineController;
 
-    @Inject
-    AttachmentController attachmentController;
-
-    @Inject
-    OrderAttachmentController orderAttachmentController;
-
-    @Inject
-    OrderManagementController orderManagementController;
-
     public List<IssueRequestEntity> getRequestsForContractor(final UUID issueId, final UUID organizationId) {
         logger.infov("Retrieving issue requests (issueId={0}, organizationId={1})", issueId, organizationId);
         return issueRequestRepository.findByIssue(issueId, organizationId);
@@ -84,9 +67,6 @@ public class IssueRequestController {
             throw new BadRequestException("Issue is not visible to a tenant, cannot request a tenant response");
         }
 
-        final List<UUID> copiedAttachmentIds = copyAttachmentsToIssue(
-            issueId, organizationId, sender, attachmentIds);
-
         final IssueRequestKey key = new IssueRequestKey();
         key.setIssueId(issueId);
         key.setOrganizationId(organizationId);
@@ -96,7 +76,7 @@ public class IssueRequestController {
         entity.setKey(key);
         entity.setAgreementId(issue.getAgreementId());
         entity.setMessage(request.getMessage());
-        entity.setAttachmentIds(copiedAttachmentIds.isEmpty() ? null : copiedAttachmentIds);
+        entity.setAttachmentIds(attachmentIds);
 
         final Instant now = Instant.now();
         entity.setCreatedAt(now);
@@ -142,13 +122,6 @@ public class IssueRequestController {
         final IssueEntity issue = issueRepository.findByIssueId(issueId)
             .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
 
-        // Copy attachments first: this is the step with external I/O (order lookup, S3 download/upload)
-        // and can fail. @Transactional has no effect against Cassandra/JNoSQL, so everything after the
-        // delete below cannot be rolled back - run the fallible part first so a failure here leaves the
-        // request untouched and answerable again instead of losing the answer after the point of no return.
-        final List<UUID> copiedAttachmentIds = copyAttachmentsToOrder(
-            issueId, entity.getOrganizationId(), sender, attachmentIds);
-
         issueRequestRepository.delete(entity.getKey());
 
         tenantTimelineController.createTimelineEntry(entity.getAgreementId(), issueId, issue.getProjectId(),
@@ -159,51 +132,7 @@ public class IssueRequestController {
             .message(response.getMessage())
             .build();
         contractorTimelineController.createTimelineEntry(issueId, entity.getOrganizationId(), sender,
-            UserContext.TENANT, entry, copiedAttachmentIds);
-    }
-
-    private List<UUID> copyAttachmentsToOrder(final UUID issueId, final UUID organizationId,
-        final UserModel sender, final List<UUID> attachmentIds) {
-        if (attachmentIds == null || attachmentIds.isEmpty()) {
-            return List.of();
-        }
-
-        final QuotationRequestEntity request = orderManagementController
-            .getRequestForIssueByOrganizationIds(Set.of(organizationId), issueId);
-
-        final List<IssueAttachmentEntity> sources = attachmentIds.stream()
-            .map(attachmentId -> attachmentController.getAttachment(issueId, attachmentId))
-            .toList();
-        return orderAttachmentController.copyIssueAttachments(sender,
-            OrderProcessPhase.QUOTATION_REQUEST, request.getRequestId(), sources);
-    }
-
-    private List<UUID> copyAttachmentsToIssue(final UUID issueId, final UUID organizationId,
-        final UserModel sender, final List<UUID> attachmentIds) {
-        if (attachmentIds == null || attachmentIds.isEmpty()) {
-            return List.of();
-        }
-
-        final QuotationRequestEntity request = orderManagementController
-            .getRequestForIssueByOrganizationIds(Set.of(organizationId), issueId);
-
-        final List<UUID> copiedAttachmentIds = new ArrayList<>();
-        try {
-            for (final UUID attachmentId : attachmentIds) {
-                final OrderAttachmentEntity source = orderAttachmentController.getAttachment(
-                    OrderProcessPhase.QUOTATION_REQUEST, request.getRequestId(), attachmentId);
-                final InputStream inputStream = orderAttachmentController.downloadAttachment(source.getObjectName());
-                final FileUploadData fileData = new FileUploadData(inputStream, source.getFileName(),
-                    source.getMediaType());
-
-                final IssueAttachmentEntity copy = attachmentController.addAttachment(sender, issueId, fileData);
-                copiedAttachmentIds.add(copy.getAttachmentId());
-            }
-        } catch (final RuntimeException e) {
-            copiedAttachmentIds.forEach(id -> attachmentController.deleteAttachment(issueId, id));
-            throw e;
-        }
-        return copiedAttachmentIds;
+            UserContext.TENANT, entry, attachmentIds);
     }
 
 }

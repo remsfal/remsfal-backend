@@ -112,6 +112,6 @@ public abstract class QuotationRequestJson extends OrderProcessJson implements Q
             .build();
     }
 
-    public abstract QuotationRequestJson withAttachments(final Iterable<? extends OrderAttachmentJson> attachments);
+    public abstract QuotationRequestJson withAttachments(final Iterable<? extends IssueAttachmentJson> attachments);
 
 }

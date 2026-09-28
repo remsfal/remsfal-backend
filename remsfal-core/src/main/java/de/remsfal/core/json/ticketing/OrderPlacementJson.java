@@ -76,6 +76,6 @@ public abstract class OrderPlacementJson extends OrderProcessJson implements Ord
             .build();
     }
 
-    public abstract OrderPlacementJson withAttachments(final Iterable<? extends OrderAttachmentJson> attachments);
+    public abstract OrderPlacementJson withAttachments(final Iterable<? extends IssueAttachmentJson> attachments);
 
 }

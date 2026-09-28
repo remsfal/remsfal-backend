@@ -1,5 +1,6 @@
 package de.remsfal.ticketing.entity.dto;
 
+import de.remsfal.core.model.UserContext;
 import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
@@ -32,6 +33,9 @@ public class IssueAttachmentEntity extends AbstractEntity implements IssueAttach
 
     @Column("uploaded_by")
     private String uploadedBy;
+
+    @Column("uploader_context")
+    private String uploaderContext;
 
     public IssueAttachmentKey getKey() {
         return key;
@@ -119,6 +123,19 @@ public class IssueAttachmentEntity extends AbstractEntity implements IssueAttach
 
     public void setUploadedBy(String uploadedBy) {
         this.uploadedBy = uploadedBy;
+    }
+
+    @Override
+    public UserContext getUploaderContext() {
+        return uploaderContext != null ? UserContext.valueOf(uploaderContext) : null;
+    }
+
+    public void setUploaderContext(final UserContext uploaderContext) {
+        this.uploaderContext = uploaderContext != null ? uploaderContext.name() : null;
+    }
+
+    public void setUploaderContext(final String uploaderContext) {
+        this.uploaderContext = uploaderContext;
     }
 
     public void generateId() {

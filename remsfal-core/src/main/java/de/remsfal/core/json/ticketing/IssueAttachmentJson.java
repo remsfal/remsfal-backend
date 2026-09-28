@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
+import de.remsfal.core.model.UserContext;
 import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 
 @Immutable
@@ -25,6 +26,10 @@ public abstract class IssueAttachmentJson extends AttachmentJson implements Issu
     @Override
     public abstract UUID getIssueId();
 
+    @Nullable
+    @Override
+    public abstract UserContext getUploaderContext();
+
     public static IssueAttachmentJson valueOf(final IssueAttachmentModel model) {
         return ImmutableIssueAttachmentJson.builder()
             .issueId(model.getIssueId())
@@ -34,6 +39,7 @@ public abstract class IssueAttachmentJson extends AttachmentJson implements Issu
             .objectName(model.getObjectName())
             .uploaderId(model.getUploaderId())
             .uploadedBy(model.getUploadedBy())
+            .uploaderContext(model.getUploaderContext())
             .createdAt(model.getCreatedAt())
             .build();
     }

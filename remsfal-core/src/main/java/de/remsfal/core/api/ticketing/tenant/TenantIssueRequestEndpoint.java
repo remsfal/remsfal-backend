@@ -43,7 +43,7 @@ public interface TenantIssueRequestEndpoint {
         @PathParam("issueId") @NotNull UUID issueId);
 
     @POST
-    @Path("/{issueRequestId}/response")
+    @Path("/{requestId}")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Operation(summary = "Answer a request a contractor has sent about an issue.",
         description = "Deletes the request and records the tenant's response, optionally with file attachments,"
@@ -73,7 +73,7 @@ public interface TenantIssueRequestEndpoint {
         @Parameter(description = "ID of the issue", required = true)
         @PathParam("issueId") @NotNull UUID issueId,
         @Parameter(description = "ID of the request", required = true)
-        @PathParam("issueRequestId") @NotNull UUID issueRequestId,
+        @PathParam("requestId") @NotNull UUID requestId,
         @Parameter(hidden = true) MultipartFormDataInput input);
 
 }

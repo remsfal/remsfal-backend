@@ -22,7 +22,6 @@ import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.ticketing.boundary.AbstractTicketingResource;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
-import de.remsfal.ticketing.control.AttachmentController;
 import de.remsfal.ticketing.entity.filter.IssueFilter;
 import io.quarkus.security.Authenticated;
 
@@ -32,9 +31,6 @@ import io.quarkus.security.Authenticated;
 @Authenticated
 @RequestScoped
 public class IssueResource extends AbstractTicketingResource implements IssueEndpoint {
-
-    @Inject
-    AttachmentController attachmentController;
 
     @Inject
     Instance<IssueAttachmentResource> attachmentResource;

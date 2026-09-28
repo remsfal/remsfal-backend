@@ -8,6 +8,7 @@ import jakarta.nosql.Id;
 
 import java.time.Instant;
 import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 @Entity("quotations")
@@ -57,6 +58,9 @@ public class QuotationEntity extends AbstractEntity implements QuotationModel {
 
     @Column("valid_until")
     private Instant validUntil;
+
+    @Column("attachment_ids")
+    private List<UUID> attachmentIds;
 
     @Override
     public UUID getId() {
@@ -228,6 +232,14 @@ public class QuotationEntity extends AbstractEntity implements QuotationModel {
 
     public void setValidUntil(Instant validUntil) {
         this.validUntil = validUntil;
+    }
+
+    public List<UUID> getAttachmentIds() {
+        return attachmentIds;
+    }
+
+    public void setAttachmentIds(final List<UUID> attachmentIds) {
+        this.attachmentIds = attachmentIds;
     }
 
 }

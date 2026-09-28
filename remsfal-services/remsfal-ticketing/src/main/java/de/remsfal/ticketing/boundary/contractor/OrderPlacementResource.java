@@ -2,23 +2,18 @@ package de.remsfal.ticketing.boundary.contractor;
 
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
-import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 
 import java.util.Set;
 import java.util.UUID;
 
-import de.remsfal.core.api.ticketing.OrderAttachmentEndpoint;
 import de.remsfal.core.api.ticketing.contractor.OrderPlacementEndpoint;
-import de.remsfal.core.json.ticketing.OrderAttachmentJson;
 import de.remsfal.core.json.ticketing.OrderPlacementJson;
 import de.remsfal.core.json.ticketing.OrderPlacementListJson;
-import de.remsfal.core.model.ticketing.OrderProcessPhase;
 import de.remsfal.ticketing.boundary.AbstractTicketingResource;
-import de.remsfal.ticketing.boundary.OrderAttachmentResource;
-import de.remsfal.ticketing.control.OrderAttachmentController;
 import de.remsfal.ticketing.control.OrderManagementController;
+import de.remsfal.ticketing.entity.dto.OrderPlacementEntity;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -30,12 +25,6 @@ public class OrderPlacementResource extends AbstractTicketingResource implements
     @Inject
     OrderManagementController orderManagementController;
 
-    @Inject
-    OrderAttachmentController orderAttachmentController;
-
-    @Inject
-    Instance<OrderAttachmentResource> attachmentResource;
-
     @Override
     public OrderPlacementListJson getOrderPlacements() {
         final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
@@ -46,12 +35,8 @@ public class OrderPlacementResource extends AbstractTicketingResource implements
     @Override
     public OrderPlacementJson getOrderPlacement(final UUID placementId) {
         final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
-        final OrderPlacementJson json = OrderPlacementJson.valueOf(
+        return withAttachments(
             orderManagementController.getOrderPlacementForOrganization(eligibleOrgIds, placementId));
-        return json.withAttachments(orderAttachmentController
-            .getAttachments(OrderProcessPhase.ORDER_PLACEMENT, placementId).stream()
-            .map(OrderAttachmentJson::valueOf)
-            .toList());
     }
 
     @Override
@@ -60,18 +45,13 @@ public class OrderPlacementResource extends AbstractTicketingResource implements
         if (body.getStatus() == null) {
             throw new BadRequestException("Status must be provided");
         }
-        final OrderPlacementJson json = OrderPlacementJson.valueOf(
+        return withAttachments(
             orderManagementController.updateOrderPlacementStatus(eligibleOrgIds, placementId, body.getStatus()));
-        return json.withAttachments(orderAttachmentController
-            .getAttachments(OrderProcessPhase.ORDER_PLACEMENT, placementId).stream()
-            .map(OrderAttachmentJson::valueOf)
-            .toList());
     }
 
-    @Override
-    public OrderAttachmentEndpoint getAttachmentResource() {
-        return resourceContext.initResource(attachmentResource.get())
-            .configure(OrderProcessPhase.ORDER_PLACEMENT);
+    private OrderPlacementJson withAttachments(final OrderPlacementEntity placement) {
+        return OrderPlacementJson.valueOf(placement)
+            .withAttachments(resolveAttachments(placement.getIssueId(), placement.getAttachmentIds()));
     }
 
 }

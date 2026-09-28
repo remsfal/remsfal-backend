@@ -9,10 +9,10 @@ import org.eclipse.microprofile.reactive.messaging.Message;
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.json.eventing.ProjectEventJson;
+import de.remsfal.ticketing.control.AttachmentController;
 import de.remsfal.ticketing.entity.dao.ActivityFeedRepository;
 import de.remsfal.ticketing.entity.dao.ChatMessageRepository;
 import de.remsfal.ticketing.entity.dao.ContractorTimelineRepository;
-import de.remsfal.ticketing.entity.dao.IssueAttachmentRepository;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dao.OrderPlacementRepository;
 import de.remsfal.ticketing.entity.dao.QuotationRepository;
@@ -29,7 +29,7 @@ public class ProjectEventConsumer {
     IssueRepository issueRepository;
 
     @Inject
-    IssueAttachmentRepository issueAttachmentRepository;
+    AttachmentController attachmentController;
 
     @Inject
     OrderPlacementRepository orderPlacementRepository;
@@ -86,7 +86,7 @@ public class ProjectEventConsumer {
         final List<IssueEntity> issues = issueRepository.findAllByProjectId(projectId);
         for (final IssueEntity issue : issues) {
             final UUID issueId = issue.getId();
-            issueAttachmentRepository.deleteByIssueId(issueId);
+            attachmentController.deleteAllAttachments(issueId);
             orderPlacementRepository.deleteByIssueId(issueId);
             quotationRepository.deleteByIssueId(issueId);
             quotationRequestRepository.deleteByIssueId(issueId);

@@ -17,7 +17,6 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
-import de.remsfal.core.api.ticketing.OrderAttachmentEndpoint;
 import de.remsfal.core.json.ticketing.OrderPlacementJson;
 import de.remsfal.core.json.ticketing.QuotationJson;
 import de.remsfal.core.json.ticketing.QuotationListJson;
@@ -69,8 +68,5 @@ public interface IssueQuotationEndpoint {
         @PathParam("issueId") @NotNull UUID issueId,
         @Parameter(description = "ID of the quotation", required = true)
         @PathParam("quotationId") @NotNull UUID quotationId);
-
-    @Path("/{processId}/" + OrderAttachmentEndpoint.SERVICE)
-    OrderAttachmentEndpoint getAttachmentResource();
 
 }
