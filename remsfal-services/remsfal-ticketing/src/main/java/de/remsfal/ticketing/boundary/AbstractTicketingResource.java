@@ -179,15 +179,13 @@ public class AbstractTicketingResource extends AbstractResource {
     }
 
     private static URI buildDownloadUrl(final IssueAttachmentModel attachment, final UserContext viewer) {
-        final String issuePath = switch (viewer) {
-            case MANAGER -> "/" + IssueEndpoint.CONTEXT + "/" + IssueEndpoint.VERSION
-                + "/" + IssueEndpoint.SERVICE;
-            case TENANT -> "/" + TenantRelationsEndpoint.CONTEXT + "/" + TenantRelationsEndpoint.VERSION
-                + "/" + TenantRelationsEndpoint.SERVICE + "/" + TenantIssueEndpoint.SERVICE;
-            case CONTRACTOR -> "/" + OrderManagementEndpoint.CONTEXT + "/" + OrderManagementEndpoint.VERSION
-                + "/" + OrderManagementEndpoint.SERVICE;
+        final UriBuilder issuePath = switch (viewer) {
+            case MANAGER -> UriBuilder.fromPath("/").path(IssueEndpoint.class);
+            case TENANT -> UriBuilder.fromPath("/").path(TenantRelationsEndpoint.class)
+                .path(TenantIssueEndpoint.SERVICE);
+            case CONTRACTOR -> UriBuilder.fromPath("/").path(OrderManagementEndpoint.class);
         };
-        return UriBuilder.fromPath(issuePath)
+        return issuePath
             .path("{issueId}")
             .path(IssueAttachmentEndpoint.SERVICE)
             .path("{attachmentId}")
