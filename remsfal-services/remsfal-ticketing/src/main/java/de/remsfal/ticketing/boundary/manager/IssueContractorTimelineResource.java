@@ -28,7 +28,7 @@ public class IssueContractorTimelineResource extends AbstractContractorTimelineR
     @Override
     public ContractorTimelineListJson getTimelineEntries(final UUID issueId) {
         checkProjectIssueAccessPermissions(issueId);
-        return getAllTimelineEntries(issueId);
+        return getAllTimelineEntries(issueId, UserContext.MANAGER);
     }
 
     @Override

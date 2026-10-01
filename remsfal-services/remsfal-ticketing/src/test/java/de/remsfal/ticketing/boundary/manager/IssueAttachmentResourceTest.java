@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 
 import java.io.InputStream;
@@ -198,7 +199,7 @@ class IssueAttachmentResourceTest extends AbstractTicketingTest {
         String issueId = TicketingTestData.ISSUE_ID_1.toString();
         InputStream fileStream = getTestFileStream(TicketingTestData.ATTACHMENT_FILE_PATH_1);
 
-        given()
+        final String attachmentId = given()
             .when()
             .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
             .multiPart("attachment", TicketingTestData.ATTACHMENT_FILE_PATH_1, fileStream,
@@ -212,10 +213,30 @@ class IssueAttachmentResourceTest extends AbstractTicketingTest {
             .body("[0].attachmentId", notNullValue())
             .body("[0].fileName", equalTo(TicketingTestData.ATTACHMENT_FILE_PATH_1))
             .body("[0].contentType", startsWith(TicketingTestData.ATTACHMENT_FILE_TYPE_1))
-            .body("[0].objectName", startsWith("/issues/"))
-            .body("[0].uploaderId", notNullValue())
+            .body("[0].objectName", nullValue())
+            .body("[0].uploaderId", nullValue())
             .body("[0].uploadedBy", notNullValue())
-            .body("[0].createdAt", notNullValue());
+            .body("[0].createdAt", notNullValue())
+            .extract().path("[0].attachmentId");
+
+        final String downloadUrl = given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(BASE_PATH + "/" + issueId)
+            .then()
+            .statusCode(200)
+            .body("attachments", hasSize(1))
+            .body("attachments[0].downloadUrl", equalTo(BASE_PATH + "/" + issueId + "/attachments/"
+                + attachmentId + "/" + TicketingTestData.ATTACHMENT_FILE_PATH_1))
+            .extract().path("attachments[0].downloadUrl");
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .get(downloadUrl)
+            .then()
+            .statusCode(200)
+            .contentType(MediaType.APPLICATION_OCTET_STREAM);
     }
 
     @Test

@@ -11,6 +11,7 @@ import java.util.UUID;
 import de.remsfal.core.api.ticketing.contractor.OrderPlacementEndpoint;
 import de.remsfal.core.json.ticketing.OrderPlacementJson;
 import de.remsfal.core.json.ticketing.OrderPlacementListJson;
+import de.remsfal.core.model.UserContext;
 import de.remsfal.ticketing.boundary.AbstractTicketingResource;
 import de.remsfal.ticketing.control.OrderManagementController;
 import de.remsfal.ticketing.entity.dto.OrderPlacementEntity;
@@ -51,7 +52,8 @@ public class OrderPlacementResource extends AbstractTicketingResource implements
 
     private OrderPlacementJson withAttachments(final OrderPlacementEntity placement) {
         return OrderPlacementJson.valueOf(placement)
-            .withAttachments(resolveAttachments(placement.getIssueId(), placement.getAttachmentIds()));
+            .withAttachments(resolveAttachments(placement.getIssueId(), placement.getAttachmentIds(),
+                UserContext.CONTRACTOR));
     }
 
 }

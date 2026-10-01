@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.startsWith;
 
 import java.io.InputStream;
 import java.util.List;
@@ -78,7 +79,7 @@ class TenantIssueResourceTest extends AbstractTicketingTest {
         // TenantIssueJson never carries attachments (issue #801) — they're only surfaced through the
         // issue-creation timeline entry, which the resource must link them into. Attachment order
         // within an entry isn't guaranteed, so assert membership rather than positions.
-        given()
+        final String downloadUrl = given()
             .when()
             .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
                 TicketingTestData.USER_NAME, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
@@ -91,7 +92,19 @@ class TenantIssueResourceTest extends AbstractTicketingTest {
             .body("timelines[0].attachments.fileName", containsInAnyOrder(
                 TicketingTestData.ATTACHMENT_FILE_PATH_2, TicketingTestData.ATTACHMENT_FILE_PATH_3,
                 TicketingTestData.ATTACHMENT_FILE_PATH_4))
-            .body("timelines[0].attachments.uploaderId", everyItem(equalTo(TicketingTestData.USER_ID.toString())));
+            .body("timelines[0].attachments.uploaderId", everyItem(nullValue()))
+            .body("timelines[0].attachments.objectName", everyItem(nullValue()))
+            .body("timelines[0].attachments.downloadUrl", everyItem(startsWith(BASE_PATH + "/" + issueId
+                + "/attachments/")))
+            .extract().path("timelines[0].attachments[0].downloadUrl");
+
+        given()
+            .when()
+            .cookie(buildCookie(TicketingTestData.USER_ID, TicketingTestData.USER_EMAIL,
+                TicketingTestData.USER_NAME, Map.of(), Map.of(), TicketingTestData.TENANT_PROJECT_ROLES))
+            .get(downloadUrl)
+            .then()
+            .statusCode(200);
     }
 
     @Test

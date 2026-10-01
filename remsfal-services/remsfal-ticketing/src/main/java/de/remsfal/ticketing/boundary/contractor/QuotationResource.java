@@ -10,6 +10,7 @@ import java.util.UUID;
 import de.remsfal.core.api.ticketing.contractor.QuotationEndpoint;
 import de.remsfal.core.json.ticketing.QuotationJson;
 import de.remsfal.core.json.ticketing.QuotationListJson;
+import de.remsfal.core.model.UserContext;
 import de.remsfal.ticketing.boundary.AbstractTicketingResource;
 import de.remsfal.ticketing.control.OrderManagementController;
 import de.remsfal.ticketing.entity.dto.QuotationEntity;
@@ -37,7 +38,8 @@ public class QuotationResource extends AbstractTicketingResource implements Quot
         final QuotationEntity quotation =
             orderManagementController.getQuotationForOrganization(eligibleOrgIds, quotationId);
         return QuotationJson.valueOf(quotation)
-            .withAttachments(resolveAttachments(quotation.getIssueId(), quotation.getAttachmentIds()));
+            .withAttachments(resolveAttachments(quotation.getIssueId(), quotation.getAttachmentIds(),
+                UserContext.CONTRACTOR));
     }
 
 }

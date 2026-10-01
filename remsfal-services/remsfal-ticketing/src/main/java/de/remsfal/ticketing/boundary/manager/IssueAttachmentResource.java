@@ -44,8 +44,9 @@ public class IssueAttachmentResource extends AbstractTicketingResource implement
         List<InputPart> fileParts = formDataMap.get("attachment");
         List<IssueAttachmentJson> attachments = MultipartAttachmentProcessor.processAttachmentParts(
             fileParts,
-            fileData -> IssueAttachmentJson.valueOf(
-                attachmentController.addAttachment(principal, UserContext.MANAGER, issueId, fileData)));
+            fileData -> toAttachmentJson(
+                attachmentController.addAttachment(principal, UserContext.MANAGER, issueId, fileData),
+                UserContext.MANAGER));
 
         return Response.ok()
             .type(MediaType.APPLICATION_JSON)

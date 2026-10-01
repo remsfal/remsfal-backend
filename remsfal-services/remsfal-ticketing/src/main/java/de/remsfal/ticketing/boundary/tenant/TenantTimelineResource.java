@@ -24,7 +24,7 @@ public class TenantTimelineResource extends AbstractTimelineResource implements 
     @Override
     public TenantTimelineListJson getTimelineEntries(final UUID issueId) {
         final IssueModel issue = checkTenancyIssueAccessPermissions(issueId);
-        return super.getTimelineEntries(issue);
+        return super.getTimelineEntries(issue, UserContext.TENANT);
     }
 
     @Override

@@ -30,7 +30,7 @@ public class ContractorTimelineResource extends AbstractContractorTimelineResour
         final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
         final QuotationRequestEntity request =
             orderManagementController.getRequestForIssueByOrganizationIds(eligibleOrgIds, issueId);
-        return super.getTimelineEntries(request);
+        return super.getTimelineEntries(request, UserContext.CONTRACTOR);
     }
 
     @Override

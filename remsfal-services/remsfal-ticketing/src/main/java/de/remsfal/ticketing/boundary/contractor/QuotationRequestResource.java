@@ -11,6 +11,7 @@ import de.remsfal.core.api.ticketing.contractor.QuotationRequestEndpoint;
 import de.remsfal.core.json.ticketing.QuotationJson;
 import de.remsfal.core.json.ticketing.QuotationRequestJson;
 import de.remsfal.core.json.ticketing.QuotationRequestListJson;
+import de.remsfal.core.model.UserContext;
 import de.remsfal.ticketing.boundary.AbstractTicketingResource;
 import de.remsfal.ticketing.control.OrderManagementController;
 import de.remsfal.ticketing.entity.dto.QuotationEntity;
@@ -39,7 +40,8 @@ public class QuotationRequestResource extends AbstractTicketingResource implemen
         final QuotationRequestEntity request =
             orderManagementController.updateRequestForQuotationByContractor(eligibleOrgIds, requestId, body);
         return QuotationRequestJson.valueOf(request)
-            .withAttachments(resolveAttachments(request.getIssueId(), request.getAttachmentIds()));
+            .withAttachments(resolveAttachments(request.getIssueId(), request.getAttachmentIds(),
+                UserContext.CONTRACTOR));
     }
 
     @Override
@@ -48,7 +50,8 @@ public class QuotationRequestResource extends AbstractTicketingResource implemen
         final QuotationEntity quotation =
             orderManagementController.createQuotationByContractor(eligibleOrgIds, requestId, body);
         return QuotationJson.valueOf(quotation)
-            .withAttachments(resolveAttachments(quotation.getIssueId(), quotation.getAttachmentIds()));
+            .withAttachments(resolveAttachments(quotation.getIssueId(), quotation.getAttachmentIds(),
+                UserContext.CONTRACTOR));
     }
 
 }
