@@ -119,6 +119,12 @@ public abstract class UserJson implements CustomerModel {
 
     @Nullable
     @Null
+    @Schema(readOnly = true, examples = {"[\"test@example.com\"]"})
+    @Override
+    public abstract List<String> getVerifiedAdditionalEmails();
+
+    @Nullable
+    @Null
     @Schema(readOnly = true)
     @Override
     public abstract LocalDate getRegisteredDate();
@@ -144,6 +150,7 @@ public abstract class UserJson implements CustomerModel {
                 .placeOfBirth(model.getPlaceOfBirth())
                 .dateOfBirth(model.getDateOfBirth())
                 .additionalEmails(model.getAdditionalEmails())
+                .verifiedAdditionalEmails(model.getVerifiedAdditionalEmails())
                 .registeredDate(model.getRegisteredDate())
                 .lastLoginDate(model.getLastLoginDate())
                 .build();

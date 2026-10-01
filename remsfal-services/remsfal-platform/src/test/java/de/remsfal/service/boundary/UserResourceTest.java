@@ -122,6 +122,42 @@ class UserResourceTest extends AbstractResourceTest {
     }
 
     @Test
+    void getUser_SUCCESS_verifiedAdditionalEmailsReturned() {
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO users (id, email, authenticated_at) VALUES (?,?,?)")
+            .setParameter(1, TestData.USER_ID)
+            .setParameter(2, TestData.USER_EMAIL)
+            .setParameter(3, new Date())
+            .executeUpdate());
+        runInTransaction(() -> entityManager.createNativeQuery(
+            "INSERT INTO user_additional_email (id, user_id, email, verified) VALUES (?,?,?,?)")
+            .setParameter(1, UUID.randomUUID())
+            .setParameter(2, TestData.USER_ID)
+            .setParameter(3, TestData.ALTERNATIVE_EMAIL_1)
+            .setParameter(4, true)
+            .executeUpdate());
+        runInTransaction(() -> entityManager.createNativeQuery(
+            "INSERT INTO user_additional_email (id, user_id, email, verified) VALUES (?,?,?,?)")
+            .setParameter(1, UUID.randomUUID())
+            .setParameter(2, TestData.USER_ID)
+            .setParameter(3, TestData.ALTERNATIVE_EMAIL_2)
+            .setParameter(4, false)
+            .executeUpdate());
+        insertRefreshToken(TestData.USER_ID, UUID.randomUUID());
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .get(BASE_PATH)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("additionalEmails",
+                Matchers.containsInAnyOrder(TestData.ALTERNATIVE_EMAIL_1, TestData.ALTERNATIVE_EMAIL_2))
+            .and().body("verifiedAdditionalEmails", Matchers.contains(TestData.ALTERNATIVE_EMAIL_1));
+    }
+
+    @Test
     void updateUser_SUCCESS_userInfoChanged() {
         setupTestUsers();
 

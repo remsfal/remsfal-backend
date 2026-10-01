@@ -235,6 +235,17 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
                 .toList();
     }
 
+    @Override
+    public List<String> getVerifiedAdditionalEmails() {
+        if (additionalEmails == null || additionalEmails.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return additionalEmails.stream()
+                .filter(AdditionalEmailEntity::isVerified)
+                .map(AdditionalEmailEntity::getEmail)
+                .toList();
+    }
+
     public Set<AdditionalEmailEntity> getAdditionalEmailEntities() {
         return additionalEmails;
     }
