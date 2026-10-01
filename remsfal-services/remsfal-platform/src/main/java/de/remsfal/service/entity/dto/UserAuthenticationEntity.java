@@ -5,7 +5,6 @@ import java.util.UUID;
 
 import de.remsfal.core.model.UserAuthenticationModel;
 import de.remsfal.service.entity.dto.superclass.MetaDataEntity;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -25,7 +24,7 @@ import jakarta.persistence.Table;
 public class UserAuthenticationEntity extends MetaDataEntity implements UserAuthenticationModel {
 
     @Id
-    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false, columnDefinition = "uuid")
     private UserEntity user;
 
