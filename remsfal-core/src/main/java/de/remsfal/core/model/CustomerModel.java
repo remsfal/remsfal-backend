@@ -41,6 +41,8 @@ public interface CustomerModel extends UserModel {
 
     List<String> getAdditionalEmails();
 
+    List<String> getVerifiedAdditionalEmails();
+
     String getPlaceOfBirth();
 
     LocalDate getDateOfBirth();
