@@ -7,8 +7,10 @@ import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
+import jakarta.ws.rs.core.UriBuilder;
 
 import java.io.InputStream;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,12 +22,18 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 
 import de.remsfal.common.boundary.AbstractResource;
 import de.remsfal.common.boundary.MultipartAttachmentProcessor;
+import de.remsfal.core.api.ticketing.contractor.OrderManagementEndpoint;
+import de.remsfal.core.api.ticketing.manager.IssueAttachmentEndpoint;
+import de.remsfal.core.api.ticketing.manager.IssueEndpoint;
+import de.remsfal.core.api.ticketing.tenant.TenantIssueEndpoint;
+import de.remsfal.core.api.ticketing.tenant.TenantRelationsEndpoint;
 import de.remsfal.core.json.ticketing.IssueAttachmentJson;
 import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
 import de.remsfal.core.model.OrganizationEmployeeModel.PermissionType;
 import de.remsfal.core.model.UserContext;
 import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 import de.remsfal.core.model.ticketing.ActivityFeedModel;
+import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.ticketing.control.AttachmentController;
 import de.remsfal.ticketing.control.IssueController;
@@ -151,14 +159,38 @@ public class AbstractTicketingResource extends AbstractResource {
     /**
      * Resolves the referenced attachment ids of an issue; ids of meanwhile deleted attachments are skipped.
      */
-    protected List<IssueAttachmentJson> resolveAttachments(final UUID issueId, final List<UUID> attachmentIds) {
+    protected List<IssueAttachmentJson> resolveAttachments(final UUID issueId, final List<UUID> attachmentIds,
+        final UserContext viewer) {
         if (attachmentIds == null || attachmentIds.isEmpty()) {
             return List.of();
         }
         return attachmentController.getAttachments(issueId).stream()
             .filter(attachment -> attachmentIds.contains(attachment.getAttachmentId()))
-            .map(IssueAttachmentJson::valueOf)
+            .map(attachment -> toAttachmentJson(attachment, viewer))
             .toList();
+    }
+
+    /**
+     * Maps an attachment to its outbound representation, including the root-relative download URL
+     * of the endpoint the given viewer is allowed to download it from.
+     */
+    protected IssueAttachmentJson toAttachmentJson(final IssueAttachmentModel attachment, final UserContext viewer) {
+        return IssueAttachmentJson.valueOf(attachment, buildDownloadUrl(attachment, viewer));
+    }
+
+    private static URI buildDownloadUrl(final IssueAttachmentModel attachment, final UserContext viewer) {
+        final UriBuilder issuePath = switch (viewer) {
+            case MANAGER -> UriBuilder.fromPath("/").path(IssueEndpoint.class);
+            case TENANT -> UriBuilder.fromPath("/").path(TenantRelationsEndpoint.class)
+                .path(TenantIssueEndpoint.SERVICE);
+            case CONTRACTOR -> UriBuilder.fromPath("/").path(OrderManagementEndpoint.class);
+        };
+        return issuePath
+            .path("{issueId}")
+            .path(IssueAttachmentEndpoint.SERVICE)
+            .path("{attachmentId}")
+            .path("{filename}")
+            .build(attachment.getIssueId(), attachment.getAttachmentId(), attachment.getFileName());
     }
 
     protected Response streamAttachment(final IssueAttachmentEntity attachment) {

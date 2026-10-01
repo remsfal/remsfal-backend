@@ -29,8 +29,9 @@ public abstract class AbstractContractorTimelineResource extends AbstractTicketi
     @Inject
     ContractorTimelineController contractorTimelineController;
 
-    protected ContractorTimelineListJson getTimelineEntries(final QuotationRequestEntity request) {
-        final List<IssueAttachmentJson> issueAttachments = fetchIssueAttachments(request.getIssueId());
+    protected ContractorTimelineListJson getTimelineEntries(final QuotationRequestEntity request,
+        final UserContext viewer) {
+        final List<IssueAttachmentJson> issueAttachments = fetchIssueAttachments(request.getIssueId(), viewer);
 
         return ContractorTimelineListJson.valueOf(
             contractorTimelineController.getTimelineEntries(
@@ -39,8 +40,8 @@ public abstract class AbstractContractorTimelineResource extends AbstractTicketi
                 .toList());
     }
 
-    protected ContractorTimelineListJson getAllTimelineEntries(final UUID issueId) {
-        final List<IssueAttachmentJson> issueAttachments = fetchIssueAttachments(issueId);
+    protected ContractorTimelineListJson getAllTimelineEntries(final UUID issueId, final UserContext viewer) {
+        final List<IssueAttachmentJson> issueAttachments = fetchIssueAttachments(issueId, viewer);
 
         return ContractorTimelineListJson.valueOf(
             contractorTimelineController.getTimelineEntries(issueId).stream()
@@ -61,7 +62,7 @@ public abstract class AbstractContractorTimelineResource extends AbstractTicketi
             principal, senderRole, timeline,
             attachmentIds.isEmpty() ? null : attachmentIds);
 
-        final List<IssueAttachmentJson> issueAttachments = fetchIssueAttachments(request.getIssueId());
+        final List<IssueAttachmentJson> issueAttachments = fetchIssueAttachments(request.getIssueId(), senderRole);
 
         final URI location = uri.getAbsolutePathBuilder().path(created.getTimelineId().toString()).build();
         return Response.created(location)
@@ -70,9 +71,9 @@ public abstract class AbstractContractorTimelineResource extends AbstractTicketi
             .build();
     }
 
-    private List<IssueAttachmentJson> fetchIssueAttachments(final UUID issueId) {
+    private List<IssueAttachmentJson> fetchIssueAttachments(final UUID issueId, final UserContext viewer) {
         return attachmentController.getAttachments(issueId).stream()
-            .map(IssueAttachmentJson::valueOf)
+            .map(attachment -> toAttachmentJson(attachment, viewer))
             .toList();
     }
 

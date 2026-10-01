@@ -15,6 +15,7 @@ import de.remsfal.core.api.ticketing.manager.IssueQuotationEndpoint;
 import de.remsfal.core.json.ticketing.OrderPlacementJson;
 import de.remsfal.core.json.ticketing.QuotationJson;
 import de.remsfal.core.json.ticketing.QuotationListJson;
+import de.remsfal.core.model.UserContext;
 import de.remsfal.ticketing.boundary.AbstractTicketingResource;
 import de.remsfal.ticketing.control.OrderManagementController;
 import de.remsfal.ticketing.entity.dto.OrderPlacementEntity;
@@ -41,7 +42,7 @@ public class IssueQuotationResource extends AbstractTicketingResource implements
         checkProjectIssueOrderPermissions(issueId);
         final QuotationEntity quotation = orderManagementController.getQuotation(issueId, quotationId);
         return QuotationJson.valueOf(quotation)
-            .withAttachments(resolveAttachments(issueId, quotation.getAttachmentIds()));
+            .withAttachments(resolveAttachments(issueId, quotation.getAttachmentIds(), UserContext.MANAGER));
     }
 
     @Override
@@ -58,7 +59,7 @@ public class IssueQuotationResource extends AbstractTicketingResource implements
             .location(location)
             .type(MediaType.APPLICATION_JSON)
             .entity(OrderPlacementJson.valueOf(placement)
-                .withAttachments(resolveAttachments(issueId, placement.getAttachmentIds())))
+                .withAttachments(resolveAttachments(issueId, placement.getAttachmentIds(), UserContext.MANAGER)))
             .build();
     }
 

@@ -13,6 +13,7 @@ import de.remsfal.core.api.ticketing.manager.IssueQuotationRequestEndpoint;
 import de.remsfal.core.json.ticketing.CreateQuotationRequestJson;
 import de.remsfal.core.json.ticketing.QuotationRequestJson;
 import de.remsfal.core.json.ticketing.QuotationRequestListJson;
+import de.remsfal.core.model.UserContext;
 import de.remsfal.ticketing.boundary.AbstractTicketingResource;
 import de.remsfal.ticketing.control.OrderManagementController;
 import de.remsfal.ticketing.entity.dto.QuotationRequestEntity;
@@ -60,7 +61,7 @@ public class IssueQuotationRequestResource extends AbstractTicketingResource
 
     private QuotationRequestJson withAttachments(final QuotationRequestEntity request) {
         return QuotationRequestJson.valueOf(request)
-            .withAttachments(resolveAttachments(request.getIssueId(), request.getAttachmentIds()));
+            .withAttachments(resolveAttachments(request.getIssueId(), request.getAttachmentIds(), UserContext.MANAGER));
     }
 
 }

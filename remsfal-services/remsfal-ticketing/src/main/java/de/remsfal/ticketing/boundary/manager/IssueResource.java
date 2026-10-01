@@ -17,6 +17,7 @@ import de.remsfal.core.json.ticketing.IssueAttachmentJson;
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.json.ticketing.IssueListJson;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
+import de.remsfal.core.model.UserContext;
 import de.remsfal.core.model.ticketing.IssueAttachmentModel;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.ticketing.boundary.AbstractTicketingResource;
@@ -88,7 +89,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
         // Lazy-load attachments and add to response
         List<? extends IssueAttachmentModel> attachments = attachmentController.getAttachments(issueId);
         List<IssueAttachmentJson> attachmentJsons = attachments.stream()
-            .map(IssueAttachmentJson::valueOf)
+            .map(attachment -> toAttachmentJson(attachment, UserContext.MANAGER))
             .collect(Collectors.toList());
 
         return IssueJson.valueOf(issue).withAttachments(attachmentJsons);

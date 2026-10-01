@@ -9,6 +9,7 @@ import java.util.UUID;
 import de.remsfal.core.api.ticketing.manager.IssueOrderPlacementEndpoint;
 import de.remsfal.core.json.ticketing.OrderPlacementJson;
 import de.remsfal.core.json.ticketing.OrderPlacementListJson;
+import de.remsfal.core.model.UserContext;
 import de.remsfal.ticketing.boundary.AbstractTicketingResource;
 import de.remsfal.ticketing.control.OrderManagementController;
 import de.remsfal.ticketing.entity.dto.OrderPlacementEntity;
@@ -35,7 +36,7 @@ public class IssueOrderPlacementResource extends AbstractTicketingResource imple
         final OrderPlacementEntity placement = orderManagementController.getOrderPlacementForIssue(
             issueId, orderId);
         return OrderPlacementJson.valueOf(placement)
-            .withAttachments(resolveAttachments(issueId, placement.getAttachmentIds()));
+            .withAttachments(resolveAttachments(issueId, placement.getAttachmentIds(), UserContext.MANAGER));
     }
 
     @Override

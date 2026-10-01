@@ -4,6 +4,8 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Map;
 import java.util.UUID;
@@ -213,6 +215,47 @@ class ContractorAttachmentResourceTest extends AbstractTicketingTest {
             .get(contractorDownloadPath(UUID.randomUUID().toString(), "test.png"))
             .then()
             .statusCode(401);
+    }
+
+    @Test
+    void downloadUrl_SUCCESS_pointsToRoleSpecificDownloadEndpoint() {
+        requestQuotation("{ \"contractors\":[" + contractorJson(organizationA) + "] }");
+        final String attachmentId = uploadViaContractorTimeline(organizationA);
+
+        final String contractorUrl = given()
+            .when()
+            .cookie(contractorCookie(organizationA))
+            .get(ORDER_MANAGEMENT_PATH + "/" + issueId + "/timeline")
+            .then()
+            .statusCode(200)
+            .extract().path("timelines.find { it.attachments.size() > 0 }.attachments[0].downloadUrl");
+        assertEquals(contractorDownloadPath(attachmentId, TicketingTestData.ATTACHMENT_FILE_PATH_2), contractorUrl);
+        given()
+            .when()
+            .cookie(contractorCookie(organizationA))
+            .get(contractorUrl)
+            .then()
+            .statusCode(200)
+            .contentType(MediaType.APPLICATION_OCTET_STREAM);
+
+        final String managerUrl = given()
+            .when()
+            .cookie(managerCookie())
+            .get(ISSUE_BASE_PATH + "/" + issueId)
+            .then()
+            .statusCode(200)
+            .body("attachments[0].objectName", nullValue())
+            .body("attachments[0].uploaderId", nullValue())
+            .extract().path("attachments[0].downloadUrl");
+        assertEquals(ISSUE_BASE_PATH + "/" + issueId + "/attachments/" + attachmentId + "/"
+            + TicketingTestData.ATTACHMENT_FILE_PATH_2, managerUrl);
+        given()
+            .when()
+            .cookie(managerCookie())
+            .get(managerUrl)
+            .then()
+            .statusCode(200)
+            .contentType(MediaType.APPLICATION_OCTET_STREAM);
     }
 
     @Test

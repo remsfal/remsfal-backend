@@ -31,7 +31,7 @@ public abstract class AbstractTimelineResource extends AbstractTicketingResource
     @Inject
     TenantTimelineController timelineController;
 
-    protected TenantTimelineListJson getTimelineEntries(final IssueModel issue) {
+    protected TenantTimelineListJson getTimelineEntries(final IssueModel issue, final UserContext viewer) {
         if (issue.getAgreementId() == null) {
             return TenantTimelineListJson.valueOf(List.of());
         }
@@ -39,7 +39,7 @@ public abstract class AbstractTimelineResource extends AbstractTicketingResource
         final List<TenantTimelineEntity> entries = timelineController.getTimelineEntries(
             issue.getAgreementId(), issue.getId(), issue.getProjectId());
 
-        final List<IssueAttachmentJson> issueAttachments = fetchIssueAttachments(issue.getId());
+        final List<IssueAttachmentJson> issueAttachments = fetchIssueAttachments(issue.getId(), viewer);
 
         return TenantTimelineListJson.valueOf(entries.stream()
             .map(entry -> withAttachments(entry, issueAttachments))
@@ -68,7 +68,7 @@ public abstract class AbstractTimelineResource extends AbstractTicketingResource
             timeline,
             attachmentIds.isEmpty() ? null : attachmentIds);
 
-        final List<IssueAttachmentJson> issueAttachments = fetchIssueAttachments(issue.getId());
+        final List<IssueAttachmentJson> issueAttachments = fetchIssueAttachments(issue.getId(), uploaderContext);
 
         final URI location = uri.getAbsolutePathBuilder().path(created.getTimelineId().toString()).build();
         return Response.created(location)
@@ -77,9 +77,9 @@ public abstract class AbstractTimelineResource extends AbstractTicketingResource
             .build();
     }
 
-    private List<IssueAttachmentJson> fetchIssueAttachments(final UUID issueId) {
+    private List<IssueAttachmentJson> fetchIssueAttachments(final UUID issueId, final UserContext viewer) {
         return attachmentController.getAttachments(issueId).stream()
-            .map(IssueAttachmentJson::valueOf)
+            .map(attachment -> toAttachmentJson(attachment, viewer))
             .toList();
     }
 
