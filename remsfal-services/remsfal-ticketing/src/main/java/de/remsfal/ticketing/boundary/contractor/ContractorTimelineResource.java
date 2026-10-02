@@ -10,6 +10,7 @@ import de.remsfal.ticketing.entity.dto.QuotationRequestEntity;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.Response;
 
 import java.util.Set;
@@ -26,10 +27,14 @@ public class ContractorTimelineResource extends AbstractContractorTimelineResour
     OrderManagementController orderManagementController;
 
     @Override
-    public ContractorTimelineListJson getTimelineEntries(final UUID issueId) {
+    public ContractorTimelineListJson getTimelineEntries(final UUID issueId, final UUID organizationId) {
         final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
+        if (organizationId != null && !eligibleOrgIds.contains(organizationId)) {
+            throw new ForbiddenException(FORBIDDEN_MESSAGE);
+        }
+        final Set<UUID> orgIds = organizationId == null ? eligibleOrgIds : Set.of(organizationId);
         final QuotationRequestEntity request =
-            orderManagementController.getRequestForIssueByOrganizationIds(eligibleOrgIds, issueId);
+            orderManagementController.getRequestForIssueByOrganizationIds(orgIds, issueId);
         return super.getTimelineEntries(request, UserContext.CONTRACTOR);
     }
 

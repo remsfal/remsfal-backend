@@ -5,6 +5,7 @@ import de.remsfal.core.json.ticketing.ContractorTimelineListJson;
 import de.remsfal.core.model.UserContext;
 import de.remsfal.ticketing.boundary.AbstractContractorTimelineResource;
 import de.remsfal.ticketing.control.OrderManagementController;
+import de.remsfal.ticketing.entity.dto.QuotationRequestEntity;
 
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
@@ -26,9 +27,14 @@ public class IssueContractorTimelineResource extends AbstractContractorTimelineR
     OrderManagementController orderManagementController;
 
     @Override
-    public ContractorTimelineListJson getTimelineEntries(final UUID issueId) {
+    public ContractorTimelineListJson getTimelineEntries(final UUID issueId, final UUID organizationId) {
         checkProjectIssueAccessPermissions(issueId);
-        return getAllTimelineEntries(issueId, UserContext.MANAGER);
+        if (organizationId == null) {
+            return getAllTimelineEntries(issueId, UserContext.MANAGER);
+        }
+        final QuotationRequestEntity request =
+            orderManagementController.getRequestForIssueByOrganizationIds(Set.of(organizationId), issueId);
+        return super.getTimelineEntries(request, UserContext.MANAGER);
     }
 
     @Override
