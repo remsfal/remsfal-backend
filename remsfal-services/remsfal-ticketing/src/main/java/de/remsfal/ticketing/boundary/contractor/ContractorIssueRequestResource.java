@@ -79,7 +79,7 @@ public class ContractorIssueRequestResource extends AbstractTicketingResource
         final QuotationRequestEntity quotationRequest =
             orderManagementController.getRequestForIssueByOrganizationIds(eligibleOrgIds, issueId);
 
-        issueRequestController.deleteRequest(issueId, quotationRequest.getOrganizationId(), requestId);
+        issueRequestController.deleteRequest(issueId, quotationRequest.getOrganizationId(), requestId, principal);
     }
 
     private void validateRequest(final IssueRequestJson request) {

@@ -202,6 +202,39 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
     }
 
     @Test
+    void deleteRequest_SUCCESS_writesRequestWithdrawnContractorTimelineEntry() {
+        final String requestJson = "{ \"message\":\"Bitte um Rueckmeldung\" }";
+        final String issueRequestId = given()
+            .when()
+            .cookie(contractorCookie())
+            .multiPart("request", requestJson, JSON_PART)
+            .post(requestsPath())
+            .then()
+            .statusCode(200)
+            .extract().path("issueRequestId");
+
+        given()
+            .when()
+            .cookie(contractorCookie())
+            .delete(requestsPath() + "/" + issueRequestId)
+            .then()
+            .statusCode(204);
+
+        given()
+            .when()
+            .cookie(contractorCookie())
+            .get(ORDER_MANAGEMENT_PATH + "/" + issueId + "/timeline")
+            .then()
+            .statusCode(200)
+            .body("timelines", hasSize(3))
+            .body("timelines[0].purpose", equalTo("QUOTATION_REQUESTED"))
+            .body("timelines[1].purpose", equalTo("REQUEST_CREATED"))
+            .body("timelines[2].purpose", equalTo("REQUEST_WITHDRAWN"))
+            .body("timelines[2].message", equalTo("Bitte um Rueckmeldung"))
+            .body("timelines[2].senderRole", equalTo("CONTRACTOR"));
+    }
+
+    @Test
     void deleteRequest_FAILED_unknownIssueRequestId_returns404() {
         given()
             .when()

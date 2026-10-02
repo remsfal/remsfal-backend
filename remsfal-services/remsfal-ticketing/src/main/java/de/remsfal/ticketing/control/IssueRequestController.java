@@ -98,7 +98,8 @@ public class IssueRequestController {
     }
 
     @Transactional
-    public void deleteRequest(final UUID issueId, final UUID organizationId, final UUID issueRequestId) {
+    public void deleteRequest(final UUID issueId, final UUID organizationId, final UUID issueRequestId,
+        final UserModel sender) {
         logger.infov("Deleting issue request (issueId={0}, organizationId={1}, issueRequestId={2})",
             issueId, organizationId, issueRequestId);
 
@@ -107,9 +108,22 @@ public class IssueRequestController {
         key.setOrganizationId(organizationId);
         key.setIssueRequestId(issueRequestId);
 
-        issueRequestRepository.findById(key)
+        final IssueRequestEntity entity = issueRequestRepository.findById(key)
             .orElseThrow(() -> new NotFoundException(ISSUE_REQUEST_NOT_FOUND));
+        final IssueEntity issue = issueRepository.findByIssueId(issueId)
+            .orElseThrow(() -> new NotFoundException(ISSUE_NOT_FOUND));
+
         issueRequestRepository.delete(key);
+
+        final ContractorTimelineJson entry = ImmutableContractorTimelineJson.builder()
+            .purpose(MessagePurpose.REQUEST_WITHDRAWN)
+            .message(entity.getMessage())
+            .build();
+        contractorTimelineController.createTimelineEntry(issueId, organizationId, sender,
+            UserContext.CONTRACTOR, entry, null);
+
+        tenantTimelineController.createTimelineEntry(entity.getAgreementId(), issueId, issue.getProjectId(),
+            sender, MessagePurpose.REQUEST_WITHDRAWN, entity.getMessage());
     }
 
     @Transactional
