@@ -317,9 +317,10 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
     void testDeleteRequest_unknownIssueRequestId_throwsNotFoundWithoutTimelineEntry() {
         final UUID issueId = createIssue(UUID.randomUUID());
         final UUID organizationId = UUID.randomUUID();
+        final UUID unknownIssueRequestId = UUID.randomUUID();
 
         assertThrows(NotFoundException.class,
-            () -> controller.deleteRequest(issueId, organizationId, UUID.randomUUID(), CONTRACTOR_USER));
+            () -> controller.deleteRequest(issueId, organizationId, unknownIssueRequestId, CONTRACTOR_USER));
         assertTrue(contractorTimelineController.getTimelineEntries(issueId, organizationId).isEmpty());
     }
 
