@@ -85,6 +85,56 @@ class IssueContractorTimelineResourceTest extends AbstractTicketingTest {
     }
 
     @Test
+    void getTimelineEntries_SUCCESS_filtersByOrganization() {
+        final String message = "{"
+            + "\"organizationId\":\"" + firstOrganizationId + "\","
+            + "\"purpose\":\"MESSAGE_SENT\","
+            + "\"message\":\"An Bauservice GmbH\""
+            + "}";
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .multiPart("timeline", message, MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8").toString())
+            .post(timelinePath())
+            .then()
+            .statusCode(201);
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .queryParam("organizationId", firstOrganizationId.toString())
+            .get(timelinePath())
+            .then()
+            .statusCode(200)
+            .body("timelines", hasSize(2))
+            .body("timelines.purpose", containsInAnyOrder("QUOTATION_REQUESTED", "MESSAGE_SENT"))
+            .body("timelines.organizationId", containsInAnyOrder(
+                firstOrganizationId.toString(), firstOrganizationId.toString()));
+
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .queryParam("organizationId", secondOrganizationId.toString())
+            .get(timelinePath())
+            .then()
+            .statusCode(200)
+            .body("timelines", hasSize(1))
+            .body("timelines[0].purpose", equalTo("QUOTATION_REQUESTED"))
+            .body("timelines[0].organizationId", equalTo(secondOrganizationId.toString()));
+    }
+
+    @Test
+    void getTimelineEntries_FAILED_unknownOrganization() {
+        given()
+            .when()
+            .cookie(buildManagerCookie(TicketingTestData.MANAGER_PROJECT_ROLES))
+            .queryParam("organizationId", UUID.randomUUID().toString())
+            .get(timelinePath())
+            .then()
+            .statusCode(404);
+    }
+
+    @Test
     void getTimelineEntries_FAILED_noPermission() {
         given()
             .when()

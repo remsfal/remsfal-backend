@@ -87,6 +87,30 @@ class ContractorTimelineResourceTest extends AbstractTicketingTest {
     }
 
     @Test
+    void getTimelineEntries_SUCCESS_withOrganizationId() {
+        given()
+            .when()
+            .cookie(contractorCookie())
+            .queryParam("organizationId", organizationId.toString())
+            .get(timelinePath())
+            .then()
+            .statusCode(200)
+            .body("timelines", hasSize(1))
+            .body("timelines[0].organizationId", equalTo(organizationId.toString()));
+    }
+
+    @Test
+    void getTimelineEntries_FAILED_foreignOrganizationId() {
+        given()
+            .when()
+            .cookie(contractorCookie())
+            .queryParam("organizationId", UUID.randomUUID().toString())
+            .get(timelinePath())
+            .then()
+            .statusCode(403);
+    }
+
+    @Test
     void getTimelineEntries_FAILED_wrongOrganization() {
         given()
             .when()

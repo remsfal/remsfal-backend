@@ -6,6 +6,7 @@ import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -34,10 +35,13 @@ public interface ContractorTimelineEndpoint {
     @APIResponse(responseCode = "200", description = "Timeline entries retrieved successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "403", description = "User does not have permission to access this request")
-    @APIResponse(responseCode = "404", description = "The quotation request does not exist")
+    @APIResponse(responseCode = "404",
+        description = "The quotation request does not exist or no contractor of the given organization is assigned")
     ContractorTimelineListJson getTimelineEntries(
         @Parameter(description = "ID of the issue", required = true)
-        @PathParam("issueId") @NotNull UUID issueId);
+        @PathParam("issueId") @NotNull UUID issueId,
+        @Parameter(description = "Optional ID of the contractor organization to restrict the timeline to")
+        @QueryParam("organizationId") UUID organizationId);
 
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
