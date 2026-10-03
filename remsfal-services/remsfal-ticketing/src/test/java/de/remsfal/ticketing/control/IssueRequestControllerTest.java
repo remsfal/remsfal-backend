@@ -283,6 +283,48 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
     }
 
     @Test
+    void testDeleteRequest_deletesEntityAndWritesBothTimelines() {
+        final UUID agreementId = UUID.randomUUID();
+        final UUID issueId = createIssue(agreementId);
+        final UUID organizationId = UUID.randomUUID();
+
+        final IssueRequestEntity created = controller.createRequest(issueId, organizationId, CONTRACTOR_USER,
+            ImmutableIssueRequestJson.builder().message("Termin?").build(), null);
+
+        controller.deleteRequest(issueId, organizationId, created.getIssueRequestId(), CONTRACTOR_USER);
+
+        assertTrue(repository.findByIssueAndRequestId(issueId, created.getIssueRequestId()).isEmpty());
+
+        final List<ContractorTimelineEntity> contractorTimeline =
+            contractorTimelineController.getTimelineEntries(issueId, organizationId);
+        assertEquals(2, contractorTimeline.size());
+        assertTrue(contractorTimeline.stream()
+            .anyMatch(e -> MessagePurpose.REQUEST_WITHDRAWN.equals(e.getPurpose())
+                && "Termin?".equals(e.getMessage())
+                && UserContext.CONTRACTOR.equals(e.getSenderRole())));
+
+        final UUID projectId = issueRepository.findByIssueId(issueId).orElseThrow().getProjectId();
+        final List<TenantTimelineEntity> tenantTimeline =
+            tenantTimelineController.getTimelineEntries(agreementId, issueId, projectId);
+        assertEquals(2, tenantTimeline.size());
+        final TenantTimelineEntity tenantWithdrawnEntry = tenantTimeline.stream()
+            .filter(e -> MessagePurpose.REQUEST_WITHDRAWN.equals(e.getPurpose()))
+            .findFirst().orElseThrow();
+        assertEquals("Termin?", tenantWithdrawnEntry.getMessage());
+    }
+
+    @Test
+    void testDeleteRequest_unknownIssueRequestId_throwsNotFoundWithoutTimelineEntry() {
+        final UUID issueId = createIssue(UUID.randomUUID());
+        final UUID organizationId = UUID.randomUUID();
+        final UUID unknownIssueRequestId = UUID.randomUUID();
+
+        assertThrows(NotFoundException.class,
+            () -> controller.deleteRequest(issueId, organizationId, unknownIssueRequestId, CONTRACTOR_USER));
+        assertTrue(contractorTimelineController.getTimelineEntries(issueId, organizationId).isEmpty());
+    }
+
+    @Test
     void testAnswerRequest_unknownIssueRequestId_throwsNotFound() {
         final UUID issueId = createIssue(UUID.randomUUID());
         final IssueRequestJson response = ImmutableIssueRequestJson.builder()
