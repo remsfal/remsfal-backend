@@ -2,6 +2,7 @@ package de.remsfal.ticketing.boundary.tenant;
 
 import de.remsfal.common.boundary.MultipartAttachmentProcessor;
 import de.remsfal.core.api.ticketing.tenant.TenantIssueRequestEndpoint;
+import de.remsfal.core.json.ticketing.ImmutableIssueRequestListJson;
 import de.remsfal.core.json.ticketing.IssueRequestJson;
 import de.remsfal.core.json.ticketing.IssueRequestListJson;
 import de.remsfal.core.model.UserContext;
@@ -38,7 +39,12 @@ public class TenantIssueRequestResource extends AbstractTicketingResource implem
     @Override
     public IssueRequestListJson getRequests(final UUID issueId) {
         checkTenancyIssueAccessPermissions(issueId);
-        return IssueRequestListJson.valueOf(issueRequestController.getRequestsForTenant(issueId));
+        return ImmutableIssueRequestListJson.builder()
+            .requests(issueRequestController.getRequestsForTenant(issueId).stream()
+                .map(request -> IssueRequestJson.valueOf(request)
+                    .withAttachments(resolveAttachments(issueId, request.getAttachmentIds(), UserContext.TENANT)))
+                .toList())
+            .build();
     }
 
     @Override

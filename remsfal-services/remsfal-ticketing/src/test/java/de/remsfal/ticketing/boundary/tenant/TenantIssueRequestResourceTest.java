@@ -96,7 +96,9 @@ class TenantIssueRequestResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200)
             .contentType(ContentType.JSON)
-            .body("requests", hasSize(2));
+            .body("requests", hasSize(2))
+            .body("requests[0].attachments", hasSize(0))
+            .body("requests[1].attachments", hasSize(0));
     }
 
     @Test
@@ -185,7 +187,15 @@ class TenantIssueRequestResourceTest extends AbstractTicketingTest {
             .get(REQUESTS_PATH, ISSUE_ID_WITH_AGREEMENT)
             .then()
             .statusCode(200)
-            .body("requests[0].attachmentIds[0]", equalTo(TicketingTestData.ATTACHMENT_ID_2.toString()));
+            .body("requests[0].attachmentIds[0]", equalTo(TicketingTestData.ATTACHMENT_ID_2.toString()))
+            .body("requests[0].attachments", hasSize(1))
+            .body("requests[0].attachments[0].attachmentId", equalTo(TicketingTestData.ATTACHMENT_ID_2.toString()))
+            .body("requests[0].attachments[0].fileName", equalTo(TicketingTestData.ATTACHMENT_FILE_PATH_2))
+            .body("requests[0].attachments[0].contentType", equalTo(TicketingTestData.ATTACHMENT_FILE_TYPE_2))
+            .body("requests[0].attachments[0].downloadUrl", equalTo(ATTACHMENT_PATH
+                .replace("{issueId}", ISSUE_ID_WITH_AGREEMENT.toString())
+                .replace("{attachmentId}", TicketingTestData.ATTACHMENT_ID_2.toString())
+                .replace("{filename}", TicketingTestData.ATTACHMENT_FILE_PATH_2)));
 
         final byte[] downloaded = given()
             .when()

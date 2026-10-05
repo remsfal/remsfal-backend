@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class IssueRequestJsonTest {
 
@@ -49,5 +50,22 @@ class IssueRequestJsonTest {
         assertEquals(attachmentIds, json.getAttachmentIds());
         assertEquals(createdAt, json.getCreatedAt());
         assertEquals(modifiedAt, json.getModifiedAt());
+        assertNull(json.getAttachments());
+    }
+
+    @Test
+    void withAttachments_setsResolvedAttachments() {
+        final UUID attachmentId = UUID.randomUUID();
+        final IssueAttachmentJson attachment = ImmutableIssueAttachmentJson.builder()
+            .attachmentId(attachmentId)
+            .fileName("plan.pdf")
+            .build();
+
+        final IssueRequestJson json = IssueRequestJson.valueOf(model(UUID.randomUUID(), UUID.randomUUID(),
+            UUID.randomUUID(), UUID.randomUUID(), "Plan anbei", List.of(attachmentId), Instant.now(), Instant.now()))
+            .withAttachments(List.of(attachment));
+
+        assertEquals(List.of(attachment), json.getAttachments());
+        assertEquals(List.of(attachmentId), json.getAttachmentIds());
     }
 }
