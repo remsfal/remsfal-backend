@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+import de.remsfal.core.model.UserContext;
 import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.core.model.ticketing.TimelineModel;
 
@@ -63,6 +64,12 @@ public abstract class AbstractTimelineJson implements TimelineModel {
     @Schema(readOnly = true)
     @Override
     public abstract String getSenderName();
+
+    @Null
+    @Nullable
+    @Schema(readOnly = true)
+    @Override
+    public abstract UserContext getSenderRole();
 
     @NotNull
     @Nullable

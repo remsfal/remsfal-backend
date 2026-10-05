@@ -1,5 +1,7 @@
 package de.remsfal.core.model.ticketing;
 
+import de.remsfal.core.model.UserContext;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -19,6 +21,8 @@ public interface TimelineModel {
     UUID getSenderId();
 
     String getSenderName();
+
+    UserContext getSenderRole();
 
     MessagePurpose getPurpose();
 

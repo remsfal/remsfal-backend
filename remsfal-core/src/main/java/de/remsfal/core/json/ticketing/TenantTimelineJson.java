@@ -1,8 +1,6 @@
 package de.remsfal.core.json.ticketing;
 
 import de.remsfal.core.ImmutableStyle;
-import de.remsfal.core.model.UserContext;
-import de.remsfal.core.model.ticketing.TenantTimelineModel;
 import de.remsfal.core.model.ticketing.TimelineModel;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -23,13 +21,7 @@ import java.util.List;
 @Schema(description = "An issue timeline entry")
 @JsonDeserialize(as = ImmutableTenantTimelineJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class TenantTimelineJson extends AbstractTimelineJson implements TenantTimelineModel {
-
-    @Null
-    @Nullable
-    @Schema(readOnly = true)
-    @Override
-    public abstract UserContext getSenderRole();
+public abstract class TenantTimelineJson extends AbstractTimelineJson {
 
     @Null
     @Nullable
@@ -44,15 +36,12 @@ public abstract class TenantTimelineJson extends AbstractTimelineJson implements
             .timelineId(model.getTimelineId())
             .senderId(model.getSenderId())
             .senderName(model.getSenderName())
+            .senderRole(model.getSenderRole())
             .purpose(model.getPurpose())
             .message(model.getMessage())
             .createdAt(model.getCreatedAt())
             .modifiedAt(model.getModifiedAt());
         // projectId and attachmentIds are omitted
-
-        if (model instanceof TenantTimelineModel tenantTimelineModel) {
-            builder.senderRole(tenantTimelineModel.getSenderRole());
-        }
 
         if (model instanceof TenantTimelineJson tenantTimelineJson && tenantTimelineJson.getAttachments() != null) {
             builder.attachments(tenantTimelineJson.getAttachments());

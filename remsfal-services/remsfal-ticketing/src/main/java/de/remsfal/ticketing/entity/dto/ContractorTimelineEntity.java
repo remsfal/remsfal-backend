@@ -1,9 +1,7 @@
 package de.remsfal.ticketing.entity.dto;
 
 import de.remsfal.core.model.ticketing.ContractorTimelineModel;
-import de.remsfal.core.model.UserContext;
 
-import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
 import jakarta.nosql.Id;
 
@@ -15,9 +13,6 @@ public class ContractorTimelineEntity extends AbstractTimelineEntity implements 
 
     @Id
     private ContractorTimelineKey key;
-
-    @Column("sender_role")
-    private String senderRole;
 
     public ContractorTimelineKey getKey() {
         return key;
@@ -77,19 +72,6 @@ public class ContractorTimelineEntity extends AbstractTimelineEntity implements 
     @Override
     public UUID getProjectId() {
         return null;
-    }
-
-    @Override
-    public UserContext getSenderRole() {
-        return senderRole != null ? UserContext.valueOf(senderRole) : null;
-    }
-
-    public void setSenderRole(final UserContext senderRole) {
-        this.senderRole = senderRole != null ? senderRole.name() : null;
-    }
-
-    public void setSenderRole(final String senderRole) {
-        this.senderRole = senderRole;
     }
 
 }
