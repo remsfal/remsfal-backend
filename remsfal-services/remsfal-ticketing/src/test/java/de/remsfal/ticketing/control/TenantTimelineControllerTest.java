@@ -16,6 +16,7 @@ import com.datastax.oss.quarkus.test.CassandraTestResource;
 
 import de.remsfal.core.json.ticketing.ImmutableTenantTimelineJson;
 import de.remsfal.core.json.ticketing.TenantTimelineJson;
+import de.remsfal.core.model.UserContext;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.ticketing.AbstractTicketingTest;
@@ -56,6 +57,7 @@ class TenantTimelineControllerTest extends AbstractTicketingTest {
             issueId,
             projectId,
             sender,
+            UserContext.TENANT,
             timeline,
             attachmentIds);
 
@@ -65,6 +67,7 @@ class TenantTimelineControllerTest extends AbstractTicketingTest {
         assertEquals(projectId, created.getProjectId());
         assertEquals(senderId, created.getSenderId());
         assertEquals("Max Mustermann", created.getSenderName());
+        assertEquals(UserContext.TENANT, created.getSenderRole());
         assertEquals(MessagePurpose.MESSAGE_SENT, created.getPurpose());
         assertEquals("Eintrag aus Controller-Test", created.getMessage());
         assertEquals(attachmentIds, created.getAttachmentIds());
@@ -158,6 +161,7 @@ class TenantTimelineControllerTest extends AbstractTicketingTest {
             issueId,
             projectId,
             sender,
+            UserContext.MANAGER,
             MessagePurpose.ISSUE_CREATED,
             "Die Heizung ist defekt");
 
@@ -167,6 +171,7 @@ class TenantTimelineControllerTest extends AbstractTicketingTest {
         assertEquals(projectId, created.getProjectId());
         assertEquals(senderId, created.getSenderId());
         assertEquals("System", created.getSenderName());
+        assertEquals(UserContext.MANAGER, created.getSenderRole());
         assertEquals(MessagePurpose.ISSUE_CREATED, created.getPurpose());
         assertEquals("Die Heizung ist defekt", created.getMessage());
         assertNotNull(created.getCreatedAt());

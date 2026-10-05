@@ -8,6 +8,7 @@ import jakarta.ws.rs.NotFoundException;
 import org.jboss.logging.Logger;
 
 import de.remsfal.common.authentication.RemsfalPrincipal;
+import de.remsfal.core.model.UserContext;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
@@ -94,7 +95,7 @@ public class IssueController {
         if (createTimelineEntry && entity.getAgreementId() != null
             && Boolean.TRUE.equals(entity.isVisibleToTenants())) {
             timelineController.createTimelineEntry(entity.getAgreementId(), entity.getId(),
-                entity.getProjectId(), user,
+                entity.getProjectId(), user, UserContext.MANAGER,
                 MessagePurpose.ISSUE_CREATED, entity.getDescription());
         }
         return entity;
@@ -199,7 +200,7 @@ public class IssueController {
         if (entity.getAgreementId() != null && Boolean.TRUE.equals(entity.isVisibleToTenants())
             && issue.getStatus() != null && issue.getStatus() != oldStatus) {
             timelineController.createTimelineEntry(entity.getAgreementId(), entity.getId(),
-                entity.getProjectId(), principal,
+                entity.getProjectId(), principal, UserContext.MANAGER,
                 MessagePurpose.STATUS_CHANGED, entity.getStatus().name());
         }
 
@@ -216,7 +217,7 @@ public class IssueController {
         issueRepository.delete(entity.getKey());
     }
 
-    public void closeIssue(final UUID issueId) {
+    public void closeIssue(final UUID issueId, final UserContext closerRole) {
         logger.infov("Closing issue (issueId={0})", issueId);
         final Optional<IssueEntity> entity = issueRepository.findByIssueId(issueId);
         entity.ifPresent((e) -> {
@@ -226,7 +227,7 @@ public class IssueController {
             if (oldStatus != IssueStatus.CLOSED && e.getAgreementId() != null
                 && Boolean.TRUE.equals(e.isVisibleToTenants())) {
                 timelineController.createTimelineEntry(e.getAgreementId(), e.getId(), e.getProjectId(),
-                    principal, MessagePurpose.STATUS_CHANGED,
+                    principal, closerRole, MessagePurpose.STATUS_CHANGED,
                     IssueStatus.CLOSED.name());
             }
         });

@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import com.datastax.oss.quarkus.test.CassandraTestResource;
 
 import de.remsfal.common.authentication.RemsfalPrincipal;
+import de.remsfal.core.model.UserContext;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.IssueModel.IssuePriority;
@@ -158,6 +159,7 @@ class IssueControllerTest extends AbstractTicketingTest {
         assertEquals("Die Heizung ist defekt", entries.get(0).getMessage());
         assertEquals(reporterId, entries.get(0).getSenderId());
         assertEquals("Max Manager", entries.get(0).getSenderName());
+        assertEquals(UserContext.MANAGER, entries.get(0).getSenderRole());
     }
 
     @Test
@@ -285,6 +287,7 @@ class IssueControllerTest extends AbstractTicketingTest {
         assertEquals("IN_PROGRESS", entries.get(0).getMessage());
         assertEquals(principalId, entries.get(0).getSenderId());
         assertEquals("Max Manager", entries.get(0).getSenderName());
+        assertEquals(UserContext.MANAGER, entries.get(0).getSenderRole());
     }
 
     @Test
@@ -363,7 +366,7 @@ class IssueControllerTest extends AbstractTicketingTest {
         when(principal.getId()).thenReturn(principalId);
         when(principal.getName()).thenReturn("Tina Tenant");
 
-        controller.closeIssue(issueId);
+        controller.closeIssue(issueId, UserContext.TENANT);
 
         final List<TenantTimelineEntity> entries = timelineController.getTimelineEntries(agreementId, issueId, projectId);
         assertEquals(1, entries.size());
@@ -371,6 +374,7 @@ class IssueControllerTest extends AbstractTicketingTest {
         assertEquals("CLOSED", entries.get(0).getMessage());
         assertEquals(principalId, entries.get(0).getSenderId());
         assertEquals("Tina Tenant", entries.get(0).getSenderName());
+        assertEquals(UserContext.TENANT, entries.get(0).getSenderRole());
     }
 
     @Test
@@ -382,7 +386,7 @@ class IssueControllerTest extends AbstractTicketingTest {
         insertIssue(projectId, issueId, "Issue", IssueType.DEFECT, IssueStatus.CLOSED, IssuePriority.MEDIUM,
             UUID.randomUUID(), agreementId, null, "Issue");
 
-        controller.closeIssue(issueId);
+        controller.closeIssue(issueId, UserContext.TENANT);
 
         assertTrue(timelineController.getTimelineEntries(agreementId, issueId, projectId).isEmpty());
     }

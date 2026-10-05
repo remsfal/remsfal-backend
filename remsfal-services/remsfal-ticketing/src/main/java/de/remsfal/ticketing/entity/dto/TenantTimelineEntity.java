@@ -1,7 +1,9 @@
 package de.remsfal.ticketing.entity.dto;
 
-import de.remsfal.core.model.ticketing.TimelineModel;
+import de.remsfal.core.model.UserContext;
+import de.remsfal.core.model.ticketing.TenantTimelineModel;
 
+import jakarta.nosql.Column;
 import jakarta.nosql.Entity;
 import jakarta.nosql.Id;
 
@@ -9,10 +11,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Entity("tenant_timelines")
-public class TenantTimelineEntity extends AbstractTimelineEntity implements TimelineModel {
+public class TenantTimelineEntity extends AbstractTimelineEntity implements TenantTimelineModel {
 
     @Id
     private TenantTimelineKey key;
+
+    @Column("sender_role")
+    private String senderRole;
 
     public TenantTimelineKey getKey() {
         return key;
@@ -55,6 +60,19 @@ public class TenantTimelineEntity extends AbstractTimelineEntity implements Time
             this.key = new TenantTimelineKey();
         }
         this.key.setProjectId(projectId);
+    }
+
+    @Override
+    public UserContext getSenderRole() {
+        return senderRole != null ? UserContext.valueOf(senderRole) : null;
+    }
+
+    public void setSenderRole(final UserContext senderRole) {
+        this.senderRole = senderRole != null ? senderRole.name() : null;
+    }
+
+    public void setSenderRole(final String senderRole) {
+        this.senderRole = senderRole;
     }
 
 }
