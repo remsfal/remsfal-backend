@@ -20,7 +20,7 @@
         <version.jax-rs>4.0.0</version.jax-rs>
         <version.resteasy>7.0.5.Final</version.resteasy>
         <version.open-api>4.1.1</version.open-api>
-        <version.config-api>3.1.1</version.config-api>
+        <version.config-api>3.1.2</version.config-api>
         <version.archunit>1.5.1</version.archunit>
     </properties>
 
