@@ -75,7 +75,7 @@ public class TenantIssueResource extends AbstractTicketingResource implements Te
 
         final List<UUID> attachmentIds = collectAttachmentIds(createdIssue.getId(), input, UserContext.TENANT);
         timelineController.createTimelineEntry(createdIssue.getAgreementId(), createdIssue.getId(),
-            createdIssue.getProjectId(), principal,
+            createdIssue.getProjectId(), principal, UserContext.TENANT,
             MessagePurpose.ISSUE_CREATED, createdIssue.getDescription(),
             attachmentIds.isEmpty() ? null : attachmentIds);
 
@@ -104,7 +104,7 @@ public class TenantIssueResource extends AbstractTicketingResource implements Te
     @Override
     public void closeIssue(final UUID issueId) {
         checkTenancyIssueAccessPermissions(issueId);
-        issueController.closeIssue(issueId);
+        issueController.closeIssue(issueId, UserContext.TENANT);
     }
 
     @Override

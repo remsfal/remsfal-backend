@@ -113,6 +113,7 @@ class IssueTimelineResourceTest extends AbstractTicketingTest {
             .body("issueId", equalTo(ISSUE_ID_WITH_AGREEMENT.toString()))
             .body("tenancyId", equalTo(AGREEMENT_ID.toString()))
             .body("purpose", equalTo("MESSAGE_SENT"))
+            .body("senderRole", equalTo("MANAGER"))
             .body("message", equalTo("Handwerker beauftragt"));
     }
 
