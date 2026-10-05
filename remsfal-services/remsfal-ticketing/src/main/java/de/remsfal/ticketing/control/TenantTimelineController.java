@@ -1,5 +1,6 @@
 package de.remsfal.ticketing.control;
 
+import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.common.util.UUIDv7;
 import de.remsfal.core.json.ticketing.TenantTimelineJson;
 import de.remsfal.core.model.UserContext;
@@ -8,6 +9,7 @@ import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.ticketing.boundary.eventing.IssueEventProducer;
 import de.remsfal.ticketing.entity.dao.IssueRepository;
+import de.remsfal.ticketing.entity.dao.QuotationRequestRepository;
 import de.remsfal.ticketing.entity.dao.TenantTimelineRepository;
 import de.remsfal.ticketing.entity.dto.TenantTimelineEntity;
 import de.remsfal.ticketing.entity.dto.TenantTimelineKey;
@@ -19,6 +21,7 @@ import jakarta.transaction.Transactional;
 import org.jboss.logging.Logger;
 
 import java.time.Instant;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -39,6 +42,12 @@ public class TenantTimelineController {
 
     @Inject
     IssueEventProducer issueEventProducer;
+
+    @Inject
+    QuotationRequestRepository quotationRequestRepository;
+
+    @Inject
+    RemsfalPrincipal principal;
 
     public List<TenantTimelineEntity> getTimelineEntries(
         final UUID tenancyId,
@@ -63,21 +72,21 @@ public class TenantTimelineController {
 
     @Transactional
     public TenantTimelineEntity createTimelineEntry(final UUID tenancyId, final UUID issueId, final UUID projectId,
-        final UserModel sender, final UserContext senderRole, final TenantTimelineJson timeline,
+        final UserModel sender, final UserContext contextRole, final TenantTimelineJson timeline,
         final List<UUID> attachmentIds) {
-        return createTimelineEntry(tenancyId, issueId, projectId, sender, senderRole,
+        return createTimelineEntry(tenancyId, issueId, projectId, sender, contextRole,
             timeline.getPurpose(), timeline.getMessage(), attachmentIds);
     }
 
     @Transactional
     public TenantTimelineEntity createTimelineEntry(final UUID tenancyId, final UUID issueId, final UUID projectId,
-        final UserModel sender, final UserContext senderRole, final MessagePurpose purpose, final String message) {
-        return createTimelineEntry(tenancyId, issueId, projectId, sender, senderRole, purpose, message, null);
+        final UserModel sender, final UserContext contextRole, final MessagePurpose purpose, final String message) {
+        return createTimelineEntry(tenancyId, issueId, projectId, sender, contextRole, purpose, message, null);
     }
 
     @Transactional
     public TenantTimelineEntity createTimelineEntry(final UUID tenancyId, final UUID issueId, final UUID projectId,
-        final UserModel sender, final UserContext senderRole, final MessagePurpose purpose, final String message,
+        final UserModel sender, final UserContext contextRole, final MessagePurpose purpose, final String message,
         final List<UUID> attachmentIds) {
         logger.infov("Creating timeline entry (issueId={0}, projectId={1}, tenancyId={2})",
             issueId, projectId, tenancyId);
@@ -93,7 +102,7 @@ public class TenantTimelineController {
         entity.setAttachmentIds(attachmentIds);
         entity.setSenderId(sender.getId());
         entity.setSenderName(sender.getName());
-        entity.setSenderRole(senderRole);
+        entity.setSenderRole(resolveSenderRole(tenancyId, issueId, projectId, contextRole));
         entity.setPurpose(purpose);
         entity.setMessage(message);
 
@@ -107,6 +116,40 @@ public class TenantTimelineController {
         issueEventProducer.sendTimelineEntryCreated(issue, TenantTimelineJson.valueOf(created), sender);
 
         return created;
+    }
+
+    /**
+     * Derives the sender role from the claims of the caller's JWT. The endpoint context
+     * ({@code contextRole}) only decides if the token grants more than one role for this issue.
+     */
+    private UserContext resolveSenderRole(final UUID tenancyId, final UUID issueId, final UUID projectId,
+        final UserContext contextRole) {
+        final Set<UserContext> tokenRoles = resolveTokenRoles(tenancyId, issueId, projectId);
+        if (tokenRoles.size() == 1) {
+            return tokenRoles.iterator().next();
+        }
+        if (contextRole != null && tokenRoles.contains(contextRole)) {
+            return contextRole;
+        }
+        logger.warnv("Unable to resolve sender role from token (issueId={0}, tokenRoles={1}, contextRole={2})",
+            issueId, tokenRoles, contextRole);
+        return null;
+    }
+
+    private Set<UserContext> resolveTokenRoles(final UUID tenancyId, final UUID issueId, final UUID projectId) {
+        final Set<UserContext> roles = EnumSet.noneOf(UserContext.class);
+        if (projectId != null && principal.getProjectRole(projectId) != null) {
+            roles.add(UserContext.MANAGER);
+        }
+        if (tenancyId != null && projectId != null && projectId.equals(principal.getTenancyProject(tenancyId))) {
+            roles.add(UserContext.TENANT);
+        }
+        final Set<UUID> organizationIds = principal.getOrganizationRoles().keySet();
+        if (!organizationIds.isEmpty() && quotationRequestRepository.findByIssueId(issueId).stream()
+            .anyMatch(request -> organizationIds.contains(request.getOrganizationId()))) {
+            roles.add(UserContext.CONTRACTOR);
+        }
+        return roles;
     }
 
 }
