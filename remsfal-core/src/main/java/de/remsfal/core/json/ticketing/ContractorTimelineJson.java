@@ -2,7 +2,6 @@ package de.remsfal.core.json.ticketing;
 
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.ticketing.ContractorTimelineModel;
-import de.remsfal.core.model.UserContext;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.immutables.value.Value.Immutable;
@@ -39,12 +38,6 @@ public abstract class ContractorTimelineJson extends AbstractTimelineJson implem
     @Schema(readOnly = true, hidden = true)
     @Override
     public abstract UUID getTenancyId();
-
-    @Null
-    @Nullable
-    @Schema(readOnly = true)
-    @Override
-    public abstract UserContext getSenderRole();
 
     @Null
     @Nullable

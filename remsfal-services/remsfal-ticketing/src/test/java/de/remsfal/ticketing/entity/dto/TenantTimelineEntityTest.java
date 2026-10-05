@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
+import de.remsfal.core.model.UserContext;
 import de.remsfal.core.model.ticketing.MessagePurpose;
 
 class TenantTimelineEntityTest {
@@ -54,6 +55,7 @@ class TenantTimelineEntityTest {
         entity.setKey(key);
         entity.setSenderId(senderId);
         entity.setSenderName("Tester");
+        entity.setSenderRole(UserContext.TENANT);
         entity.setPurpose(MessagePurpose.MESSAGE_SENT);
         entity.setMessage("Nachricht");
         entity.setAttachmentIds(List.of(attachmentId));
@@ -64,6 +66,7 @@ class TenantTimelineEntityTest {
         assertEquals(projectId, entity.getProjectId());
         assertEquals(senderId, entity.getSenderId());
         assertEquals("Tester", entity.getSenderName());
+        assertEquals(UserContext.TENANT, entity.getSenderRole());
         assertEquals(MessagePurpose.MESSAGE_SENT, entity.getPurpose());
         assertEquals("Nachricht", entity.getMessage());
         assertEquals(List.of(attachmentId), entity.getAttachmentIds());

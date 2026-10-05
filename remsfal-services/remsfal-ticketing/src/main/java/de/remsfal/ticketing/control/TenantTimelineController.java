@@ -2,6 +2,7 @@ package de.remsfal.ticketing.control;
 
 import de.remsfal.common.util.UUIDv7;
 import de.remsfal.core.json.ticketing.TenantTimelineJson;
+import de.remsfal.core.model.UserContext;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.ticketing.IssueModel;
 import de.remsfal.core.model.ticketing.MessagePurpose;
@@ -62,21 +63,21 @@ public class TenantTimelineController {
 
     @Transactional
     public TenantTimelineEntity createTimelineEntry(final UUID tenancyId, final UUID issueId, final UUID projectId,
-        final UserModel sender, final TenantTimelineJson timeline,
+        final UserModel sender, final UserContext senderRole, final TenantTimelineJson timeline,
         final List<UUID> attachmentIds) {
-        return createTimelineEntry(tenancyId, issueId, projectId, sender,
+        return createTimelineEntry(tenancyId, issueId, projectId, sender, senderRole,
             timeline.getPurpose(), timeline.getMessage(), attachmentIds);
     }
 
     @Transactional
     public TenantTimelineEntity createTimelineEntry(final UUID tenancyId, final UUID issueId, final UUID projectId,
-        final UserModel sender, final MessagePurpose purpose, final String message) {
-        return createTimelineEntry(tenancyId, issueId, projectId, sender, purpose, message, null);
+        final UserModel sender, final UserContext senderRole, final MessagePurpose purpose, final String message) {
+        return createTimelineEntry(tenancyId, issueId, projectId, sender, senderRole, purpose, message, null);
     }
 
     @Transactional
     public TenantTimelineEntity createTimelineEntry(final UUID tenancyId, final UUID issueId, final UUID projectId,
-        final UserModel sender, final MessagePurpose purpose, final String message,
+        final UserModel sender, final UserContext senderRole, final MessagePurpose purpose, final String message,
         final List<UUID> attachmentIds) {
         logger.infov("Creating timeline entry (issueId={0}, projectId={1}, tenancyId={2})",
             issueId, projectId, tenancyId);
@@ -92,6 +93,7 @@ public class TenantTimelineController {
         entity.setAttachmentIds(attachmentIds);
         entity.setSenderId(sender.getId());
         entity.setSenderName(sender.getName());
+        entity.setSenderRole(senderRole);
         entity.setPurpose(purpose);
         entity.setMessage(message);
 

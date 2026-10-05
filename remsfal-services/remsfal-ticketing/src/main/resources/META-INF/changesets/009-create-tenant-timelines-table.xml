@@ -17,6 +17,7 @@
                 project_id UUID,
                 sender_id UUID,
                 sender_name TEXT,
+                sender_role TEXT,
                 purpose TEXT,
                 message TEXT,
                 attachment_ids LIST&lt;UUID&gt;,

@@ -139,6 +139,7 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
         assertEquals(MessagePurpose.REQUEST_CREATED, tenantTimeline.get(0).getPurpose());
         assertEquals("Termin?", tenantTimeline.get(0).getMessage());
         assertEquals(CONTRACTOR_USER.getId(), tenantTimeline.get(0).getSenderId());
+        assertEquals(UserContext.CONTRACTOR, tenantTimeline.get(0).getSenderRole());
     }
 
     @Test
@@ -238,6 +239,7 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
             .filter(e -> MessagePurpose.REQUEST_ANSWERED.equals(e.getPurpose()))
             .findFirst().orElseThrow();
         assertEquals("Termin bestaetigt", tenantAnswerEntry.getMessage());
+        assertEquals(UserContext.TENANT, tenantAnswerEntry.getSenderRole());
     }
 
     @Test
@@ -311,6 +313,7 @@ class IssueRequestControllerTest extends AbstractTicketingTest {
             .filter(e -> MessagePurpose.REQUEST_WITHDRAWN.equals(e.getPurpose()))
             .findFirst().orElseThrow();
         assertEquals("Termin?", tenantWithdrawnEntry.getMessage());
+        assertEquals(UserContext.CONTRACTOR, tenantWithdrawnEntry.getSenderRole());
     }
 
     @Test
