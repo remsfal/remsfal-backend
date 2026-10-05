@@ -3,6 +3,7 @@ package de.remsfal.ticketing.boundary.contractor;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.startsWith;
 
 import java.util.List;
 import java.util.Map;
@@ -103,7 +104,8 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
             .statusCode(200)
             .body("requests", hasSize(1))
             .body("requests[0].message", equalTo("Bitte um Rueckmeldung"))
-            .body("requests[0].organizationId", equalTo(organizationId.toString()));
+            .body("requests[0].organizationId", equalTo(organizationId.toString()))
+            .body("requests[0].attachments", hasSize(0));
     }
 
     @Test
@@ -142,7 +144,23 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
             .then()
             .statusCode(200)
             .body("attachmentIds", hasSize(1))
+            .body("attachments", hasSize(1))
+            .body("attachments[0].fileName", equalTo("plan.pdf"))
+            .body("attachments[0].contentType", startsWith("application/pdf"))
             .extract().path("attachmentIds");
+
+        given()
+            .when()
+            .cookie(contractorCookie())
+            .get(requestsPath())
+            .then()
+            .statusCode(200)
+            .body("requests[0].attachments", hasSize(1))
+            .body("requests[0].attachments[0].attachmentId", equalTo(attachmentIds.get(0)))
+            .body("requests[0].attachments[0].fileName", equalTo("plan.pdf"))
+            .body("requests[0].attachments[0].contentType", startsWith("application/pdf"))
+            .body("requests[0].attachments[0].downloadUrl", equalTo(ORDER_MANAGEMENT_PATH + "/" + issueId
+                + "/attachments/" + attachmentIds.get(0) + "/plan.pdf"));
 
         given()
             .when()

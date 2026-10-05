@@ -2,6 +2,7 @@ package de.remsfal.ticketing.boundary.contractor;
 
 import de.remsfal.common.boundary.MultipartAttachmentProcessor;
 import de.remsfal.core.api.ticketing.contractor.ContractorIssueRequestEndpoint;
+import de.remsfal.core.json.ticketing.ImmutableIssueRequestListJson;
 import de.remsfal.core.json.ticketing.IssueRequestJson;
 import de.remsfal.core.json.ticketing.IssueRequestListJson;
 import de.remsfal.core.model.UserContext;
@@ -47,8 +48,13 @@ public class ContractorIssueRequestResource extends AbstractTicketingResource
         final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
         final QuotationRequestEntity request =
             orderManagementController.getRequestForIssueByOrganizationIds(eligibleOrgIds, issueId);
-        return IssueRequestListJson.valueOf(
-            issueRequestController.getRequestsForContractor(issueId, request.getOrganizationId()));
+        return ImmutableIssueRequestListJson.builder()
+            .requests(issueRequestController.getRequestsForContractor(issueId, request.getOrganizationId()).stream()
+                .map(issueRequest -> IssueRequestJson.valueOf(issueRequest)
+                    .withAttachments(resolveAttachments(issueId, issueRequest.getAttachmentIds(),
+                        UserContext.CONTRACTOR)))
+                .toList())
+            .build();
     }
 
     @Override
@@ -66,7 +72,8 @@ public class ContractorIssueRequestResource extends AbstractTicketingResource
             final IssueRequestEntity created = issueRequestController.createRequest(issueId,
                 quotationRequest.getOrganizationId(), principal, request,
                 attachmentIds.isEmpty() ? null : attachmentIds);
-            return IssueRequestJson.valueOf(created);
+            return IssueRequestJson.valueOf(created)
+                .withAttachments(resolveAttachments(issueId, created.getAttachmentIds(), UserContext.CONTRACTOR));
         } catch (final RuntimeException e) {
             attachmentIds.forEach(id -> attachmentController.deleteAttachment(issueId, id));
             throw e;
