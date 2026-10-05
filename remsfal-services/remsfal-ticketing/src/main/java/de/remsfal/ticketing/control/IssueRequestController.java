@@ -92,7 +92,8 @@ public class IssueRequestController {
             UserContext.CONTRACTOR, entry, attachmentIds);
 
         tenantTimelineController.createTimelineEntry(issue.getAgreementId(), issueId, issue.getProjectId(),
-            sender, UserContext.CONTRACTOR, MessagePurpose.REQUEST_CREATED, request.getMessage(), inserted.getAttachmentIds());
+            sender, UserContext.CONTRACTOR, MessagePurpose.REQUEST_CREATED, request.getMessage(),
+            inserted.getAttachmentIds());
 
         return inserted;
     }
