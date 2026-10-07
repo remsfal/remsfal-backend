@@ -2,7 +2,7 @@ package de.remsfal.service.control;
 
 import de.remsfal.core.json.eventing.AffectedContractorJson;
 import de.remsfal.core.json.organization.ClientProjectJson;
-import de.remsfal.core.json.organization.ClientListJson;
+import de.remsfal.core.json.organization.ClientProjectListJson;
 import de.remsfal.core.json.organization.ImmutableOrganizationJson;
 import de.remsfal.core.json.organization.OrganizationJson;
 import de.remsfal.core.model.UserModel;
@@ -147,7 +147,7 @@ public class OrganizationControllerTest extends AbstractResourceTest {
 
     @Test
     void getClients_SUCCESS_emptyWhenNoContractor() {
-        ClientListJson result = organizationController.getClients(TestData.ORGANIZATION_ID_3, 0, 10);
+        ClientProjectListJson result = organizationController.getClients(TestData.ORGANIZATION_ID_3, 0, 10);
         assertTrue(result.getProjects().isEmpty());
         assertEquals(0L, result.getTotal());
     }
@@ -162,7 +162,7 @@ public class OrganizationControllerTest extends AbstractResourceTest {
         updateProjectBilling(projectId, "WEG Musterstraße", "Hausverwaltung Süd GmbH", addressId);
         insertContractor(contractorId, projectId, "Test Contractor 3", TestData.ORGANIZATION_ID_3);
 
-        ClientListJson result = organizationController.getClients(TestData.ORGANIZATION_ID_3, 0, 10);
+        ClientProjectListJson result = organizationController.getClients(TestData.ORGANIZATION_ID_3, 0, 10);
         assertEquals(1L, result.getTotal());
         ClientProjectJson project = result.getProjects().get(0);
         assertEquals(projectId, project.getId());
@@ -199,8 +199,8 @@ public class OrganizationControllerTest extends AbstractResourceTest {
         insertContractor(UUID.fromString("ee000000-0000-0000-0000-000000000096"), projectId2, "Contractor",
             TestData.ORGANIZATION_ID_3);
 
-        ClientListJson firstPage = organizationController.getClients(TestData.ORGANIZATION_ID_3, 0, 1);
-        ClientListJson secondPage = organizationController.getClients(TestData.ORGANIZATION_ID_3, 1, 1);
+        ClientProjectListJson firstPage = organizationController.getClients(TestData.ORGANIZATION_ID_3, 0, 1);
+        ClientProjectListJson secondPage = organizationController.getClients(TestData.ORGANIZATION_ID_3, 1, 1);
         assertEquals("A Project", firstPage.getProjects().get(0).getTitle());
         assertEquals("B Project", secondPage.getProjects().get(0).getTitle());
         assertEquals(2L, secondPage.getTotal());

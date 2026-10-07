@@ -14,9 +14,9 @@ import java.util.List;
 @Value.Immutable
 @ImmutableStyle
 @Schema(description = "A paginated list of clients (projects with billing data) of a contractor organization")
-@JsonDeserialize(as = ImmutableClientListJson.class)
+@JsonDeserialize(as = ImmutableClientProjectListJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public abstract class ClientListJson {
+public abstract class ClientProjectListJson {
 
     @NotNull
     public abstract List<ClientProjectJson> getProjects();
@@ -26,9 +26,9 @@ public abstract class ClientListJson {
     @Schema(description = "Total number of projects")
     public abstract Long getTotal();
 
-    public static ClientListJson valueOf(final List<? extends ProjectModel> projects, final Integer offset,
+    public static ClientProjectListJson valueOf(final List<? extends ProjectModel> projects, final Integer offset,
         final Long total) {
-        final ImmutableClientListJson.Builder builder = ImmutableClientListJson.builder();
+        final ImmutableClientProjectListJson.Builder builder = ImmutableClientProjectListJson.builder();
         for (ProjectModel project : projects) {
             builder.addProjects(ClientProjectJson.valueOf(project));
         }

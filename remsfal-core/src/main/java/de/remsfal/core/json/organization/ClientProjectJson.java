@@ -16,10 +16,6 @@ import org.immutables.value.Value;
 
 import java.util.UUID;
 
-/**
- * JSON representation of a client (Auftraggeber) of a contractor organization: a project (Liegenschaft) in which the
- * organization is registered as contractor, reduced to its billing recipient and billing address.
- */
 @Value.Immutable
 @ImmutableStyle
 @Schema(description = "A project in which a contractor organization is registered, with its billing data")

@@ -1,6 +1,6 @@
 package de.remsfal.core.api.organization;
 
-import de.remsfal.core.json.organization.ClientListJson;
+import de.remsfal.core.json.organization.ClientProjectListJson;
 import de.remsfal.core.json.organization.OrganizationEmployeeListJson;
 import de.remsfal.core.json.organization.OrganizationJson;
 import de.remsfal.core.json.organization.OrganizationListJson;
@@ -93,7 +93,7 @@ public interface OrganizationEndpoint {
     @APIResponse(responseCode = "200", description = "List of projects with their clients was successfully returned")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "403", description = "The user is not an employee of the organization")
-    ClientListJson getClients(
+    ClientProjectListJson getClients(
         @Parameter(description = "Id of the contractor organization", required = true)
         @PathParam("organizationId") @NotNull UUID organizationId,
         @Parameter(description = "Offset of the first project to return")

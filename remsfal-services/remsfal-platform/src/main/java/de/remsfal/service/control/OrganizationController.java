@@ -2,7 +2,7 @@ package de.remsfal.service.control;
 
 import de.remsfal.core.json.eventing.AffectedContractorJson;
 import de.remsfal.core.json.eventing.ImmutableAffectedContractorJson;
-import de.remsfal.core.json.organization.ClientListJson;
+import de.remsfal.core.json.organization.ClientProjectListJson;
 import de.remsfal.core.json.organization.OrganizationJson;
 import de.remsfal.core.model.OrganizationEmployeeModel;
 import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
@@ -181,9 +181,9 @@ public class OrganizationController {
      * @param limit          pagination limit
      * @return paginated list of projects with their billing data
      */
-    public ClientListJson getClients(final UUID organizationId, final int offset, final int limit) {
+    public ClientProjectListJson getClients(final UUID organizationId, final int offset, final int limit) {
         logger.infov("Retrieving clients of organization {0}", organizationId);
-        return ClientListJson.valueOf(
+        return ClientProjectListJson.valueOf(
             organizationRepository.findClientProjectsByOrganization(organizationId, offset, limit),
             offset,
             organizationRepository.countClientProjectsByOrganization(organizationId));
