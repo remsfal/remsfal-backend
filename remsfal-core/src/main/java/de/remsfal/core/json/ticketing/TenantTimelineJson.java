@@ -36,6 +36,7 @@ public abstract class TenantTimelineJson extends AbstractTimelineJson {
             .timelineId(model.getTimelineId())
             .senderId(model.getSenderId())
             .senderName(model.getSenderName())
+            .senderRole(model.getSenderRole())
             .purpose(model.getPurpose())
             .message(model.getMessage())
             .createdAt(model.getCreatedAt())

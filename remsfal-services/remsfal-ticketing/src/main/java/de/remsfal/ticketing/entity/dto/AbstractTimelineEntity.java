@@ -1,5 +1,6 @@
 package de.remsfal.ticketing.entity.dto;
 
+import de.remsfal.core.model.UserContext;
 import de.remsfal.core.model.ticketing.MessagePurpose;
 
 import jakarta.nosql.Column;
@@ -17,6 +18,9 @@ public abstract class AbstractTimelineEntity extends AbstractEntity {
 
     @Column("sender_name")
     protected String senderName;
+
+    @Column("sender_role")
+    protected String senderRole;
 
     @Column("purpose")
     protected String purpose;
@@ -46,6 +50,18 @@ public abstract class AbstractTimelineEntity extends AbstractEntity {
 
     public void setSenderName(final String senderName) {
         this.senderName = senderName;
+    }
+
+    public UserContext getSenderRole() {
+        return senderRole != null ? UserContext.valueOf(senderRole) : null;
+    }
+
+    public void setSenderRole(final UserContext senderRole) {
+        this.senderRole = senderRole != null ? senderRole.name() : null;
+    }
+
+    public void setSenderRole(final String senderRole) {
+        this.senderRole = senderRole;
     }
 
     public MessagePurpose getPurpose() {

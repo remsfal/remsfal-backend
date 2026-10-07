@@ -92,7 +92,8 @@ public class IssueRequestController {
             UserContext.CONTRACTOR, entry, attachmentIds);
 
         tenantTimelineController.createTimelineEntry(issue.getAgreementId(), issueId, issue.getProjectId(),
-            sender, MessagePurpose.REQUEST_CREATED, request.getMessage(), inserted.getAttachmentIds());
+            sender, UserContext.CONTRACTOR, MessagePurpose.REQUEST_CREATED, request.getMessage(),
+            inserted.getAttachmentIds());
 
         return inserted;
     }
@@ -123,7 +124,7 @@ public class IssueRequestController {
             UserContext.CONTRACTOR, entry, null);
 
         tenantTimelineController.createTimelineEntry(entity.getAgreementId(), issueId, issue.getProjectId(),
-            sender, MessagePurpose.REQUEST_WITHDRAWN, entity.getMessage());
+            sender, UserContext.CONTRACTOR, MessagePurpose.REQUEST_WITHDRAWN, entity.getMessage());
     }
 
     @Transactional
@@ -139,7 +140,7 @@ public class IssueRequestController {
         issueRequestRepository.delete(entity.getKey());
 
         tenantTimelineController.createTimelineEntry(entity.getAgreementId(), issueId, issue.getProjectId(),
-            sender, MessagePurpose.REQUEST_ANSWERED, response.getMessage(), attachmentIds);
+            sender, UserContext.TENANT, MessagePurpose.REQUEST_ANSWERED, response.getMessage(), attachmentIds);
 
         final ContractorTimelineJson entry = ImmutableContractorTimelineJson.builder()
             .purpose(MessagePurpose.REQUEST_ANSWERED)
