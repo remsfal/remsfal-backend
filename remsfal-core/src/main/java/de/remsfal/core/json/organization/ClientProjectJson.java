@@ -12,11 +12,11 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.immutables.value.Value;
+import org.immutables.value.Value.Immutable;
 
 import java.util.UUID;
 
-@Value.Immutable
+@Immutable
 @ImmutableStyle
 @Schema(description = "A project in which a contractor organization is registered, with its billing data")
 @JsonDeserialize(as = ImmutableClientProjectJson.class)

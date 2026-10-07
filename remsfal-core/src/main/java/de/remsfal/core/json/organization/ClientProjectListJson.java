@@ -7,11 +7,11 @@ import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.project.ProjectModel;
 import jakarta.validation.constraints.NotNull;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.immutables.value.Value;
+import org.immutables.value.Value.Immutable;
 
 import java.util.List;
 
-@Value.Immutable
+@Immutable
 @ImmutableStyle
 @Schema(description = "A list of clients (projects with billing data) of a contractor organization")
 @JsonDeserialize(as = ImmutableClientProjectListJson.class)
