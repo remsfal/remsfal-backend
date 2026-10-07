@@ -3,7 +3,7 @@ package de.remsfal.service.entity;
 import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.entity.dao.OrganizationRepository;
 import de.remsfal.service.entity.dto.OrganizationEntity;
-import de.remsfal.service.entity.dto.UserEntity;
+import de.remsfal.service.entity.dto.ProjectEntity;
 import de.remsfal.test.TestData;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -121,70 +121,20 @@ class OrganizationRepositoryTest extends AbstractServiceTest {
     }
 
     @Test
-    void findClientUsersByOrganization_SUCCESS_emptyWhenNoContractor() {
-        List<UserEntity> result = repository.findClientUsersByOrganization(TestData.ORGANIZATION_ID_3, 0, 10);
-        assertNotNull(result);
-        assertTrue(result.isEmpty());
-        assertEquals(0, repository.countClientUsersByOrganization(TestData.ORGANIZATION_ID_3));
+    void findClientProjectsByOrganization_SUCCESS_emptyWhenNoContractor() {
+        assertTrue(repository.findClientProjectsByOrganization(TestData.ORGANIZATION_ID_3, 0, 10).isEmpty());
+        assertEquals(0, repository.countClientProjectsByOrganization(TestData.ORGANIZATION_ID_3));
     }
 
     @Test
-    void findClientUsersByOrganization_SUCCESS_projectManagerWithoutOrganization() {
-        // USER_ID_4 manages the project as a single person and registered ORGANIZATION_ID_3 as contractor
+    void findClientProjectsByOrganization_SUCCESS_projectWithContractor() {
         insertProject(PROJECT_ID, "Test Project");
-        insertProjectMember(PROJECT_ID, TestData.USER_ID_4, "MANAGER");
         insertContractor(CONTRACTOR_ID_1, PROJECT_ID, "Contractor A", TestData.ORGANIZATION_ID_3);
 
-        List<UserEntity> result = repository.findClientUsersByOrganization(TestData.ORGANIZATION_ID_3, 0, 10);
+        List<ProjectEntity> result = repository.findClientProjectsByOrganization(TestData.ORGANIZATION_ID_3, 0, 10);
         assertEquals(1, result.size());
-        assertEquals(TestData.USER_ID_4, result.get(0).getId());
-        assertEquals(1, repository.countClientUsersByOrganization(TestData.ORGANIZATION_ID_3));
-    }
-
-    @Test
-    void findClientUsersByOrganization_SUCCESS_distinctAcrossProjects() {
-        final UUID projectId2 = UUID.fromString("dd000000-0000-0000-0000-000000000002");
-        final UUID contractorId2 = UUID.fromString("ee000000-0000-0000-0000-000000000002");
-        insertProject(PROJECT_ID, "Test Project");
-        insertProject(projectId2, "Test Project 2");
-        insertProjectMember(PROJECT_ID, TestData.USER_ID_4, "MANAGER");
-        insertProjectMember(projectId2, TestData.USER_ID_4, "PROPRIETOR");
-        insertContractor(CONTRACTOR_ID_1, PROJECT_ID, "Contractor A", TestData.ORGANIZATION_ID_3);
-        insertContractor(contractorId2, projectId2, "Contractor A", TestData.ORGANIZATION_ID_3);
-
-        List<UserEntity> result = repository.findClientUsersByOrganization(TestData.ORGANIZATION_ID_3, 0, 10);
-        assertEquals(1, result.size());
-        assertEquals(1, repository.countClientUsersByOrganization(TestData.ORGANIZATION_ID_3));
-    }
-
-    @Test
-    void findClientUsersByOrganization_SUCCESS_excludesEmployeesOfContractorOrganization() {
-        // USER_ID_3 is employee of the contractor organization ORGANIZATION_ID_3
-        insertProject(PROJECT_ID, "Test Project");
-        insertProjectMember(PROJECT_ID, TestData.USER_ID_3, "MANAGER");
-        insertContractor(CONTRACTOR_ID_1, PROJECT_ID, "Contractor A", TestData.ORGANIZATION_ID_3);
-
-        List<UserEntity> result = repository.findClientUsersByOrganization(TestData.ORGANIZATION_ID_3, 0, 10);
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void findClientUsersByOrganization_SUCCESS_ignoresNonClientRoles() {
-        insertProject(PROJECT_ID, "Test Project");
-        insertProjectMember(PROJECT_ID, TestData.USER_ID_4, "STAFF");
-        insertContractor(CONTRACTOR_ID_1, PROJECT_ID, "Contractor A", TestData.ORGANIZATION_ID_3);
-
-        List<UserEntity> result = repository.findClientUsersByOrganization(TestData.ORGANIZATION_ID_3, 0, 10);
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void findClientUsersByOrganization_SUCCESS_emptyForOtherOrganization() {
-        insertProject(PROJECT_ID, "Test Project");
-        insertProjectMember(PROJECT_ID, TestData.USER_ID_4, "MANAGER");
-        insertContractor(CONTRACTOR_ID_1, PROJECT_ID, "Contractor A", TestData.ORGANIZATION_ID_3);
-
-        List<UserEntity> result = repository.findClientUsersByOrganization(TestData.ORGANIZATION_ID, 0, 10);
-        assertTrue(result.isEmpty());
+        assertEquals(PROJECT_ID, result.get(0).getId());
+        assertEquals(1, repository.countClientProjectsByOrganization(TestData.ORGANIZATION_ID_3));
+        assertTrue(repository.findClientProjectsByOrganization(TestData.ORGANIZATION_ID, 0, 10).isEmpty());
     }
 }

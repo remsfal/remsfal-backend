@@ -421,17 +421,17 @@ public class OrganizationResourceTest extends AbstractResourceTest {
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-            .and().body("clients.size()", Matchers.equalTo(0))
+            .and().body("projects.size()", Matchers.equalTo(0))
             .and().body("total", Matchers.equalTo(0));
     }
 
     @Test
-    void getClients_SUCCESS_projectManagerWithoutOrganization() {
-        // USER_ID_2 is MANAGER of ORGANIZATION_ID_3, which is contractor in PROJECT_ID_1.
-        // USER_ID_4 manages PROJECT_ID_1 as single person.
-        // USER_ID (MANAGER of PROJECT_ID_1) is excluded as owner of the contractor organization.
+    void getClients_SUCCESS_projectWithBillingData() {
+        // USER_ID_2 is MANAGER of ORGANIZATION_ID_3, which is contractor in PROJECT_ID_1
         super.setupTestProjects();
-        insertProjectMember(TestData.PROJECT_ID_1, TestData.USER_ID_4, "MANAGER");
+        final UUID addressId = UUID.fromString("aa000000-0000-0000-0000-000000000003");
+        insertAddress(addressId, "Musterstraße 1", "Berlin", "Berlin", "10115", "DE");
+        updateProjectBilling(TestData.PROJECT_ID_1, "WEG Musterstraße", "Hausverwaltung Süd GmbH", addressId);
         final UUID contractorId = UUID.fromString("cc000000-0000-0000-0000-000000000003");
         insertContractor(contractorId, TestData.PROJECT_ID_1, "Test Contractor", TestData.ORGANIZATION_ID_3);
 
@@ -443,11 +443,15 @@ public class OrganizationResourceTest extends AbstractResourceTest {
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
             .and().body("total", Matchers.equalTo(1))
-            .and().body("clients.size()", Matchers.equalTo(1))
-            .and().body("clients[0].id", Matchers.equalTo(TestData.USER_ID_4.toString()))
-            .and().body("clients[0].name",
-                Matchers.equalTo(TestData.USER_FIRST_NAME_4 + " " + TestData.USER_LAST_NAME_4))
-            .and().body("clients[0].email", Matchers.equalTo(TestData.USER_EMAIL_4));
+            .and().body("projects[0].id", Matchers.equalTo(TestData.PROJECT_ID_1.toString()))
+            .and().body("projects[0].title", Matchers.equalTo(TestData.PROJECT_TITLE_1))
+            .and().body("projects[0].owner", Matchers.equalTo("WEG Musterstraße"))
+            .and().body("projects[0].careOf", Matchers.equalTo("Hausverwaltung Süd GmbH"))
+            .and().body("projects[0].billingAddress.street", Matchers.equalTo("Musterstraße 1"))
+            .and().body("projects[0].billingAddress.zip", Matchers.equalTo("10115"))
+            .and().body("projects[0].billingAddress.city", Matchers.equalTo("Berlin"))
+            .and().body("projects[0]", Matchers.not(Matchers.hasKey("organizations")))
+            .and().body("projects[0]", Matchers.not(Matchers.hasKey("members")));
     }
 
     @Test

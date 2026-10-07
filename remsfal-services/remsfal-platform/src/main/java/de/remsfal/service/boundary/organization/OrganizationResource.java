@@ -48,10 +48,7 @@ public class OrganizationResource extends OrganizationSubResource implements Org
     @Override
     public ClientListJson getClients(final UUID organizationId, final Integer offset, final Integer limit) {
         checkReadPermissions(organizationId);
-        return ClientListJson.valueOf(
-            controller.getClients(organizationId, offset, limit),
-            offset,
-            controller.countClients(organizationId));
+        return controller.getClients(organizationId, offset, limit);
     }
 
     @Override

@@ -2,6 +2,7 @@ package de.remsfal.service.control;
 
 import de.remsfal.core.json.eventing.AffectedContractorJson;
 import de.remsfal.core.json.eventing.ImmutableAffectedContractorJson;
+import de.remsfal.core.json.organization.ClientListJson;
 import de.remsfal.core.json.organization.OrganizationJson;
 import de.remsfal.core.model.OrganizationEmployeeModel;
 import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
@@ -171,27 +172,21 @@ public class OrganizationController {
     }
 
     /**
-     * Retrieve paginated clients of a contractor organization. A client is a project member with a client role
-     * (proprietor, manager or lessor) of a project in which the organization is registered as contractor.
+     * Retrieve the clients of a contractor organization, i.e. the projects in which the organization is registered
+     * as contractor together with their billing recipient and billing address. Projects are ordered by title and
+     * paginated.
      *
      * @param organizationId the contractor organization
      * @param offset         pagination offset
      * @param limit          pagination limit
-     * @return list of client users
+     * @return paginated list of projects with their billing data
      */
-    public List<UserEntity> getClients(final UUID organizationId, final int offset, final int limit) {
+    public ClientListJson getClients(final UUID organizationId, final int offset, final int limit) {
         logger.infov("Retrieving clients of organization {0}", organizationId);
-        return organizationRepository.findClientUsersByOrganization(organizationId, offset, limit);
-    }
-
-    /**
-     * Count clients of a contractor organization.
-     *
-     * @param organizationId the contractor organization
-     * @return total count
-     */
-    public long countClients(final UUID organizationId) {
-        return organizationRepository.countClientUsersByOrganization(organizationId);
+        return ClientListJson.valueOf(
+            organizationRepository.findClientProjectsByOrganization(organizationId, offset, limit),
+            offset,
+            organizationRepository.countClientProjectsByOrganization(organizationId));
     }
 
     /**

@@ -88,17 +88,17 @@ public interface OrganizationEndpoint {
     @GET
     @Path("/{organizationId}/clients")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(description = "Retrieve all clients of a contractor organization. A client is a project member "
-        + "(proprietor, manager or lessor) of a project in which the organization is registered as contractor")
-    @APIResponse(responseCode = "200", description = "List of clients was successfully returned")
+    @Operation(description = "Retrieve the clients of a contractor organization: the projects in which the "
+        + "organization is registered as contractor, with their billing recipient and billing address")
+    @APIResponse(responseCode = "200", description = "List of projects with their clients was successfully returned")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "403", description = "The user is not an employee of the organization")
     ClientListJson getClients(
         @Parameter(description = "Id of the contractor organization", required = true)
         @PathParam("organizationId") @NotNull UUID organizationId,
-        @Parameter(description = "Offset of the first client to return")
+        @Parameter(description = "Offset of the first project to return")
         @QueryParam("offset") @DefaultValue("0") @NotNull @PositiveOrZero Integer offset,
-        @Parameter(description = "Maximum number of clients to return")
+        @Parameter(description = "Maximum number of projects to return")
         @QueryParam("limit") @DefaultValue("10") @NotNull @Positive @Max(100) Integer limit
     );
 
