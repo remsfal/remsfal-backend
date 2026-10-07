@@ -3,6 +3,7 @@ package de.remsfal.ticketing.boundary.contractor;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 
 import java.util.List;
@@ -143,11 +144,11 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
             .post(requestsPath())
             .then()
             .statusCode(200)
-            .body("attachmentIds", hasSize(1))
+            .body("attachmentIds", nullValue())
             .body("attachments", hasSize(1))
             .body("attachments[0].fileName", equalTo("plan.pdf"))
             .body("attachments[0].contentType", startsWith("application/pdf"))
-            .extract().path("attachmentIds");
+            .extract().path("attachments.attachmentId");
 
         given()
             .when()
@@ -178,7 +179,7 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
     }
 
     @Test
-    void createRequest_FAILED_attachmentIdsInRequestJson_returns400() {
+    void createRequest_SUCCESS_attachmentIdsInRequestJson_areIgnored() {
         final String requestJson = "{ \"message\":\"Bitte Plan pruefen\","
             + " \"attachmentIds\":[\"" + UUID.randomUUID() + "\"] }";
 
@@ -188,7 +189,8 @@ class ContractorIssueRequestResourceTest extends AbstractTicketingTest {
             .multiPart("request", requestJson, JSON_PART)
             .post(requestsPath())
             .then()
-            .statusCode(400);
+            .statusCode(200)
+            .body("attachments", hasSize(0));
     }
 
     @Test

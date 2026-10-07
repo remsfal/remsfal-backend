@@ -93,7 +93,6 @@ public class IssueRequestEntity extends AbstractEntity implements IssueRequestMo
         this.message = message;
     }
 
-    @Override
     public List<UUID> getAttachmentIds() {
         return attachmentIds;
     }

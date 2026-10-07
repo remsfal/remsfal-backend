@@ -61,12 +61,6 @@ public abstract class IssueRequestJson implements IssueRequestModel {
 
     @Null
     @Nullable
-    @Schema(readOnly = true, description = "IDs of the issue attachments the contractor has sent with this request")
-    @Override
-    public abstract List<UUID> getAttachmentIds();
-
-    @Null
-    @Nullable
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @Schema(readOnly = true,
         description = "Attachments the contractor has sent with this request, including download URLs")
@@ -91,7 +85,6 @@ public abstract class IssueRequestJson implements IssueRequestModel {
             .organizationId(model.getOrganizationId())
             .agreementId(model.getAgreementId())
             .message(model.getMessage())
-            .attachmentIds(model.getAttachmentIds())
             .createdAt(model.getCreatedAt())
             .modifiedAt(model.getModifiedAt())
             .build();

@@ -1,7 +1,6 @@
 package de.remsfal.core.model.ticketing;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
 public interface IssueRequestModel {
@@ -15,8 +14,6 @@ public interface IssueRequestModel {
     UUID getAgreementId();
 
     String getMessage();
-
-    List<UUID> getAttachmentIds();
 
     Instant getCreatedAt();
 

@@ -13,15 +13,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 class IssueRequestJsonTest {
 
     private static IssueRequestModel model(final UUID issueRequestId, final UUID issueId, final UUID organizationId,
-        final UUID agreementId, final String message, final List<UUID> attachmentIds, final Instant createdAt,
-        final Instant modifiedAt) {
+        final UUID agreementId, final String message, final Instant createdAt, final Instant modifiedAt) {
         return new IssueRequestModel() {
             @Override public UUID getIssueRequestId() { return issueRequestId; }
             @Override public UUID getIssueId() { return issueId; }
             @Override public UUID getOrganizationId() { return organizationId; }
             @Override public UUID getAgreementId() { return agreementId; }
             @Override public String getMessage() { return message; }
-            @Override public List<UUID> getAttachmentIds() { return attachmentIds; }
             @Override public Instant getCreatedAt() { return createdAt; }
             @Override public Instant getModifiedAt() { return modifiedAt; }
         };
@@ -33,12 +31,11 @@ class IssueRequestJsonTest {
         final UUID issueId = UUID.randomUUID();
         final UUID organizationId = UUID.randomUUID();
         final UUID agreementId = UUID.randomUUID();
-        final List<UUID> attachmentIds = List.of(UUID.randomUUID());
         final Instant createdAt = Instant.now();
         final Instant modifiedAt = Instant.now();
 
         final IssueRequestModel m = model(issueRequestId, issueId, organizationId, agreementId,
-            "Bitte um Rueckmeldung", attachmentIds, createdAt, modifiedAt);
+            "Bitte um Rueckmeldung", createdAt, modifiedAt);
 
         final IssueRequestJson json = IssueRequestJson.valueOf(m);
 
@@ -47,7 +44,6 @@ class IssueRequestJsonTest {
         assertEquals(organizationId, json.getOrganizationId());
         assertEquals(agreementId, json.getAgreementId());
         assertEquals("Bitte um Rueckmeldung", json.getMessage());
-        assertEquals(attachmentIds, json.getAttachmentIds());
         assertEquals(createdAt, json.getCreatedAt());
         assertEquals(modifiedAt, json.getModifiedAt());
         assertNull(json.getAttachments());
@@ -62,10 +58,9 @@ class IssueRequestJsonTest {
             .build();
 
         final IssueRequestJson json = IssueRequestJson.valueOf(model(UUID.randomUUID(), UUID.randomUUID(),
-            UUID.randomUUID(), UUID.randomUUID(), "Plan anbei", List.of(attachmentId), Instant.now(), Instant.now()))
+            UUID.randomUUID(), UUID.randomUUID(), "Plan anbei", Instant.now(), Instant.now()))
             .withAttachments(List.of(attachment));
 
         assertEquals(List.of(attachment), json.getAttachments());
-        assertEquals(List.of(attachmentId), json.getAttachmentIds());
     }
 }

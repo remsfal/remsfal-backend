@@ -3,6 +3,7 @@ package de.remsfal.ticketing.boundary.tenant;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -187,7 +188,7 @@ class TenantIssueRequestResourceTest extends AbstractTicketingTest {
             .get(REQUESTS_PATH, ISSUE_ID_WITH_AGREEMENT)
             .then()
             .statusCode(200)
-            .body("requests[0].attachmentIds[0]", equalTo(TicketingTestData.ATTACHMENT_ID_2.toString()))
+            .body("requests[0].attachmentIds", nullValue())
             .body("requests[0].attachments", hasSize(1))
             .body("requests[0].attachments[0].attachmentId", equalTo(TicketingTestData.ATTACHMENT_ID_2.toString()))
             .body("requests[0].attachments[0].fileName", equalTo(TicketingTestData.ATTACHMENT_FILE_PATH_2))
