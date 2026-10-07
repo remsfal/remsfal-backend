@@ -1,7 +1,9 @@
 package de.remsfal.service.entity.dao;
 
+import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 import de.remsfal.service.entity.dto.OrganizationEmployeeEntity;
 import de.remsfal.service.entity.dto.OrganizationEntity;
+import de.remsfal.service.entity.dto.UserEntity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.NoResultException;
 
@@ -11,6 +13,24 @@ import java.util.UUID;
 
 @ApplicationScoped
 public class OrganizationRepository extends AbstractRepository<OrganizationEntity> {
+
+    /**
+     * Project roles of a member that are considered a client of the project's contractors.
+     */
+    private static final List<MemberRole> CLIENT_ROLES =
+        List.of(MemberRole.PROPRIETOR, MemberRole.MANAGER, MemberRole.LESSOR);
+
+    /**
+     * JPQL condition (alias {@code pm} for ProjectMembershipEntity) matching project members with a client role in
+     * a project in which {@code :organizationId} is registered as contractor. Employees of the contractor
+     * organization itself are excluded.
+     */
+    private static final String CLIENT_MEMBER_CONDITION =
+        " pm.role IN :roles"
+        + " AND EXISTS (SELECT c FROM ContractorEntity c"
+        + "   WHERE c.project.id = pm.project.id AND c.organization.id = :organizationId)"
+        + " AND NOT EXISTS (SELECT oe FROM OrganizationEmployeeEntity oe"
+        + "   WHERE oe.organization.id = :organizationId AND oe.user.id = pm.user.id)";
 
     public Optional<OrganizationEntity> findByEmail(final String email) {
         return find("email", email == null ? null : email.trim().toLowerCase()).singleResultOptional();
@@ -150,6 +170,43 @@ public class OrganizationRepository extends AbstractRepository<OrganizationEntit
             + "             WHERE po.project.id = c.project.id AND oe.user.id = :userId)"
             + " )", Long.class)
             .setParameter(PARAM_USER_ID, userId)
+            .getSingleResult();
+    }
+
+    /**
+     * Find distinct users that are clients of the given contractor organization, i.e. members with a client role
+     * (proprietor, manager or lessor) of a project in which the organization is registered as contractor.
+     *
+     * @param organizationId the contractor organization ID
+     * @param offset         pagination offset
+     * @param limit          pagination limit
+     * @return paginated list of distinct client users, ordered by name
+     */
+    public List<UserEntity> findClientUsersByOrganization(final UUID organizationId,
+        final int offset, final int limit) {
+        return getEntityManager().createQuery(
+            "SELECT u FROM UserEntity u WHERE u IN ("
+            + "  SELECT pm.user FROM ProjectMembershipEntity pm WHERE" + CLIENT_MEMBER_CONDITION
+            + ") ORDER BY u.lastName, u.firstName, u.email", UserEntity.class)
+            .setParameter(PARAM_ORGANIZATION_ID, organizationId)
+            .setParameter("roles", CLIENT_ROLES)
+            .setFirstResult(offset)
+            .setMaxResults(limit)
+            .getResultList();
+    }
+
+    /**
+     * Count distinct users that are clients of the given contractor organization.
+     *
+     * @param organizationId the contractor organization ID
+     * @return count of distinct client users
+     */
+    public long countClientUsersByOrganization(final UUID organizationId) {
+        return getEntityManager().createQuery(
+            "SELECT COUNT(DISTINCT pm.user) FROM ProjectMembershipEntity pm WHERE" + CLIENT_MEMBER_CONDITION,
+            Long.class)
+            .setParameter(PARAM_ORGANIZATION_ID, organizationId)
+            .setParameter("roles", CLIENT_ROLES)
             .getSingleResult();
     }
 

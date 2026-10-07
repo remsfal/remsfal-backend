@@ -1,5 +1,6 @@
 package de.remsfal.core.api.organization;
 
+import de.remsfal.core.json.organization.ClientListJson;
 import de.remsfal.core.json.organization.OrganizationEmployeeListJson;
 import de.remsfal.core.json.organization.OrganizationJson;
 import de.remsfal.core.json.organization.OrganizationListJson;
@@ -81,6 +82,23 @@ public interface OrganizationEndpoint {
         @Parameter(description = "Offset of the first organization to return")
         @QueryParam("offset") @DefaultValue("0") @NotNull @PositiveOrZero Integer offset,
         @Parameter(description = "Maximum number of organizations to return")
+        @QueryParam("limit") @DefaultValue("10") @NotNull @Positive @Max(100) Integer limit
+    );
+
+    @GET
+    @Path("/{organizationId}/clients")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(description = "Retrieve all clients of a contractor organization. A client is a project member "
+        + "(proprietor, manager or lessor) of a project in which the organization is registered as contractor")
+    @APIResponse(responseCode = "200", description = "List of clients was successfully returned")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "403", description = "The user is not an employee of the organization")
+    ClientListJson getClients(
+        @Parameter(description = "Id of the contractor organization", required = true)
+        @PathParam("organizationId") @NotNull UUID organizationId,
+        @Parameter(description = "Offset of the first client to return")
+        @QueryParam("offset") @DefaultValue("0") @NotNull @PositiveOrZero Integer offset,
+        @Parameter(description = "Maximum number of clients to return")
         @QueryParam("limit") @DefaultValue("10") @NotNull @Positive @Max(100) Integer limit
     );
 

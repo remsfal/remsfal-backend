@@ -7,6 +7,7 @@ import de.remsfal.core.model.UserModel;
 import de.remsfal.service.boundary.AbstractResourceTest;
 import de.remsfal.service.boundary.eventing.OrganizationEventProducer;
 import de.remsfal.service.entity.dto.OrganizationEntity;
+import de.remsfal.service.entity.dto.UserEntity;
 import de.remsfal.test.TestData;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -141,6 +142,26 @@ public class OrganizationControllerTest extends AbstractResourceTest {
 
         long count = organizationController.countContractorOrganizations(user);
         assertEquals(1, count);
+    }
+
+    @Test
+    void getClients_SUCCESS_emptyWhenNoContractor() {
+        assertTrue(organizationController.getClients(TestData.ORGANIZATION_ID_3, 0, 10).isEmpty());
+        assertEquals(0, organizationController.countClients(TestData.ORGANIZATION_ID_3));
+    }
+
+    @Test
+    void getClients_SUCCESS_projectManagerWithoutOrganization() {
+        final UUID projectId = UUID.fromString("dd000000-0000-0000-0000-000000000097");
+        final UUID contractorId = UUID.fromString("ee000000-0000-0000-0000-000000000097");
+        insertProject(projectId, "Test Project 3");
+        insertProjectMember(projectId, TestData.USER_ID_4, "LESSOR");
+        insertContractor(contractorId, projectId, "Test Contractor 3", TestData.ORGANIZATION_ID_3);
+
+        List<UserEntity> results = organizationController.getClients(TestData.ORGANIZATION_ID_3, 0, 10);
+        assertEquals(1, results.size());
+        assertEquals(TestData.USER_ID_4, results.get(0).getId());
+        assertEquals(1, organizationController.countClients(TestData.ORGANIZATION_ID_3));
     }
 
     @Test

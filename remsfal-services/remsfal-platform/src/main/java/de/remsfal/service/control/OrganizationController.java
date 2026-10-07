@@ -171,6 +171,30 @@ public class OrganizationController {
     }
 
     /**
+     * Retrieve paginated clients of a contractor organization. A client is a project member with a client role
+     * (proprietor, manager or lessor) of a project in which the organization is registered as contractor.
+     *
+     * @param organizationId the contractor organization
+     * @param offset         pagination offset
+     * @param limit          pagination limit
+     * @return list of client users
+     */
+    public List<UserEntity> getClients(final UUID organizationId, final int offset, final int limit) {
+        logger.infov("Retrieving clients of organization {0}", organizationId);
+        return organizationRepository.findClientUsersByOrganization(organizationId, offset, limit);
+    }
+
+    /**
+     * Count clients of a contractor organization.
+     *
+     * @param organizationId the contractor organization
+     * @return total count
+     */
+    public long countClients(final UUID organizationId) {
+        return organizationRepository.countClientUsersByOrganization(organizationId);
+    }
+
+    /**
      * Update an organization
      *
      * @param organization The organization entity containing the updated values

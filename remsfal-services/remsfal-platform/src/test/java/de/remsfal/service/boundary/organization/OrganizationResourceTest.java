@@ -393,6 +393,64 @@ public class OrganizationResourceTest extends AbstractResourceTest {
     }
 
     @Test
+    void getClients_FAILED_noAuthentication() {
+        given()
+            .when()
+            .get(BASE_PATH + "/" + TestData.ORGANIZATION_ID_3 + "/clients")
+            .then()
+            .statusCode(Response.Status.UNAUTHORIZED.getStatusCode());
+    }
+
+    @Test
+    void getClients_FAILED_notAnEmployee() {
+        // USER_ID_4 is not employed in ORGANIZATION_ID_3
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/" + TestData.ORGANIZATION_ID_3 + "/clients")
+            .then()
+            .statusCode(Response.Status.FORBIDDEN.getStatusCode());
+    }
+
+    @Test
+    void getClients_SUCCESS_emptyWhenNoContractor() {
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/" + TestData.ORGANIZATION_ID_3 + "/clients")
+            .then()
+            .statusCode(Response.Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("clients.size()", Matchers.equalTo(0))
+            .and().body("total", Matchers.equalTo(0));
+    }
+
+    @Test
+    void getClients_SUCCESS_projectManagerWithoutOrganization() {
+        // USER_ID_2 is MANAGER of ORGANIZATION_ID_3, which is contractor in PROJECT_ID_1.
+        // USER_ID_4 manages PROJECT_ID_1 as single person.
+        // USER_ID (MANAGER of PROJECT_ID_1) is excluded as owner of the contractor organization.
+        super.setupTestProjects();
+        insertProjectMember(TestData.PROJECT_ID_1, TestData.USER_ID_4, "MANAGER");
+        final UUID contractorId = UUID.fromString("cc000000-0000-0000-0000-000000000003");
+        insertContractor(contractorId, TestData.PROJECT_ID_1, "Test Contractor", TestData.ORGANIZATION_ID_3);
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/" + TestData.ORGANIZATION_ID_3 + "/clients")
+            .then()
+            .statusCode(Response.Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("total", Matchers.equalTo(1))
+            .and().body("clients.size()", Matchers.equalTo(1))
+            .and().body("clients[0].id", Matchers.equalTo(TestData.USER_ID_4.toString()))
+            .and().body("clients[0].name",
+                Matchers.equalTo(TestData.USER_FIRST_NAME_4 + " " + TestData.USER_LAST_NAME_4))
+            .and().body("clients[0].email", Matchers.equalTo(TestData.USER_EMAIL_4));
+    }
+
+    @Test
     void createOrganization_FAILED_emailNotOwnedByUser() {
         final String json = "{\"name\": \"" + TestData.ORGANIZATION_NAME + "\",\n" +
                 "  \"email\": \"" + TestData.ORGANIZATION_EMAIL + "\"\n" +
