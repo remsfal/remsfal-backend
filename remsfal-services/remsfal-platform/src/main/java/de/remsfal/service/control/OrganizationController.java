@@ -171,16 +171,6 @@ public class OrganizationController {
         return organizationRepository.countContractorOrganizationsByUser(user.getId());
     }
 
-    /**
-     * Retrieve the clients of a contractor organization, i.e. the projects in which the organization is registered
-     * as contractor together with their billing recipient and billing address. Projects are ordered by title and
-     * paginated.
-     *
-     * @param organizationId the contractor organization
-     * @param offset         pagination offset
-     * @param limit          pagination limit
-     * @return paginated list of projects with their billing data
-     */
     public ClientProjectListJson getClients(final UUID organizationId, final int offset, final int limit) {
         logger.infov("Retrieving clients of organization {0}", organizationId);
         return ClientProjectListJson.valueOf(

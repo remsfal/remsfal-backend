@@ -403,7 +403,6 @@ public class OrganizationResourceTest extends AbstractResourceTest {
 
     @Test
     void getClients_FAILED_notAnEmployee() {
-        // USER_ID_4 is not employed in ORGANIZATION_ID_3
         given()
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
@@ -427,7 +426,6 @@ public class OrganizationResourceTest extends AbstractResourceTest {
 
     @Test
     void getClients_SUCCESS_projectWithBillingData() {
-        // USER_ID_2 is MANAGER of ORGANIZATION_ID_3, which is contractor in PROJECT_ID_1
         super.setupTestProjects();
         final UUID addressId = UUID.fromString("aa000000-0000-0000-0000-000000000003");
         insertAddress(addressId, "Musterstraße 1", "Berlin", "Berlin", "10115", "DE");

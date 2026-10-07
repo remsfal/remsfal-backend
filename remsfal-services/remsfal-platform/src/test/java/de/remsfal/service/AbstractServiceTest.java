@@ -288,10 +288,6 @@ public abstract class AbstractServiceTest extends AbstractTest {
                 .executeUpdate());
     }
 
-    /**
-     * Set the billing recipient and billing address of a project.
-     * @param params project_id, owner, care_of, billing_address_id
-     */
     protected void updateProjectBilling(Object... params) {
         runInTransaction(() -> entityManager
                 .createNativeQuery("UPDATE projects SET owner = ?, care_of = ?, billing_address_id = ? WHERE id = ?")

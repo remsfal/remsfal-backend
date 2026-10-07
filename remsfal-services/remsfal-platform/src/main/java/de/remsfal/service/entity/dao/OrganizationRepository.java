@@ -154,14 +154,6 @@ public class OrganizationRepository extends AbstractRepository<OrganizationEntit
             .getSingleResult();
     }
 
-    /**
-     * Find the projects in which the given organization is registered as contractor.
-     *
-     * @param organizationId the contractor organization ID
-     * @param offset         pagination offset
-     * @param limit          pagination limit
-     * @return paginated list of projects, ordered by title
-     */
     public List<ProjectEntity> findClientProjectsByOrganization(final UUID organizationId,
         final int offset, final int limit) {
         return getEntityManager().createQuery(
@@ -174,12 +166,6 @@ public class OrganizationRepository extends AbstractRepository<OrganizationEntit
             .getResultList();
     }
 
-    /**
-     * Count the projects in which the given organization is registered as contractor.
-     *
-     * @param organizationId the contractor organization ID
-     * @return count of projects
-     */
     public long countClientProjectsByOrganization(final UUID organizationId) {
         return getEntityManager().createQuery(
             "SELECT COUNT(DISTINCT c.project) FROM ContractorEntity c WHERE c.organization.id = :organizationId",
