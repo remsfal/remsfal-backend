@@ -122,8 +122,7 @@ class OrganizationRepositoryTest extends AbstractServiceTest {
 
     @Test
     void findClientProjectsByOrganization_SUCCESS_emptyWhenNoContractor() {
-        assertTrue(repository.findClientProjectsByOrganization(TestData.ORGANIZATION_ID_3, 0, 10).isEmpty());
-        assertEquals(0, repository.countClientProjectsByOrganization(TestData.ORGANIZATION_ID_3));
+        assertTrue(repository.findClientProjectsByOrganization(TestData.ORGANIZATION_ID_3).isEmpty());
     }
 
     @Test
@@ -131,10 +130,9 @@ class OrganizationRepositoryTest extends AbstractServiceTest {
         insertProject(PROJECT_ID, "Test Project");
         insertContractor(CONTRACTOR_ID_1, PROJECT_ID, "Contractor A", TestData.ORGANIZATION_ID_3);
 
-        List<ProjectEntity> result = repository.findClientProjectsByOrganization(TestData.ORGANIZATION_ID_3, 0, 10);
+        List<ProjectEntity> result = repository.findClientProjectsByOrganization(TestData.ORGANIZATION_ID_3);
         assertEquals(1, result.size());
         assertEquals(PROJECT_ID, result.get(0).getId());
-        assertEquals(1, repository.countClientProjectsByOrganization(TestData.ORGANIZATION_ID_3));
-        assertTrue(repository.findClientProjectsByOrganization(TestData.ORGANIZATION_ID, 0, 10).isEmpty());
+        assertTrue(repository.findClientProjectsByOrganization(TestData.ORGANIZATION_ID).isEmpty());
     }
 }

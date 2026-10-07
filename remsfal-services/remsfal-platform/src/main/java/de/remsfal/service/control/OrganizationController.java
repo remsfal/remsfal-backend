@@ -171,12 +171,9 @@ public class OrganizationController {
         return organizationRepository.countContractorOrganizationsByUser(user.getId());
     }
 
-    public ClientProjectListJson getClients(final UUID organizationId, final int offset, final int limit) {
+    public ClientProjectListJson getClients(final UUID organizationId) {
         logger.infov("Retrieving clients of organization {0}", organizationId);
-        return ClientProjectListJson.valueOf(
-            organizationRepository.findClientProjectsByOrganization(organizationId, offset, limit),
-            offset,
-            organizationRepository.countClientProjectsByOrganization(organizationId));
+        return ClientProjectListJson.valueOf(organizationRepository.findClientProjectsByOrganization(organizationId));
     }
 
     /**

@@ -13,7 +13,7 @@ import java.util.List;
 
 @Value.Immutable
 @ImmutableStyle
-@Schema(description = "A paginated list of clients (projects with billing data) of a contractor organization")
+@Schema(description = "A list of clients (projects with billing data) of a contractor organization")
 @JsonDeserialize(as = ImmutableClientProjectListJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
 public abstract class ClientProjectListJson {
@@ -21,17 +21,11 @@ public abstract class ClientProjectListJson {
     @NotNull
     public abstract List<ClientProjectJson> getProjects();
 
-    public abstract Integer getOffset();
-
-    @Schema(description = "Total number of projects")
-    public abstract Long getTotal();
-
-    public static ClientProjectListJson valueOf(final List<? extends ProjectModel> projects, final Integer offset,
-        final Long total) {
+    public static ClientProjectListJson valueOf(final List<? extends ProjectModel> projects) {
         final ImmutableClientProjectListJson.Builder builder = ImmutableClientProjectListJson.builder();
         for (ProjectModel project : projects) {
             builder.addProjects(ClientProjectJson.valueOf(project));
         }
-        return builder.offset(offset).total(total).build();
+        return builder.build();
     }
 }

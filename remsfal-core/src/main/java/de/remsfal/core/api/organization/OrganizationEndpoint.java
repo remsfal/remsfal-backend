@@ -95,11 +95,7 @@ public interface OrganizationEndpoint {
     @APIResponse(responseCode = "403", description = "The user is not an employee of the organization")
     ClientProjectListJson getClients(
         @Parameter(description = "Id of the contractor organization", required = true)
-        @PathParam("organizationId") @NotNull UUID organizationId,
-        @Parameter(description = "Offset of the first project to return")
-        @QueryParam("offset") @DefaultValue("0") @NotNull @PositiveOrZero Integer offset,
-        @Parameter(description = "Maximum number of projects to return")
-        @QueryParam("limit") @DefaultValue("10") @NotNull @Positive @Max(100) Integer limit
+        @PathParam("organizationId") @NotNull UUID organizationId
     );
 
     @GET

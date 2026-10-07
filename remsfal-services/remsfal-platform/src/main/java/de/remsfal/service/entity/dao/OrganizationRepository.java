@@ -154,24 +154,13 @@ public class OrganizationRepository extends AbstractRepository<OrganizationEntit
             .getSingleResult();
     }
 
-    public List<ProjectEntity> findClientProjectsByOrganization(final UUID organizationId,
-        final int offset, final int limit) {
+    public List<ProjectEntity> findClientProjectsByOrganization(final UUID organizationId) {
         return getEntityManager().createQuery(
             "SELECT p FROM ProjectEntity p WHERE EXISTS (SELECT c FROM ContractorEntity c"
             + "  WHERE c.project.id = p.id AND c.organization.id = :organizationId)"
             + " ORDER BY p.title", ProjectEntity.class)
             .setParameter(PARAM_ORGANIZATION_ID, organizationId)
-            .setFirstResult(offset)
-            .setMaxResults(limit)
             .getResultList();
-    }
-
-    public long countClientProjectsByOrganization(final UUID organizationId) {
-        return getEntityManager().createQuery(
-            "SELECT COUNT(DISTINCT c.project) FROM ContractorEntity c WHERE c.organization.id = :organizationId",
-            Long.class)
-            .setParameter(PARAM_ORGANIZATION_ID, organizationId)
-            .getSingleResult();
     }
 
 }

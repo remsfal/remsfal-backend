@@ -147,9 +147,8 @@ public class OrganizationControllerTest extends AbstractResourceTest {
 
     @Test
     void getClients_SUCCESS_emptyWhenNoContractor() {
-        ClientProjectListJson result = organizationController.getClients(TestData.ORGANIZATION_ID_3, 0, 10);
+        ClientProjectListJson result = organizationController.getClients(TestData.ORGANIZATION_ID_3);
         assertTrue(result.getProjects().isEmpty());
-        assertEquals(0L, result.getTotal());
     }
 
     @Test
@@ -162,8 +161,8 @@ public class OrganizationControllerTest extends AbstractResourceTest {
         updateProjectBilling(projectId, "WEG Musterstraße", "Hausverwaltung Süd GmbH", addressId);
         insertContractor(contractorId, projectId, "Test Contractor 3", TestData.ORGANIZATION_ID_3);
 
-        ClientProjectListJson result = organizationController.getClients(TestData.ORGANIZATION_ID_3, 0, 10);
-        assertEquals(1L, result.getTotal());
+        ClientProjectListJson result = organizationController.getClients(TestData.ORGANIZATION_ID_3);
+        assertEquals(1, result.getProjects().size());
         ClientProjectJson project = result.getProjects().get(0);
         assertEquals(projectId, project.getId());
         assertEquals("Test Project 3", project.getTitle());
@@ -181,7 +180,7 @@ public class OrganizationControllerTest extends AbstractResourceTest {
         insertContractor(UUID.fromString("ee000000-0000-0000-0000-000000000098"), projectId, "Contractor",
             TestData.ORGANIZATION_ID_3);
 
-        ClientProjectJson project = organizationController.getClients(TestData.ORGANIZATION_ID_3, 0, 10)
+        ClientProjectJson project = organizationController.getClients(TestData.ORGANIZATION_ID_3)
             .getProjects().get(0);
         assertNull(project.getOwner());
         assertNull(project.getCareOf());
@@ -189,22 +188,20 @@ public class OrganizationControllerTest extends AbstractResourceTest {
     }
 
     @Test
-    void getClients_SUCCESS_paginatesProjects() {
+    void getClients_SUCCESS_projectsSortedByTitle() {
         final UUID projectId1 = UUID.fromString("dd000000-0000-0000-0000-000000000095");
         final UUID projectId2 = UUID.fromString("dd000000-0000-0000-0000-000000000096");
-        insertProject(projectId1, "A Project");
         insertProject(projectId2, "B Project");
+        insertProject(projectId1, "A Project");
         insertContractor(UUID.fromString("ee000000-0000-0000-0000-000000000095"), projectId1, "Contractor",
             TestData.ORGANIZATION_ID_3);
         insertContractor(UUID.fromString("ee000000-0000-0000-0000-000000000096"), projectId2, "Contractor",
             TestData.ORGANIZATION_ID_3);
 
-        ClientProjectListJson firstPage = organizationController.getClients(TestData.ORGANIZATION_ID_3, 0, 1);
-        ClientProjectListJson secondPage = organizationController.getClients(TestData.ORGANIZATION_ID_3, 1, 1);
-        assertEquals("A Project", firstPage.getProjects().get(0).getTitle());
-        assertEquals("B Project", secondPage.getProjects().get(0).getTitle());
-        assertEquals(2L, secondPage.getTotal());
-        assertEquals(1, secondPage.getOffset());
+        List<String> titles = organizationController.getClients(TestData.ORGANIZATION_ID_3).getProjects().stream()
+            .map(ClientProjectJson::getTitle)
+            .toList();
+        assertEquals(List.of("A Project", "B Project"), titles);
     }
 
     @Test

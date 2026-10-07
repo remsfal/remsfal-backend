@@ -420,8 +420,7 @@ public class OrganizationResourceTest extends AbstractResourceTest {
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-            .and().body("projects.size()", Matchers.equalTo(0))
-            .and().body("total", Matchers.equalTo(0));
+            .and().body("projects.size()", Matchers.equalTo(0));
     }
 
     @Test
@@ -440,7 +439,7 @@ public class OrganizationResourceTest extends AbstractResourceTest {
             .then()
             .statusCode(Response.Status.OK.getStatusCode())
             .contentType(ContentType.JSON)
-            .and().body("total", Matchers.equalTo(1))
+            .and().body("projects.size()", Matchers.equalTo(1))
             .and().body("projects[0].id", Matchers.equalTo(TestData.PROJECT_ID_1.toString()))
             .and().body("projects[0].title", Matchers.equalTo(TestData.PROJECT_TITLE_1))
             .and().body("projects[0].owner", Matchers.equalTo("WEG Musterstraße"))
