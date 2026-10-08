@@ -2,6 +2,7 @@ package de.remsfal.service.entity.dao;
 
 import de.remsfal.service.entity.dto.OrganizationEmployeeEntity;
 import de.remsfal.service.entity.dto.OrganizationEntity;
+import de.remsfal.service.entity.dto.ProjectEntity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.NoResultException;
 
@@ -151,6 +152,15 @@ public class OrganizationRepository extends AbstractRepository<OrganizationEntit
             + " )", Long.class)
             .setParameter(PARAM_USER_ID, userId)
             .getSingleResult();
+    }
+
+    public List<ProjectEntity> findClientProjectsByOrganization(final UUID organizationId) {
+        return getEntityManager().createQuery(
+            "SELECT p FROM ProjectEntity p WHERE EXISTS (SELECT c FROM ContractorEntity c"
+            + "  WHERE c.project.id = p.id AND c.organization.id = :organizationId)"
+            + " ORDER BY p.title", ProjectEntity.class)
+            .setParameter(PARAM_ORGANIZATION_ID, organizationId)
+            .getResultList();
     }
 
 }

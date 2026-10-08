@@ -3,6 +3,7 @@ package de.remsfal.service.entity;
 import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.entity.dao.OrganizationRepository;
 import de.remsfal.service.entity.dto.OrganizationEntity;
+import de.remsfal.service.entity.dto.ProjectEntity;
 import de.remsfal.test.TestData;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -117,5 +118,21 @@ class OrganizationRepositoryTest extends AbstractServiceTest {
 
         long count = repository.countContractorOrganizationsByUser(TestData.USER_ID);
         assertEquals(1, count);
+    }
+
+    @Test
+    void findClientProjectsByOrganization_SUCCESS_emptyWhenNoContractor() {
+        assertTrue(repository.findClientProjectsByOrganization(TestData.ORGANIZATION_ID_3).isEmpty());
+    }
+
+    @Test
+    void findClientProjectsByOrganization_SUCCESS_projectWithContractor() {
+        insertProject(PROJECT_ID, "Test Project");
+        insertContractor(CONTRACTOR_ID_1, PROJECT_ID, "Contractor A", TestData.ORGANIZATION_ID_3);
+
+        List<ProjectEntity> result = repository.findClientProjectsByOrganization(TestData.ORGANIZATION_ID_3);
+        assertEquals(1, result.size());
+        assertEquals(PROJECT_ID, result.get(0).getId());
+        assertTrue(repository.findClientProjectsByOrganization(TestData.ORGANIZATION_ID).isEmpty());
     }
 }

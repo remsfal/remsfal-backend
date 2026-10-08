@@ -393,6 +393,65 @@ public class OrganizationResourceTest extends AbstractResourceTest {
     }
 
     @Test
+    void getClients_FAILED_noAuthentication() {
+        given()
+            .when()
+            .get(BASE_PATH + "/" + TestData.ORGANIZATION_ID_3 + "/clients")
+            .then()
+            .statusCode(Response.Status.UNAUTHORIZED.getStatusCode());
+    }
+
+    @Test
+    void getClients_FAILED_notAnEmployee() {
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/" + TestData.ORGANIZATION_ID_3 + "/clients")
+            .then()
+            .statusCode(Response.Status.FORBIDDEN.getStatusCode());
+    }
+
+    @Test
+    void getClients_SUCCESS_emptyWhenNoContractor() {
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/" + TestData.ORGANIZATION_ID_3 + "/clients")
+            .then()
+            .statusCode(Response.Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("projects.size()", Matchers.equalTo(0));
+    }
+
+    @Test
+    void getClients_SUCCESS_projectWithBillingData() {
+        super.setupTestProjects();
+        final UUID addressId = UUID.fromString("aa000000-0000-0000-0000-000000000003");
+        insertAddress(addressId, "Musterstraße 1", "Berlin", "Berlin", "10115", "DE");
+        updateProjectBilling(TestData.PROJECT_ID_1, "WEG Musterstraße", "Hausverwaltung Süd GmbH", addressId);
+        final UUID contractorId = UUID.fromString("cc000000-0000-0000-0000-000000000003");
+        insertContractor(contractorId, TestData.PROJECT_ID_1, "Test Contractor", TestData.ORGANIZATION_ID_3);
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_2, TestData.USER_EMAIL_2, Duration.ofMinutes(10)))
+            .get(BASE_PATH + "/" + TestData.ORGANIZATION_ID_3 + "/clients")
+            .then()
+            .statusCode(Response.Status.OK.getStatusCode())
+            .contentType(ContentType.JSON)
+            .and().body("projects.size()", Matchers.equalTo(1))
+            .and().body("projects[0].id", Matchers.equalTo(TestData.PROJECT_ID_1.toString()))
+            .and().body("projects[0].title", Matchers.equalTo(TestData.PROJECT_TITLE_1))
+            .and().body("projects[0].owner", Matchers.equalTo("WEG Musterstraße"))
+            .and().body("projects[0].careOf", Matchers.equalTo("Hausverwaltung Süd GmbH"))
+            .and().body("projects[0].billingAddress.street", Matchers.equalTo("Musterstraße 1"))
+            .and().body("projects[0].billingAddress.zip", Matchers.equalTo("10115"))
+            .and().body("projects[0].billingAddress.city", Matchers.equalTo("Berlin"))
+            .and().body("projects[0]", Matchers.not(Matchers.hasKey("organizations")))
+            .and().body("projects[0]", Matchers.not(Matchers.hasKey("members")));
+    }
+
+    @Test
     void createOrganization_FAILED_emailNotOwnedByUser() {
         final String json = "{\"name\": \"" + TestData.ORGANIZATION_NAME + "\",\n" +
                 "  \"email\": \"" + TestData.ORGANIZATION_EMAIL + "\"\n" +

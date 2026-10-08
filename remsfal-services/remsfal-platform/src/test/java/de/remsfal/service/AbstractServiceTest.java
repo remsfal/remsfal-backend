@@ -288,6 +288,16 @@ public abstract class AbstractServiceTest extends AbstractTest {
                 .executeUpdate());
     }
 
+    protected void updateProjectBilling(Object... params) {
+        runInTransaction(() -> entityManager
+                .createNativeQuery("UPDATE projects SET owner = ?, care_of = ?, billing_address_id = ? WHERE id = ?")
+                .setParameter(1, params[1])
+                .setParameter(2, params[2])
+                .setParameter(3, params[3])
+                .setParameter(4, params[0])
+                .executeUpdate());
+    }
+
     protected void insertProjectMember(Object... params) {
         runInTransaction(() -> entityManager
                 .createNativeQuery("INSERT INTO project_memberships (project_id, user_id, member_role) VALUES (?,?,?)")

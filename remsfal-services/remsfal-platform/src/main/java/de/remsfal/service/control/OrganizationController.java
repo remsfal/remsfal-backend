@@ -2,6 +2,7 @@ package de.remsfal.service.control;
 
 import de.remsfal.core.json.eventing.AffectedContractorJson;
 import de.remsfal.core.json.eventing.ImmutableAffectedContractorJson;
+import de.remsfal.core.json.organization.ClientProjectListJson;
 import de.remsfal.core.json.organization.OrganizationJson;
 import de.remsfal.core.model.OrganizationEmployeeModel;
 import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
@@ -168,6 +169,11 @@ public class OrganizationController {
      */
     public long countContractorOrganizations(final UserModel user) {
         return organizationRepository.countContractorOrganizationsByUser(user.getId());
+    }
+
+    public ClientProjectListJson getClients(final UUID organizationId) {
+        logger.infov("Retrieving clients of organization {0}", organizationId);
+        return ClientProjectListJson.valueOf(organizationRepository.findClientProjectsByOrganization(organizationId));
     }
 
     /**

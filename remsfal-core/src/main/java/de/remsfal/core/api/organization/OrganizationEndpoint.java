@@ -1,5 +1,6 @@
 package de.remsfal.core.api.organization;
 
+import de.remsfal.core.json.organization.ClientProjectListJson;
 import de.remsfal.core.json.organization.OrganizationEmployeeListJson;
 import de.remsfal.core.json.organization.OrganizationJson;
 import de.remsfal.core.json.organization.OrganizationListJson;
@@ -82,6 +83,19 @@ public interface OrganizationEndpoint {
         @QueryParam("offset") @DefaultValue("0") @NotNull @PositiveOrZero Integer offset,
         @Parameter(description = "Maximum number of organizations to return")
         @QueryParam("limit") @DefaultValue("10") @NotNull @Positive @Max(100) Integer limit
+    );
+
+    @GET
+    @Path("/{organizationId}/clients")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(description = "Retrieve the clients of a contractor organization: the projects in which the "
+        + "organization is registered as contractor, with their billing recipient and billing address")
+    @APIResponse(responseCode = "200", description = "List of projects with their clients was successfully returned")
+    @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "403", description = "The user is not an employee of the organization")
+    ClientProjectListJson getClients(
+        @Parameter(description = "Id of the contractor organization", required = true)
+        @PathParam("organizationId") @NotNull UUID organizationId
     );
 
     @GET

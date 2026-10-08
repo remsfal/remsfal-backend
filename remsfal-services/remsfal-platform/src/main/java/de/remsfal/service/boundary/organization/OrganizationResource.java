@@ -1,6 +1,7 @@
 package de.remsfal.service.boundary.organization;
 
 import de.remsfal.core.api.organization.OrganizationEndpoint;
+import de.remsfal.core.json.organization.ClientProjectListJson;
 import de.remsfal.core.json.organization.OrganizationEmployeeListJson;
 import de.remsfal.core.json.organization.OrganizationJson;
 import de.remsfal.core.json.organization.OrganizationListJson;
@@ -42,6 +43,12 @@ public class OrganizationResource extends OrganizationSubResource implements Org
             controller.getContractorOrganizations(principal, offset, limit),
             offset,
             controller.countContractorOrganizations(principal));
+    }
+
+    @Override
+    public ClientProjectListJson getClients(final UUID organizationId) {
+        checkReadPermissions(organizationId);
+        return controller.getClients(organizationId);
     }
 
     @Override

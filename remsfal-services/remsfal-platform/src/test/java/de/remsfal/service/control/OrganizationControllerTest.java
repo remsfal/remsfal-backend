@@ -1,6 +1,8 @@
 package de.remsfal.service.control;
 
 import de.remsfal.core.json.eventing.AffectedContractorJson;
+import de.remsfal.core.json.organization.ClientProjectJson;
+import de.remsfal.core.json.organization.ClientProjectListJson;
 import de.remsfal.core.json.organization.ImmutableOrganizationJson;
 import de.remsfal.core.json.organization.OrganizationJson;
 import de.remsfal.core.model.UserModel;
@@ -141,6 +143,65 @@ public class OrganizationControllerTest extends AbstractResourceTest {
 
         long count = organizationController.countContractorOrganizations(user);
         assertEquals(1, count);
+    }
+
+    @Test
+    void getClients_SUCCESS_emptyWhenNoContractor() {
+        ClientProjectListJson result = organizationController.getClients(TestData.ORGANIZATION_ID_3);
+        assertTrue(result.getProjects().isEmpty());
+    }
+
+    @Test
+    void getClients_SUCCESS_projectWithBillingData() {
+        final UUID projectId = UUID.fromString("dd000000-0000-0000-0000-000000000097");
+        final UUID contractorId = UUID.fromString("ee000000-0000-0000-0000-000000000097");
+        final UUID addressId = UUID.fromString("aa000000-0000-0000-0000-000000000097");
+        insertProject(projectId, "Test Project 3");
+        insertAddress(addressId, "Musterstraße 1", "Berlin", "Berlin", "10115", "DE");
+        updateProjectBilling(projectId, "WEG Musterstraße", "Hausverwaltung Süd GmbH", addressId);
+        insertContractor(contractorId, projectId, "Test Contractor 3", TestData.ORGANIZATION_ID_3);
+
+        ClientProjectListJson result = organizationController.getClients(TestData.ORGANIZATION_ID_3);
+        assertEquals(1, result.getProjects().size());
+        ClientProjectJson project = result.getProjects().get(0);
+        assertEquals(projectId, project.getId());
+        assertEquals("Test Project 3", project.getTitle());
+        assertEquals("WEG Musterstraße", project.getOwner());
+        assertEquals("Hausverwaltung Süd GmbH", project.getCareOf());
+        assertEquals("Musterstraße 1", project.getBillingAddress().getStreet());
+        assertEquals("10115", project.getBillingAddress().getZip());
+        assertEquals("Berlin", project.getBillingAddress().getCity());
+    }
+
+    @Test
+    void getClients_SUCCESS_projectWithoutBillingData() {
+        final UUID projectId = UUID.fromString("dd000000-0000-0000-0000-000000000098");
+        insertProject(projectId, "Test Project 4");
+        insertContractor(UUID.fromString("ee000000-0000-0000-0000-000000000098"), projectId, "Contractor",
+            TestData.ORGANIZATION_ID_3);
+
+        ClientProjectJson project = organizationController.getClients(TestData.ORGANIZATION_ID_3)
+            .getProjects().get(0);
+        assertNull(project.getOwner());
+        assertNull(project.getCareOf());
+        assertNull(project.getBillingAddress());
+    }
+
+    @Test
+    void getClients_SUCCESS_projectsSortedByTitle() {
+        final UUID projectId1 = UUID.fromString("dd000000-0000-0000-0000-000000000095");
+        final UUID projectId2 = UUID.fromString("dd000000-0000-0000-0000-000000000096");
+        insertProject(projectId2, "B Project");
+        insertProject(projectId1, "A Project");
+        insertContractor(UUID.fromString("ee000000-0000-0000-0000-000000000095"), projectId1, "Contractor",
+            TestData.ORGANIZATION_ID_3);
+        insertContractor(UUID.fromString("ee000000-0000-0000-0000-000000000096"), projectId2, "Contractor",
+            TestData.ORGANIZATION_ID_3);
+
+        List<String> titles = organizationController.getClients(TestData.ORGANIZATION_ID_3).getProjects().stream()
+            .map(ClientProjectJson::getTitle)
+            .toList();
+        assertEquals(List.of("A Project", "B Project"), titles);
     }
 
     @Test
