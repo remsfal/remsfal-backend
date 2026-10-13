@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.security.GeneralSecurityException;
@@ -94,7 +95,7 @@ public class KeyLoader {
         if (location == null || location.isBlank()) {
             throw new IllegalArgumentException(type + " key location is not configured");
         }
-        if (location.startsWith(FILE_PREFIX) || location.startsWith("/")) {
+        if (location.startsWith(FILE_PREFIX) || isAbsolutePath(location)) {
             final Path path = Path.of(location.startsWith(FILE_PREFIX)
                 ? location.substring(FILE_PREFIX.length()) : location);
             if (!Files.isReadable(path)) {
@@ -109,6 +110,15 @@ public class KeyLoader {
                 throw new IllegalArgumentException(type + " key file not found: " + location);
             }
             return new String(inputStream.readAllBytes(), StandardCharsets.US_ASCII);
+        }
+    }
+
+    private static boolean isAbsolutePath(final String location) {
+        try {
+            return Path.of(location).isAbsolute();
+        } catch (InvalidPathException e) {
+            // e.g. "classpath:key.pem" on Windows
+            return false;
         }
     }
 
