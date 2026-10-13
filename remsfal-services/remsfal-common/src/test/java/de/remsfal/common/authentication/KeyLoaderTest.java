@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import de.remsfal.test.AbstractTest;
 import io.quarkus.test.junit.QuarkusTest;
 
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermissions;
@@ -76,7 +77,9 @@ class KeyLoaderTest extends AbstractTest {
         final Path file = directory.resolve("keys").resolve(KeyLoader.PRIVATE_KEY_FILE_NAME);
 
         assertTrue(Files.readString(file).startsWith("-----BEGIN PRIVATE KEY-----"));
-        assertEquals(PosixFilePermissions.fromString("rw-------"), Files.getPosixFilePermissions(file));
+        if (FileSystems.getDefault().supportedFileAttributeViews().contains("posix")) {
+            assertEquals(PosixFilePermissions.fromString("rw-------"), Files.getPosixFilePermissions(file));
+        }
 
         final PrivateKey loaded = KeyLoader.loadPrivateKey("file:" + file);
         assertEquals(generated, loaded);
