@@ -31,7 +31,8 @@ REMSFAL Backend is a multi-module Maven project implementing a microservices arc
 - **JWT Authentication**: Platform service signs tokens (`de.remsfal.auth.jwt.signing.enabled=true`), all services — including the platform itself — validate using the JWKS endpoint. The signing key is never in the repo or image: provided at runtime via `DE_REMSFAL_AUTH_JWT_PRIVATE_KEY_LOCATION=file:…`, auto-generated in dev mode (`.dev-keys/`), fixed test pair in `remsfal-platform/src/test/resources/test-keys/`
 - **Cookie-based sessions**: Access/refresh token pattern using `SessionManager`
 - **Principal injection**: Use `RemsfalPrincipal` (implements `UserModel`) for authenticated user context
-- **Google OAuth**: Integrated via `GoogleAuthenticator` for social login; client secret comes from `GOOGLE_CLIENT_SECRET` — never commit secrets to `application.properties`
+- **Identity providers**: A user can own several external identities (`user_identities`: provider + subject, see [AccountLinking.md](AccountLinking.md)). Each provider has its own entry point (e.g. `GET /api/v1/authentication/login/google`; `/login` is the backward-compatible Google default); the frontend picks the provider. OAuth `state` is bound to the browser via the `remsfal_oauth_state` cookie (`OAuthStateManager`)
+- **Google OAuth**: Integrated via `GoogleAuthenticator` (`OidcAuthenticator`) for social login; client secret comes from `GOOGLE_CLIENT_SECRET` — never commit secrets to `application.properties`
 - **Dev login**: In dev mode `/login` redirects to `DevLoginResource` (`/api/v1/authentication/dev-login`) instead of Google; `DevDataSeedController` seeds linked sample data (`verwalter@`, `mieter@`, `handwerker@remsfal.dev`). Both are build-time switches (`@IfBuildProperty`), dev profile only
 - Use `@Authenticated` annotation on JAX-RS resources requiring login
 

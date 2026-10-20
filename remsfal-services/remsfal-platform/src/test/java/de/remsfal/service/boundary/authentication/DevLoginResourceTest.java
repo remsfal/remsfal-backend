@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import de.remsfal.service.boundary.AbstractResourceTest;
 import de.remsfal.service.control.DevDataSeedController;
+import de.remsfal.service.entity.dto.UserIdentityEntity.IdentityProvider;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.QuarkusTestProfile;
 import io.quarkus.test.junit.TestProfile;
@@ -85,11 +86,13 @@ class DevLoginResourceTest extends AbstractResourceTest {
             .cookie("remsfal_access_token", Matchers.notNullValue())
             .cookie("remsfal_refresh_token", Matchers.notNullValue());
 
-        final String tokenId = entityManager
-            .createQuery("SELECT user.tokenId FROM UserEntity user where user.email = :email", String.class)
+        final String subject = entityManager
+            .createQuery("SELECT identity.subject FROM UserIdentityEntity identity "
+                + "where identity.user.email = :email and identity.provider = :provider", String.class)
             .setParameter("email", email.toLowerCase())
+            .setParameter("provider", IdentityProvider.GOOGLE)
             .getSingleResult();
-        assertEquals(DevDataSeedController.tokenIdOf(email), tokenId);
+        assertEquals(DevDataSeedController.subjectOf(email), subject);
     }
 
     @Test

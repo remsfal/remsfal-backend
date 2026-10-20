@@ -30,6 +30,10 @@ class AuthenticationEventObserver {
         return updateQueue.poll(BLOCKING_TIMEOUT, TimeUnit.MILLISECONDS);
     }
 
+    public void clear() {
+        updateQueue.clear();
+    }
+
     public int getNumberOfEvents() {
         return updateQueue.size();
     }

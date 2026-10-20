@@ -12,6 +12,11 @@ public class AdditionalEmailRepository extends AbstractRepository<AdditionalEmai
         return count("email", email == null ? null : email.trim().toLowerCase()) > 0;
     }
 
+    public Optional<AdditionalEmailEntity> findVerifiedByEmail(final String email) {
+        return find("email = ?1 and verified = true", email == null ? null : email.trim().toLowerCase())
+            .singleResultOptional();
+    }
+
     public Optional<AdditionalEmailEntity> findByVerificationToken(final String verificationToken) {
         return find("verificationToken", verificationToken).singleResultOptional();
     }

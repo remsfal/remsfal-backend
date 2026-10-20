@@ -17,7 +17,7 @@ import org.jboss.logging.Logger;
 import de.remsfal.core.model.UserModel;
 
 /**
- * Shared helpers for resources that establish a user session (Google login and dev login).
+ * Shared helpers for resources that establish a user session (identity provider login and dev login).
  */
 public abstract class AbstractAuthenticationResource {
 
@@ -37,11 +37,19 @@ public abstract class AbstractAuthenticationResource {
     @Inject
     protected Logger logger;
 
-    protected Response createSession(final UserModel user, final String route) {
+    protected Response createSession(final UserModel user, final String route, final NewCookie... cookies) {
         final URI redirectUri = getAbsoluteUriBuilder().replacePath(route).build();
         final NewCookie refreshToken = sessionManager.generateRefreshToken(user.getId(), user.getEmail());
         final NewCookie accessToken = sessionManager.generateAccessToken(user.getId(), user.getEmail());
-        return redirect(redirectUri).cookie(accessToken, refreshToken).build();
+        return redirect(redirectUri).cookie(accessToken, refreshToken).cookie(cookies).build();
+    }
+
+    /** Only allows local, absolute paths of the frontend as redirect targets. */
+    protected static String sanitizeRoute(final String route) {
+        if (route == null || !route.startsWith("/") || route.startsWith("//")) {
+            return "/";
+        }
+        return route;
     }
 
     protected String resolveLocale() {

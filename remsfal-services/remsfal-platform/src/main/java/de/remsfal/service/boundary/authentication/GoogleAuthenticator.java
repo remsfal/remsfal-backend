@@ -2,6 +2,7 @@ package de.remsfal.service.boundary.authentication;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.googleapis.auth.oauth2.GoogleOAuthConstants;
 import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
@@ -11,6 +12,7 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.gson.GsonFactory;
 
 import de.remsfal.common.authentication.UnauthorizedException;
+import de.remsfal.service.entity.dto.UserIdentityEntity.IdentityProvider;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.UriBuilder;
@@ -22,7 +24,7 @@ import java.security.GeneralSecurityException;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 @ApplicationScoped
-public class GoogleAuthenticator {
+public class GoogleAuthenticator implements OidcAuthenticator {
 
     @ConfigProperty(name = "de.remsfal.auth.oidc.auth-server-url",
         defaultValue = GoogleOAuthConstants.AUTHORIZATION_SERVER_URL)
@@ -57,6 +59,12 @@ public class GoogleAuthenticator {
         .Builder(transport, jsonFactory)
         .build();
 
+    @Override
+    public IdentityProvider provider() {
+        return IdentityProvider.GOOGLE;
+    }
+
+    @Override
     public URI getAuthorizationCodeURI(final String redirectUri, final String state) {
         return UriBuilder.fromUri(authServerURL)
             .queryParam("response_type", authResponseType)
@@ -67,7 +75,21 @@ public class GoogleAuthenticator {
             .build();
     }
 
-    public GoogleIdToken getIdToken(final String code, final URI redirectUri) {
+    @Override
+    public ExternalIdentity authenticate(final String code, final URI redirectUri) {
+        final GoogleIdToken idToken = getIdToken(code, redirectUri);
+        if (idToken == null || idToken.getPayload() == null) {
+            throw new ForbiddenException("Invalid ID token");
+        }
+        final Payload payload = idToken.getPayload();
+        if (payload.getSubject() == null || payload.getEmail() == null) {
+            throw new ForbiddenException("ID token does not contain subject and email");
+        }
+        return new ExternalIdentity(IdentityProvider.GOOGLE, payload.getSubject(),
+            payload.getEmail().trim().toLowerCase(), Boolean.TRUE.equals(payload.getEmailVerified()));
+    }
+
+    GoogleIdToken getIdToken(final String code, final URI redirectUri) {
         try {
             final GoogleTokenResponse response = new GoogleAuthorizationCodeTokenRequest(transport, jsonFactory,
                 authClientId, authClientSecret, code, redirectUri.toASCIIString())

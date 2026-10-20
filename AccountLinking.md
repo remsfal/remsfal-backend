@@ -41,15 +41,34 @@ There is no separate contractor-to-user join table.
 
 ## Active vs. Placeholder Accounts
 
-`UserEntity.isActive()` returns `true` if and only if `tokenId` (the Google account identifier) is set. This
-distinguishes two kinds of account:
+`UserEntity.isActive()` returns `true` if and only if at least one external identity (`UserIdentityEntity`, table
+`user_identities`) is linked to the user. This distinguishes two kinds of account:
 
-- **Active account** — created by `UserController.createUser(googleId, email)` on first successful Google login
-  (`AuthorizationController.authenticateUser`). `tokenId`, `locale`, and `authenticatedAt` are set.
+- **Active account** — created by `UserController.createUser(provider, subject, email, emailVerified, locale)` on
+  the first successful login with an identity provider (`AuthorizationController.authenticateUser`). An identity,
+  `locale`, and `authenticatedAt` are set.
 - **Placeholder account** — created by `UserController.findOrCreateUser(UserModel)` when someone invites a person
   by email who has no account yet (`ProjectController.addProjectMember`, `OrganizationController.addEmployee`,
-  `OrganizationController.createOrganization`). Only `id` and `email` are stored; `tokenId` stays `null`. Nothing
+  `OrganizationController.createOrganization`). Only `id` and `email` are stored; no identity is linked. Nothing
   else about that person (name, address, phone, locale) is populated at this point.
+
+### Identities and identity providers
+
+A user can sign in with several identity providers (`IdentityProvider`: `GOOGLE`, `APPLE`, `EMAIL`). Each identity
+is stored as one row in `user_identities` with `provider`, the provider's stable `subject`, the `email` the
+provider reported, and `last_used_at`. The pair `(provider, subject)` is unique, so an identity belongs to exactly
+one user, while a user may own any number of identities. The email of an identity is informational only (Apple
+may e.g. report a private relay address); the user's primary email stays in `users.email`.
+
+`AuthorizationController.authenticateUser(provider, subject, email, emailVerified, locale)` resolves the user in
+this order:
+
+1. **Identity lookup** — an identity with the same `provider` and `subject` exists: that user is signed in.
+2. **Linking by verified email** — only if the provider has *verified* the email: if an **active** user owns that
+   email as primary email or as a *verified* additional email, the new identity is attached to that user instead of
+   creating a duplicate account. This is how one person can use e.g. Google and Apple with the same email. An
+   unverified email is never used for linking.
+3. **Create or reclaim** — otherwise `UserController.createUser` is called, see below.
 
 ### Reclaim on first login
 
@@ -60,13 +79,14 @@ would be orphaned.
 
 `UserController.createUser` therefore looks up an existing row by (normalized) email before creating anything:
 
-- if a row exists and is **already active**, the login attempt is rejected with `AlreadyExistsException` (a
-  genuine email conflict between two different Google accounts);
-- if a row exists and is **inactive** (a placeholder), it is *reclaimed*: `tokenId`, `locale`
-  (derived from the request's `Accept-Language` header, see below), and `authenticatedAt` are set on the
-  existing entity, which is then merged — the `id`, and therefore every link established while the account was a
-  placeholder, is preserved;
-- otherwise a brand-new active account is created.
+- if the email is used as an additional email (verified or not) of any user, or a row exists that is **already
+  active** (only reachable with an unverified email, since step 2 above links verified ones), the login attempt is
+  rejected with `AlreadyExistsException`;
+- if a row exists and is **inactive** (a placeholder), it is *reclaimed* — but only if the provider has verified
+  the email, otherwise the attempt is rejected as well: the identity is linked, and `locale` (derived from the
+  request's `Accept-Language` header, see below) and `authenticatedAt` are set on the existing entity, which is
+  then merged — the `id`, and therefore every link established while the account was a placeholder, is preserved;
+- otherwise a brand-new active account with the identity is created.
 
 In both the "brand-new" and the "reclaimed" case, `NotificationController.informUserAboutRegistration(...)` is
 sent, in the locale that was just derived for that account.
@@ -147,13 +167,13 @@ mechanics:
    no profile data is collected on the invited person's behalf. Profile data is only added once that person logs
    in themselves.
 3. **Reclaiming an account does not collect additional data.** The first-login reclaim path
-   (`UserController.createUser`) sets only `tokenId`, `locale`, and `authenticatedAt`; it does not read the
-   Google profile's name or picture. Name/address/phone remain fields the user fills in themselves via
+   (`UserController.createUser`) stores only the identity (provider, subject, provider email), `locale`, and
+   `authenticatedAt`; it does not read the identity provider's profile name or picture. Name/address/phone remain fields the user fills in themselves via
    `updateUser`.
 4. **Deletion behaviour is intentionally inconsistent across link types, which matters for erasure requests
    (GDPR Art. 17).** `UserController.deleteUser` hard-deletes the `users` row and emits a `USER_DELETED` event.
    - Cascade-linked data — `project_memberships`, `organization_employees`, `user_authentications`,
-     `user_additional_email` — is removed automatically with the user.
+     `user_additional_email`, `user_identities` — is removed automatically with the user.
    - `tenants` and `contractors` are **not** deleted; their FK to the user is set to `NULL` and the record's own
      data (name, DOB, address, phone for tenants; company details for contractors) persists. This is deliberate:
      rental and contractor records typically have an independent retention basis (accounting/legal retention
@@ -167,7 +187,8 @@ mechanics:
    (`UserController.verifyAdditionalEmail`); `isVerifiedEmailForUser` gates uses like assigning an organization's
    display email. The *primary* linking email used for tenant/project/organization invites has no equivalent
    verification step — an inviter's claim that "this email belongs to this person" is trusted outright, and the
-   actual owner only implicitly confirms it by choosing to log in with the matching Google account. Until that
+   actual owner only implicitly confirms it by choosing to log in with an identity provider that has verified the
+   matching email. Until that
    happens, the data exists under an unconfirmed placeholder identity.
 6. **Normalization and uniqueness are data-integrity controls, not just a lookup convenience.** Without
    case-insensitive matching and the unique constraints described above, the same natural person could end up
