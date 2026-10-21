@@ -11,7 +11,7 @@
         <comment>Create order attachments table for storing file references from MinIO,
             attachable to quotation requests, quotations, or order placements</comment>
         <sql>
-            CREATE TABLE IF NOT EXISTS REMSFAL.order_attachments (
+            CREATE TABLE IF NOT EXISTS order_attachments (
                 process_phase TEXT,
                 process_id UUID,
                 attachment_id UUID,
@@ -26,7 +26,7 @@
             ) WITH CLUSTERING ORDER BY (attachment_id DESC);
         </sql>
         <rollback>
-            <sql>DROP TABLE IF EXISTS REMSFAL.order_attachments;</sql>
+            <sql>DROP TABLE IF EXISTS order_attachments;</sql>
         </rollback>
     </changeSet>
 

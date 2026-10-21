@@ -48,7 +48,7 @@ public class ActivityFeedRepository extends AbstractRepository<ActivityFeedEntit
      */
     public List<ActivityFeedEntity> findByQuery(final UUID userId, final ActivityFeedFilter filter,
         final UUID cursor, final Integer limit) {
-        final StringBuilder cql = new StringBuilder("SELECT * FROM remsfal.activity_feeds WHERE ")
+        final StringBuilder cql = new StringBuilder("SELECT * FROM activity_feeds WHERE ")
             .append(USER_ID).append(" = ?");
         final List<Object> params = new ArrayList<>();
         params.add(userId);
@@ -111,7 +111,7 @@ public class ActivityFeedRepository extends AbstractRepository<ActivityFeedEntit
      */
     public List<ActivityFeedEntity> findByProjectId(final UUID projectId) {
         return cassandraTemplate.<ActivityFeedEntity>cql(
-            "SELECT * FROM remsfal.activity_feeds WHERE project_id = ? ALLOW FILTERING", projectId)
+            "SELECT * FROM activity_feeds WHERE project_id = ? ALLOW FILTERING", projectId)
             .toList();
     }
 

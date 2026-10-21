@@ -196,7 +196,7 @@ class IssueControllerTest extends AbstractTicketingTest {
 
         // without an agreementId there is no tenancy to query the timeline by; assert directly
         // against the (freshly truncated, see AbstractTicketingTest) table that nothing was written
-        assertEquals(0L, cqlSession.execute("SELECT COUNT(*) FROM remsfal.tenant_timelines").one().getLong(0));
+        assertEquals(0L, cqlSession.execute("SELECT COUNT(*) FROM tenant_timelines").one().getLong(0));
     }
 
     @Test
@@ -350,7 +350,7 @@ class IssueControllerTest extends AbstractTicketingTest {
 
         controller.updateIssue(issueId, patch);
 
-        assertEquals(0L, cqlSession.execute("SELECT COUNT(*) FROM remsfal.tenant_timelines").one().getLong(0));
+        assertEquals(0L, cqlSession.execute("SELECT COUNT(*) FROM tenant_timelines").one().getLong(0));
     }
 
     @Test

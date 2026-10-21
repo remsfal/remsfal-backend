@@ -46,7 +46,7 @@ public class ContractorTimelineRepository extends AbstractRepository<ContractorT
      */
     public List<ContractorTimelineEntity> findByIssueIdOnly(final UUID issueId) {
         return cassandraTemplate.<ContractorTimelineEntity>cql(
-            "SELECT * FROM remsfal.contractor_timelines WHERE " + ISSUE_ID + " = ? ALLOW FILTERING", issueId)
+            "SELECT * FROM contractor_timelines WHERE " + ISSUE_ID + " = ? ALLOW FILTERING", issueId)
             .toList();
     }
 

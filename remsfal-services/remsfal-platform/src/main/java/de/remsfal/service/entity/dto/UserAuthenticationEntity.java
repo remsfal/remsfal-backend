@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import de.remsfal.core.model.UserAuthenticationModel;
-import de.remsfal.service.entity.dto.superclass.MetaDataEntity;
+import de.remsfal.common.entity.MetaDataEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

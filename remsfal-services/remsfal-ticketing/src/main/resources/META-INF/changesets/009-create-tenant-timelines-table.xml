@@ -10,7 +10,7 @@
     <changeSet id="remsfal-ticketing-009-tenant-timelines" author="Philipp.Bogatchev@Student.HTW-Berlin.de">
         <comment>Create tenant timelines table</comment>
         <sql>
-            CREATE TABLE IF NOT EXISTS REMSFAL.tenant_timelines (
+            CREATE TABLE IF NOT EXISTS tenant_timelines (
                 tenancy_id UUID,
                 issue_id UUID,
                 timeline_id UUID,
@@ -27,7 +27,7 @@
             ) WITH CLUSTERING ORDER BY (timeline_id ASC);
         </sql>
         <rollback>
-            <sql>DROP TABLE IF EXISTS REMSFAL.tenant_timelines;</sql>
+            <sql>DROP TABLE IF EXISTS tenant_timelines;</sql>
         </rollback>
     </changeSet>
 

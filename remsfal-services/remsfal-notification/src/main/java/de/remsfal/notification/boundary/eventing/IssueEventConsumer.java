@@ -1,6 +1,8 @@
 package de.remsfal.notification.boundary.eventing;
 
+import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.eventing.IssueEventJson;
+import de.remsfal.notification.control.EmailSettingsController;
 import de.remsfal.notification.control.MailingController;
 import io.smallrye.common.annotation.Blocking;
 import io.smallrye.mutiny.Uni;
@@ -23,6 +25,9 @@ public class IssueEventConsumer {
 
     @Inject
     MailingController mailingController;
+
+    @Inject
+    EmailSettingsController emailSettingsController;
 
     @Blocking
     @Incoming(IssueEventJson.TOPIC_ENRICHED)
@@ -61,10 +66,10 @@ public class IssueEventConsumer {
     private Uni<Void> handleIssueCreated(IssueEventJson event) {
         logger.infov("Handling ISSUE_CREATED for issue: {0}", event.getIssue().getTitle());
         Uni<Void> result = Uni.createFrom().voidItem();
-        if (event.getAssignee() != null && event.getAssignee().getEmail() != null) {
+        if (isRecipient(event, event.getAssignee())) {
             result = result.chain(v -> mailingController.sendIssueCreatedEmail(event, event.getAssignee()));
         }
-        if (event.getPrincipal() != null && event.getPrincipal().getEmail() != null
+        if (isRecipient(event, event.getPrincipal())
             && (event.getAssignee() == null
             || !event.getPrincipal().getEmail().equals(event.getAssignee().getEmail()))) {
             result = result.chain(v -> mailingController.sendIssueCreatedEmail(event, event.getPrincipal()));
@@ -75,10 +80,10 @@ public class IssueEventConsumer {
     private Uni<Void> handleIssueUpdated(IssueEventJson event) {
         logger.infov("Handling ISSUE_UPDATED for issue: {0}", event.getIssue().getTitle());
         Uni<Void> result = Uni.createFrom().voidItem();
-        if (event.getAssignee() != null && event.getAssignee().getEmail() != null) {
+        if (isRecipient(event, event.getAssignee())) {
             result = result.chain(v -> mailingController.sendIssueUpdatedEmail(event, event.getAssignee()));
         }
-        if (event.getPrincipal() != null && event.getPrincipal().getEmail() != null
+        if (isRecipient(event, event.getPrincipal())
             && (event.getAssignee() == null
             || !event.getPrincipal().getEmail().equals(event.getAssignee().getEmail()))) {
             result = result.chain(v -> mailingController.sendIssueUpdatedEmail(event, event.getPrincipal()));
@@ -89,14 +94,22 @@ public class IssueEventConsumer {
     private Uni<Void> handleIssueAssigned(IssueEventJson event) {
         logger.infov("Handling ISSUE_ASSIGNED for issue: {0}", event.getIssue().getTitle());
         Uni<Void> result = Uni.createFrom().voidItem();
-        if (event.getAssignee() != null && event.getAssignee().getEmail() != null) {
+        if (isRecipient(event, event.getAssignee())) {
             result = result.chain(v -> mailingController.sendIssueAssignedEmail(event, event.getAssignee()));
         }
-        if (event.getPrincipal() != null && event.getPrincipal().getEmail() != null
+        if (isRecipient(event, event.getPrincipal())
             && (event.getAssignee() == null
             || !event.getPrincipal().getEmail().equals(event.getAssignee().getEmail()))) {
             result = result.chain(v -> mailingController.sendIssueAssignedEmail(event, event.getPrincipal()));
         }
         return result;
+    }
+
+    /**
+     * A user receives the email if an address is known and the user has not disabled this email type.
+     */
+    private boolean isRecipient(final IssueEventJson event, final UserJson user) {
+        return user != null && user.getEmail() != null
+            && emailSettingsController.isEnabled(user.getId(), event.getIssueEventType());
     }
 }

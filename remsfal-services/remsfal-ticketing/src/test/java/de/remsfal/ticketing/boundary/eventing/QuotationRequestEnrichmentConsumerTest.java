@@ -174,14 +174,14 @@ class QuotationRequestEnrichmentConsumerTest {
     }
 
     private void insertQuotationRequest(final UUID issueId, final UUID requestId) {
-        cqlSession.execute("INSERT INTO remsfal.quotation_requests"
+        cqlSession.execute("INSERT INTO quotation_requests"
                 + " (issue_id, request_id, project_id, contractor_id, status, created_at, modified_at)"
                 + " VALUES (?, ?, ?, ?, ?, ?, ?)",
             issueId, requestId, UUID.randomUUID(), UUID.randomUUID(), "REQUESTED", Instant.now(), Instant.now());
     }
 
     private Row selectQuotationRequest(final UUID issueId, final UUID requestId) {
-        return cqlSession.execute("SELECT * FROM remsfal.quotation_requests WHERE issue_id = ? AND request_id = ?",
+        return cqlSession.execute("SELECT * FROM quotation_requests WHERE issue_id = ? AND request_id = ?",
             issueId, requestId).one();
     }
 

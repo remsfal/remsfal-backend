@@ -11,7 +11,7 @@
         <comment>Create contractor timelines table for the communication between a property manager
         and a single contractor organization about one issue</comment>
         <sql>
-            CREATE TABLE IF NOT EXISTS REMSFAL.contractor_timelines (
+            CREATE TABLE IF NOT EXISTS contractor_timelines (
                 issue_id UUID,
                 organization_id UUID,
                 timeline_id UUID,
@@ -27,7 +27,7 @@
             ) WITH CLUSTERING ORDER BY (timeline_id ASC);
         </sql>
         <rollback>
-            <sql>DROP TABLE IF EXISTS REMSFAL.contractor_timelines;</sql>
+            <sql>DROP TABLE IF EXISTS contractor_timelines;</sql>
         </rollback>
     </changeSet>
 </databaseChangeLog>

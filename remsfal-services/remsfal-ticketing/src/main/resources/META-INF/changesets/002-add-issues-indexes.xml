@@ -13,47 +13,47 @@
                  and is stable from Cassandra 5.0 onwards.</comment>
         <sql>
             CREATE CUSTOM INDEX IF NOT EXISTS issues_status_sai
-            ON REMSFAL.issues (status)
+            ON issues (status)
             USING 'StorageAttachedIndex';
         </sql>
         <sql>
             CREATE CUSTOM INDEX IF NOT EXISTS issues_type_sai
-            ON REMSFAL.issues (type)
+            ON issues (type)
             USING 'StorageAttachedIndex';
         </sql>
         <sql>
             CREATE CUSTOM INDEX IF NOT EXISTS issues_assignee_id_sai
-            ON REMSFAL.issues (assignee_id)
+            ON issues (assignee_id)
             USING 'StorageAttachedIndex';
         </sql>
         <sql>
             CREATE CUSTOM INDEX IF NOT EXISTS issues_agreement_id_sai
-            ON REMSFAL.issues (agreement_id)
+            ON issues (agreement_id)
             USING 'StorageAttachedIndex';
         </sql>
         <sql>
             CREATE CUSTOM INDEX IF NOT EXISTS issues_visible_to_tenants_sai
-            ON REMSFAL.issues (is_visable_to_tenants)
+            ON issues (is_visable_to_tenants)
             USING 'StorageAttachedIndex';
         </sql>
         <sql>
             CREATE CUSTOM INDEX IF NOT EXISTS issues_rental_unit_type_sai
-            ON REMSFAL.issues (rental_unit_type)
+            ON issues (rental_unit_type)
             USING 'StorageAttachedIndex';
         </sql>
         <sql>
             CREATE CUSTOM INDEX IF NOT EXISTS issues_rental_unit_id_sai
-            ON REMSFAL.issues (rental_unit_id)
+            ON issues (rental_unit_id)
             USING 'StorageAttachedIndex';
         </sql>
         <rollback>
-            <sql>DROP INDEX IF EXISTS REMSFAL.issues_status_sai;</sql>
-            <sql>DROP INDEX IF EXISTS REMSFAL.issues_type_sai;</sql>
-            <sql>DROP INDEX IF EXISTS REMSFAL.issues_assignee_id_sai;</sql>
-            <sql>DROP INDEX IF EXISTS REMSFAL.issues_agreement_id_sai;</sql>
-            <sql>DROP INDEX IF EXISTS REMSFAL.issues_visible_to_tenants_sai;</sql>
-            <sql>DROP INDEX IF EXISTS REMSFAL.issues_rental_unit_type_sai;</sql>
-            <sql>DROP INDEX IF EXISTS REMSFAL.issues_rental_unit_id_sai;</sql>
+            <sql>DROP INDEX IF EXISTS issues_status_sai;</sql>
+            <sql>DROP INDEX IF EXISTS issues_type_sai;</sql>
+            <sql>DROP INDEX IF EXISTS issues_assignee_id_sai;</sql>
+            <sql>DROP INDEX IF EXISTS issues_agreement_id_sai;</sql>
+            <sql>DROP INDEX IF EXISTS issues_visible_to_tenants_sai;</sql>
+            <sql>DROP INDEX IF EXISTS issues_rental_unit_type_sai;</sql>
+            <sql>DROP INDEX IF EXISTS issues_rental_unit_id_sai;</sql>
         </rollback>
     </changeSet>
 

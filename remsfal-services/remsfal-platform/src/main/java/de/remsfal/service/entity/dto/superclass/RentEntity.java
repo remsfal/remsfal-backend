@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Optional;
 
+import de.remsfal.common.entity.MetaDataEntity;
 import de.remsfal.core.model.project.RentModel;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;

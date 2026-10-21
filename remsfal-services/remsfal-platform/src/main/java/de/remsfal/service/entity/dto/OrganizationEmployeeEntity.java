@@ -2,7 +2,7 @@ package de.remsfal.service.entity.dto;
 
 import de.remsfal.core.model.OrganizationEmployeeModel;
 import de.remsfal.service.entity.dto.embeddable.OrganizationEmployeeKey;
-import de.remsfal.service.entity.dto.superclass.MetaDataEntity;
+import de.remsfal.common.entity.MetaDataEntity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.NamedQuery;

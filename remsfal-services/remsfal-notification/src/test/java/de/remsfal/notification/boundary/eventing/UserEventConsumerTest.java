@@ -1,5 +1,6 @@
 package de.remsfal.notification.boundary.eventing;
 
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
@@ -15,12 +16,17 @@ import org.junit.jupiter.api.Test;
 import de.remsfal.core.json.eventing.ImmutableUserEventJson;
 import de.remsfal.core.json.eventing.UserEventJson;
 import de.remsfal.core.json.eventing.UserEventJson.UserEventType;
+import de.remsfal.core.json.notification.ImmutableEmailSettingsJson;
+import de.remsfal.notification.control.EmailSettingsController;
+import de.remsfal.notification.entity.dao.UserEmailSettingsRepository;
 import de.remsfal.test.kafka.AbstractKafkaTest;
 import io.quarkus.kafka.client.serialization.ObjectMapperSerde;
+import io.quarkus.narayana.jta.QuarkusTransaction;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.mockito.InjectSpy;
 import io.quarkus.test.kafka.KafkaCompanionResource;
+import jakarta.inject.Inject;
 
 @QuarkusTest
 @QuarkusTestResource(KafkaCompanionResource.class)
@@ -28,6 +34,12 @@ class UserEventConsumerTest extends AbstractKafkaTest {
 
     @InjectSpy
     UserEventConsumer consumer;
+
+    @Inject
+    EmailSettingsController emailSettingsController;
+
+    @Inject
+    UserEmailSettingsRepository repository;
 
     @Override
     @BeforeEach
@@ -51,6 +63,28 @@ class UserEventConsumerTest extends AbstractKafkaTest {
             .atMost(Duration.ofSeconds(30))
             .untilAsserted(() ->
                 verify(consumer, atLeastOnce()).consume(any())
+            );
+    }
+
+    @Test
+    void testConsumeUserDeleted_deletesEmailSettings() {
+        final UUID userId = UUID.randomUUID();
+        emailSettingsController.updateSettings(userId,
+            ImmutableEmailSettingsJson.builder().issueCreated(false).build());
+
+        final ImmutableUserEventJson event = ImmutableUserEventJson.builder()
+            .userEventType(UserEventType.USER_DELETED)
+            .userId(userId)
+            .build();
+
+        companion.produce(ImmutableUserEventJson.class)
+            .fromRecords(new ProducerRecord<>(UserEventJson.TOPIC, event))
+            .awaitCompletion();
+
+        Awaitility.await()
+            .atMost(Duration.ofSeconds(30))
+            .untilAsserted(() ->
+                assertNull(QuarkusTransaction.requiringNew().call(() -> repository.findById(userId)))
             );
     }
 

@@ -155,7 +155,7 @@ public abstract class AbstractTicketingTest extends AbstractTest {
 
     protected void insertIssue(UUID projectId, UUID issueId, String title, IssueType type, IssueStatus status,
             IssuePriority priority, UUID reporterId, UUID tenancyId, UUID assigneeId, String description) {
-        String insertIssueCql = "INSERT INTO remsfal.issues "
+        String insertIssueCql = "INSERT INTO issues "
             + "(project_id, issue_id, title, type, status, priority, reporter_id, agreement_id, assignee_id,"
             + " description, is_visable_to_tenants, created_at, modified_at) "
             + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -171,7 +171,7 @@ public abstract class AbstractTicketingTest extends AbstractTest {
 
     protected void insertAttachment(UUID issueId, UUID attachmentId, String fileName,
             String contentType, String objectName, UUID uploaderId, UserContext uploaderContext) {
-        String insertAttachmentCql = "INSERT INTO remsfal.issue_attachments "
+        String insertAttachmentCql = "INSERT INTO issue_attachments "
             + "(issue_id, attachment_id, file_name, content_type, object_name, uploader_id, uploaded_by,"
             + " uploader_context, created_at, modified_at) "
             + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -186,7 +186,7 @@ public abstract class AbstractTicketingTest extends AbstractTest {
      */
     protected void insertTimelineEntry(UUID issueId, UUID projectId, UUID tenancyId, UUID timelineId,
             MessagePurpose purpose, List<UUID> attachmentIds) {
-        String insertTimelineCql = "INSERT INTO remsfal.tenant_timelines "
+        String insertTimelineCql = "INSERT INTO tenant_timelines "
             + "(tenancy_id, issue_id, timeline_id, project_id, attachment_ids, sender_id, sender_name, "
             + "purpose, message, created_at, modified_at) "
             + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -206,7 +206,7 @@ public abstract class AbstractTicketingTest extends AbstractTest {
             List<String> tenantNames, UUID organizationId, UUID contractorId, String contractorName,
             boolean read) {
         final UUID activityId = UUIDv7.randomUUID();
-        String insertActivityCql = "INSERT INTO remsfal.activity_feeds "
+        String insertActivityCql = "INSERT INTO activity_feeds "
             + "(user_id, activity_id, project_id, project_title, activity_type, issue_id, issue_title,"
             + " issue_type, issue_status, issue_priority, actor_id, actor_name, agreement_id, tenant_names,"
             + " organization_id, contractor_id, contractor_name, read, created_at, modified_at) "
@@ -224,8 +224,8 @@ public abstract class AbstractTicketingTest extends AbstractTest {
      * production is applied asynchronously from the enriched {@code QUOTATION_REQUEST_CREATED} event.
      */
     protected void enrichQuotationRequestsWithProjectData(final UUID issueId) {
-        cqlSession.execute("SELECT request_id FROM remsfal.quotation_requests WHERE issue_id = ?", issueId)
-            .forEach(row -> cqlSession.execute("UPDATE remsfal.quotation_requests"
+        cqlSession.execute("SELECT request_id FROM quotation_requests WHERE issue_id = ?", issueId)
+            .forEach(row -> cqlSession.execute("UPDATE quotation_requests"
                     + " SET project_owner = ?, project_care_of = ?, project_billing_address_1 = ?,"
                     + " project_billing_address_2 = ?, project_billing_address_3 = ?"
                     + " WHERE issue_id = ? AND request_id = ?",
@@ -235,7 +235,7 @@ public abstract class AbstractTicketingTest extends AbstractTest {
 
     protected void insertChatMessage(UUID projectId, UUID issueId, UUID messageId, UUID senderId,
             String senderName, String message) {
-        String insertChatMessageCql = "INSERT INTO remsfal.issue_chat_messages "
+        String insertChatMessageCql = "INSERT INTO issue_chat_messages "
             + "(project_id, issue_id, message_id, sender_id, sender_name, message, created_at, modified_at) "
             + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         cqlSession.execute(insertChatMessageCql,

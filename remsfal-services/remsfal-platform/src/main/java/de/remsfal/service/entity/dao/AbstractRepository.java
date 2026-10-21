@@ -2,7 +2,7 @@ package de.remsfal.service.entity.dao;
 
 import java.util.UUID;
 
-import de.remsfal.service.entity.dto.superclass.MetaDataEntity;
+import de.remsfal.common.entity.MetaDataEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
 /**

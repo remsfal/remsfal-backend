@@ -6,6 +6,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 
 import java.time.Duration;
 import java.util.UUID;
@@ -25,6 +26,8 @@ import de.remsfal.core.json.ticketing.ImmutableIssueJson;
 import de.remsfal.core.json.ticketing.IssueJson;
 import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
+import de.remsfal.core.json.notification.ImmutableEmailSettingsJson;
+import de.remsfal.notification.control.EmailSettingsController;
 import de.remsfal.notification.control.MailingController;
 import de.remsfal.test.kafka.AbstractKafkaTest;
 import io.quarkus.kafka.client.serialization.ObjectMapperSerde;
@@ -43,6 +46,9 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
 
     @Inject
     IssueEventConsumer consumer;
+
+    @Inject
+    EmailSettingsController emailSettingsController;
 
     @Override
     @BeforeEach
@@ -429,5 +435,66 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .untilAsserted(() -> {
                 verify(mailingController, atLeastOnce()).sendIssueCreatedEmail(any(), any());
             });
+    }
+
+    @Test
+    void testConsumeIssueUpdated_SkipsRecipientWithDisabledSetting() {
+        ProjectJson project = ImmutableProjectJson.builder()
+            .id(UUID.randomUUID())
+            .title("Test Project")
+            .build();
+
+        UserJson assignee = ImmutableUserJson.builder()
+            .id(UUID.randomUUID())
+            .email("muted-assignee@example.com")
+            .firstName("Muted")
+            .lastName("Owner")
+            .build();
+
+        UserJson creator = ImmutableUserJson.builder()
+            .id(UUID.randomUUID())
+            .email("active-creator@example.com")
+            .firstName("Active")
+            .lastName("Creator")
+            .build();
+
+        emailSettingsController.updateSettings(assignee.getId(),
+            ImmutableEmailSettingsJson.builder().issueUpdated(false).build());
+
+        UUID issueId = UUID.randomUUID();
+        IssueJson issue = ImmutableIssueJson.builder()
+            .id(issueId)
+            .projectId(project.getId())
+            .title("Muted Issue")
+            .type(IssueType.DEFECT)
+            .status(IssueStatus.OPEN)
+            .reporterId(UUID.randomUUID())
+            .agreementId(UUID.randomUUID())
+            .assigneeId(assignee.getId())
+            .description("Assignee disabled update emails")
+            .build();
+
+        ImmutableIssueEventJson event = ImmutableIssueEventJson.builder()
+            .issueEventType(IssueEventJson.IssueEventType.ISSUE_UPDATED)
+            .issueId(issueId)
+            .issue(issue)
+            .project(project)
+            .link("https://remsfal.de/issue/444")
+            .principal(creator)
+            .assignee(assignee)
+            .build();
+
+        companion.produce(ImmutableIssueEventJson.class)
+            .fromRecords(new ProducerRecord<>(IssueEventJson.TOPIC_ENRICHED, event))
+            .awaitCompletion();
+
+        Awaitility.await()
+            .atMost(Duration.ofSeconds(30))
+            .untilAsserted(() -> verify(mailingController, atLeastOnce()).sendIssueUpdatedEmail(
+                any(IssueEventJson.class),
+                argThat(user -> "active-creator@example.com".equals(user.getEmail()))));
+        verify(mailingController, never()).sendIssueUpdatedEmail(
+            any(IssueEventJson.class),
+            argThat(user -> "muted-assignee@example.com".equals(user.getEmail())));
     }
 }
