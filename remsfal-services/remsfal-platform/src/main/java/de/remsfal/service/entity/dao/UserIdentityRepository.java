@@ -22,7 +22,8 @@ public class UserIdentityRepository extends AbstractRepository<UserIdentityEntit
     }
 
     @Transactional
-    public boolean updateLastUsedAt(final IdentityProvider provider, final String subject, final LocalDateTime timestamp) {
+    public boolean updateLastUsedAt(final IdentityProvider provider, final String subject,
+        final LocalDateTime timestamp) {
         return getEntityManager().createNamedQuery("UserIdentityEntity.updateLastUsedAt")
             .setParameter("timestamp", timestamp)
             .setParameter(PARAM_PROVIDER, provider)
