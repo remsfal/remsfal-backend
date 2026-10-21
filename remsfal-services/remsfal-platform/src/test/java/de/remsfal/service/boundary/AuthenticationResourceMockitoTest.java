@@ -71,6 +71,16 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
             .getSingleResult();
     }
 
+    private void insertAdditionalEmail(final UUID userId, final String email, final boolean verified) {
+        runInTransaction(() -> entityManager
+            .createNativeQuery("INSERT INTO user_additional_email (id, user_id, email, verified) VALUES (?,?,?,?)")
+            .setParameter(1, UUID.randomUUID())
+            .setParameter(2, userId)
+            .setParameter(3, email)
+            .setParameter(4, verified)
+            .executeUpdate());
+    }
+
     @Test
     void session_SUCCESS_userIsCreated() {
         mockGoogleIdentity(true);
@@ -165,6 +175,32 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
     }
 
     @Test
+    void session_SUCCESS_linksNewIdentityByVerifiedAdditionalEmail() {
+        setupTestUsers();
+        insertAdditionalEmail(TestData.USER_ID_1, TestData.ALTERNATIVE_EMAIL_1, true);
+        when(authenticator.authenticate(eq(CODE), any()))
+            .thenReturn(new ExternalIdentity(IdentityProvider.APPLE, "appleSubject",
+                TestData.ALTERNATIVE_EMAIL_1, true));
+
+        givenValidState("/")
+            .when()
+            .queryParam("code", CODE)
+            .redirects().follow(false)
+            .get(BASE_PATH + "/session")
+            .then()
+            .statusCode(Status.FOUND.getStatusCode());
+
+        assertEquals(1, countUsers());
+        final String subject = entityManager
+            .createQuery("SELECT i.subject FROM UserIdentityEntity i WHERE i.user.id = :id "
+                + "AND i.provider = :provider", String.class)
+            .setParameter("id", TestData.USER_ID_1)
+            .setParameter("provider", IdentityProvider.APPLE)
+            .getSingleResult();
+        assertEquals("appleSubject", subject);
+    }
+
+    @Test
     void session_FAILED_unverifiedEmailOfExistingUser() {
         setupTestUsers();
         when(authenticator.authenticate(eq(CODE), any()))
@@ -203,6 +239,28 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
             .setParameter("id", placeholderId)
             .getSingleResult();
         assertEquals(TestData.USER_TOKEN_1, subject);
+    }
+
+    @Test
+    void session_FAILED_unverifiedEmailDoesNotReclaimPlaceholderUser() {
+        mockGoogleIdentity(false);
+        final UUID placeholderId = runInTransaction(() ->
+            userController.findOrCreateUser(ImmutableUserJson.builder().email(TestData.USER_EMAIL_1).build())
+                .getId());
+
+        givenValidState("/")
+            .when()
+            .queryParam("code", CODE)
+            .redirects().follow(false)
+            .get(BASE_PATH + "/session")
+            .then()
+            .statusCode(Status.CONFLICT.getStatusCode());
+
+        final long identities = entityManager
+            .createQuery("SELECT count(i) FROM UserIdentityEntity i WHERE i.user.id = :id", Long.class)
+            .setParameter("id", placeholderId)
+            .getSingleResult();
+        assertEquals(0, identities);
     }
 
     @Test
