@@ -39,6 +39,13 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-hibernate-orm</artifactId>
         </dependency>
+        <!-- Firebase Dependencies -->
+        <dependency>
+            <groupId>com.google.firebase</groupId>
+            <artifactId>firebase-admin</artifactId>
+            <version>9.11.0</version>
+        </dependency>
+        <!-- local notification dependencies -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-hibernate-orm-panache</artifactId>
