@@ -159,8 +159,9 @@ class ImageProcessorTest {
         byte[] svg = ("<?xml version=\"1.0\"?><svg xmlns=\"http://www.w3.org/2000/svg\">"
             + "<script>alert(1)</script></svg>").getBytes(StandardCharsets.UTF_8);
 
+        InputStream svgInput = new ByteArrayInputStream(svg);
         assertThrows(NotSupportedException.class,
-            () -> processor.processSquare(new ByteArrayInputStream(svg), 64));
+            () -> processor.processSquare(svgInput, 64));
     }
 
     @Test
@@ -168,10 +169,12 @@ class ImageProcessorTest {
         byte[] text = "just some text".getBytes(StandardCharsets.UTF_8);
         byte[] gif = encode(createLandscape(10, 10), "gif");
 
+        InputStream textInput = new ByteArrayInputStream(text);
         assertThrows(NotSupportedException.class,
-            () -> processor.processSquare(new ByteArrayInputStream(text), 64));
+            () -> processor.processSquare(textInput, 64));
+        InputStream gifInput = new ByteArrayInputStream(gif);
         assertThrows(NotSupportedException.class,
-            () -> processor.processSquare(new ByteArrayInputStream(gif), 64));
+            () -> processor.processSquare(gifInput, 64));
     }
 
     @Test
@@ -179,8 +182,9 @@ class ImageProcessorTest {
         byte[] png = encode(createLandscape(300, 100), "png");
         processor.maxFileSize = png.length - 1;
 
+        InputStream pngInput = new ByteArrayInputStream(png);
         WebApplicationException e = assertThrows(WebApplicationException.class,
-            () -> processor.processSquare(new ByteArrayInputStream(png), 64));
+            () -> processor.processSquare(pngInput, 64));
         assertEquals(413, e.getResponse().getStatus());
     }
 
@@ -189,8 +193,9 @@ class ImageProcessorTest {
         byte[] png = encode(new BufferedImage(2000, 2000, BufferedImage.TYPE_INT_RGB), "png");
         processor.maxPixels = 1_000_000L;
 
+        InputStream pngInput = new ByteArrayInputStream(png);
         WebApplicationException e = assertThrows(WebApplicationException.class,
-            () -> processor.processSquare(new ByteArrayInputStream(png), 64));
+            () -> processor.processSquare(pngInput, 64));
         assertEquals(413, e.getResponse().getStatus());
     }
 
@@ -198,8 +203,9 @@ class ImageProcessorTest {
     void processSquare_corruptImage_isRejectedWith400() {
         byte[] corrupt = new byte[] { (byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A, 1, 2, 3 };
 
+        InputStream corruptInput = new ByteArrayInputStream(corrupt);
         assertThrows(BadRequestException.class,
-            () -> processor.processSquare(new ByteArrayInputStream(corrupt), 64));
+            () -> processor.processSquare(corruptInput, 64));
     }
 
     @Test

@@ -2,6 +2,8 @@ package de.remsfal.common.image;
 
 import jakarta.ws.rs.core.MediaType;
 
+import java.util.Arrays;
+
 /**
  * A re-encoded, square image variant produced by {@link ImageProcessor}.
  *
@@ -19,6 +21,23 @@ public record ProcessedImage(int size, byte[] content) {
 
     public MediaType contentType() {
         return MEDIA_TYPE;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        return o instanceof ProcessedImage other
+            && size == other.size
+            && Arrays.equals(content, other.content);
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * Integer.hashCode(size) + Arrays.hashCode(content);
+    }
+
+    @Override
+    public String toString() {
+        return "ProcessedImage[size=" + size + ", content=" + content.length + " bytes]";
     }
 
 }
