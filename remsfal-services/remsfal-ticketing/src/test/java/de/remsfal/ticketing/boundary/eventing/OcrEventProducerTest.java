@@ -13,7 +13,7 @@ import de.remsfal.core.json.ticketing.FileUploadJson;
 import de.remsfal.core.json.ticketing.ImmutableFileUploadJson;
 import de.remsfal.test.TestData;
 import de.remsfal.test.kafka.AbstractKafkaTest;
-import de.remsfal.ticketing.entity.storage.FileStorage;
+import de.remsfal.ticketing.TicketingTestData;
 import de.remsfal.ticketing.testcontainers.OcrServiceResource;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
@@ -48,7 +48,7 @@ class OcrEventProducerTest extends AbstractKafkaTest {
             .sessionId(sessionId)
             .messageId(messageId)
             .senderId(TestData.USER_ID)
-            .bucket(FileStorage.DEFAULT_BUCKET_NAME)
+            .bucket(TicketingTestData.BUCKET_NAME)
             .fileName("file")
             .build();
 
@@ -60,7 +60,7 @@ class OcrEventProducerTest extends AbstractKafkaTest {
             .json("sessionId", Matchers.equalTo(sessionId.toString()))
             .json("messageId", Matchers.equalTo(messageId.toString()))
             .json("senderId", Matchers.equalTo(TestData.USER_ID.toString()))
-            .json("bucket", Matchers.equalTo(FileStorage.DEFAULT_BUCKET_NAME))
+            .json("bucket", Matchers.equalTo(TicketingTestData.BUCKET_NAME))
             .json("fileName", Matchers.equalTo("file"));
     }
 }

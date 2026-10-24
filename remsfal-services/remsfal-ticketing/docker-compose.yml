@@ -1,21 +1,4 @@
 services:
-  localstack:
-    image: localstack/localstack:4.9
-    container_name: localstack
-    restart: unless-stopped
-    depends_on:
-      cassandra:
-        condition: service_healthy
-    environment:
-      - SERVICES=s3
-      - PERSISTENCE=1
-    ports:
-      - "9000:4566"
-    volumes:
-      - localstack_data:/var/lib/localstack
-    networks:
-      - remsfal
-
   cassandra:
     image: cassandra:5
     container_name: cassandra
@@ -61,4 +44,3 @@ services:
 
 volumes:
   cassandra_data:
-  localstack_data:

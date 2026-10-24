@@ -13,6 +13,18 @@ Since the notification microservice is designed to send emails, it needs an outg
 [Mailpit](https://mailpit.axllent.org/), which is started together with the other infrastructure
 containers (`docker compose up -d` in the repository root, see [docker-compose.yml](docker-compose.yml)).
 
+The notification microservice reads files (e.g. profile photos for emails) from the S3 bucket `remsfal`,
+which is shared with the platform service. Locally the `localstack` container is used, in tests the S3 Dev Services.
+In production the notification service only needs **read access**: use separate credentials that may only
+read objects from the shared bucket (`s3:GetObject`) and disable the bucket creation on startup:
+
+```properties
+remsfal.storage.bucket-name=remsfal
+remsfal.storage.create-bucket=false
+quarkus.s3.aws.credentials.static-provider.access-key-id=...
+quarkus.s3.aws.credentials.static-provider.secret-access-key=...
+```
+
 The most important mailing configuration can be found in the
 [Quarkus Mailer Configuration Reference](https://quarkus.io/guides/mailer-reference#configuration-reference).
 

@@ -1,4 +1,4 @@
-package de.remsfal.ticketing.entity.storage;
+package de.remsfal.common.entity.storage;
 
 import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -27,16 +27,23 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
 /**
+ * Generic S3 file storage. The bucket is configured via {@code remsfal.storage.bucket-name}
+ * and created idempotently on startup unless {@code remsfal.storage.create-bucket=false}
+ * (e.g. for services with read-only credentials).
+ *
  * @author Parham Rahmani [parham.rahmani@student.htw-berlin.de]
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @ApplicationScoped
 public class FileStorage {
 
-    public static final String DEFAULT_BUCKET_NAME = "remsfal-ticketing";
+    public static final String DEFAULT_BUCKET_NAME = "remsfal";
 
-    @ConfigProperty(name = "remsfal.ticketing.storage.bucket-name", defaultValue = DEFAULT_BUCKET_NAME)
+    @ConfigProperty(name = "remsfal.storage.bucket-name", defaultValue = DEFAULT_BUCKET_NAME)
     String bucketName;
+
+    @ConfigProperty(name = "remsfal.storage.create-bucket", defaultValue = "true")
+    boolean createBucket;
 
     @Inject
     Logger logger;
@@ -45,6 +52,10 @@ public class FileStorage {
     S3Client s3Client;
 
     public void onStartup(@Observes StartupEvent event) throws Exception {
+        if (!createBucket) {
+            logger.infov("Bucket creation disabled, using bucket '{0}'.", bucketName);
+            return;
+        }
         logger.info("Initializing File Storage ...");
 
         try {
@@ -89,6 +100,21 @@ public class FileStorage {
         }
     }
 
+    public void putFile(final String key, final byte[] content, final MediaType contentType) {
+        try {
+            logger.infov("Putting file {0} to bucket {1}", key, bucketName);
+            s3Client.putObject(
+                PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .contentType(contentType.toString())
+                .build(),
+                RequestBody.fromBytes(content));
+        } catch (Exception e) {
+            throw new InternalServerErrorException("Error occurred while uploading file", e);
+        }
+    }
+
     public InputStream downloadFile(final String fileName) {
         try {
             logger.infov("Downloading file {0} from bucket {1}", fileName, bucketName);
@@ -124,7 +150,7 @@ public class FileStorage {
         }
     }
 
-    private boolean fileExists(final String fileName) {
+    public boolean fileExists(final String fileName) {
         try {
             logger.debugv("Checking if file name {0} exists in bucket {1}", fileName, bucketName);
             s3Client.headObject(
@@ -146,6 +172,10 @@ public class FileStorage {
         } catch (Exception e) {
             throw new InternalServerErrorException("Error occurred while checking if object exists", e);
         }
+    }
+
+    public String getBucketName() {
+        return bucketName;
     }
 
     private String generateUniqueFileName(final String fileName) {

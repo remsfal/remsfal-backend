@@ -9,7 +9,7 @@ import jakarta.ws.rs.core.MediaType;
 import org.junit.jupiter.api.Test;
 
 import de.remsfal.ticketing.AbstractTicketingTest;
-import de.remsfal.ticketing.entity.storage.FileStorage;
+import de.remsfal.ticketing.TicketingTestData;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -108,7 +108,7 @@ public class FileStorageControllerTest extends AbstractTicketingTest {
 
         boolean found = s3Client.listObjectsV2(
                 ListObjectsV2Request.builder()
-                    .bucket(FileStorage.DEFAULT_BUCKET_NAME)
+                    .bucket(TicketingTestData.BUCKET_NAME)
                     .build())
             .contents().stream()
             .anyMatch(o -> o.key().equals(fileName));

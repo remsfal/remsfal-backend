@@ -14,7 +14,7 @@ REMSFAL Backend is a multi-module Maven project implementing a microservices arc
 
 - **remsfal-core**: Core business models (`de.remsfal.core.model`) and API interfaces (`de.remsfal.core.api`) shared across all services
 - **remsfal-test**: Shared test utilities and base classes
-- **remsfal-common**: Shared implementations for authentication, JWT handling, and common utilities
+- **remsfal-common**: Shared implementations for authentication, JWT handling, S3 file storage (`FileStorage`), image processing (`ImageProcessor`), and common utilities
 - **remsfal-platform**: Primary microservice handling user auth, metadata storage, and core CRUD operations (port 8080, PostgreSQL database)
 - **remsfal-ticketing**: Document storage and ticketing functionality (port 8081, Cassandra database)
 - **remsfal-notification**: Email and notification services (port 8082, PostgreSQL database, Kafka-based)
@@ -167,6 +167,32 @@ Use `application.properties` with profile-specific overrides:
 - **Database**: Connection pooling and timezone handling for PostgreSQL
 - **Kafka**: Bootstrap servers on `localhost:39092` for dev
 - **Notification Service**: SMTP configuration via `.env` file in `remsfal-services/remsfal-notification/.env` (not committed to Git)
+- **File Storage**: `remsfal.storage.*`, `quarkus.s3.*` (see below)
+- **Image Processing**: `remsfal.image.*` (see below)
+
+### File Storage (S3)
+
+All services use `de.remsfal.common.entity.storage.FileStorage` (`quarkus-amazon-s3`, S3-compatible, IONOS S3 in production).
+Locally all services share the `localstack` container from `remsfal-services/docker-compose.yml` (port 9000); tests use the S3 Dev Services.
+
+| Property | Default | Description |
+|---|---|---|
+| `remsfal.storage.bucket-name` | `remsfal` | Bucket of the service |
+| `remsfal.storage.create-bucket` | `true` | Create the bucket idempotently on startup; set to `false` for services with read-only credentials |
+
+- **Shared bucket `remsfal`**: used by `remsfal-platform` (read/write) and `remsfal-notification` (read only), so both access the same files (e.g. profile photos uploaded via platform and embedded in emails by notification).
+- **Key prefixes per purpose**, e.g. `users/{userId}/avatar/{hash}-{size}.jpg`. Prefixes allow fine-grained access policies per service.
+- **Least privilege**: in production `remsfal-notification` gets separate credentials with read-only access (`s3:GetObject` on the shared bucket) and runs with `REMSFAL_STORAGE_CREATE_BUCKET=false`.
+- **Ticketing** keeps its own bucket `remsfal-ticketing`. The property `remsfal.ticketing.storage.bucket-name` still works but is deprecated; use `remsfal.storage.bucket-name`.
+- `FileStorage.uploadFile(...)` generates a unique key if the name already exists (`file(1).pdf`); `FileStorage.putFile(...)` writes to the given key and overwrites existing objects.
+
+### Image Processing
+
+`de.remsfal.common.image.ImageProcessor#processSquare(InputStream, int...)` validates an uploaded image and returns square variants of the requested sizes:
+
+- Accepts JPEG, PNG and WebP only, detected by magic bytes (the client's content type is not trusted). SVG and all other types are rejected with `415`.
+- Rejects files larger than `remsfal.image.max-file-size` (default 10 MB) and images with more than `remsfal.image.max-pixels` (default 40 MP, checked before decoding) with `413`; undecodable images with `400`.
+- Applies the EXIF orientation, crops a centered square, scales down (never up) and re-encodes as JPEG (`remsfal.image.jpeg-quality`, default 0.85) without any metadata (EXIF, GPS, XMP, comments).
 
 ## CI/CD and Quality Gates
 
