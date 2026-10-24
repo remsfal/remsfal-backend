@@ -171,7 +171,7 @@ class BuildingControllerTest extends AbstractServiceTest {
         assertEquals(building.getDescription(), buildingModel.getDescription());
         assertEquals(building.getLivingSpace(), buildingModel.getLivingSpace());
         assertEquals(building.getUsableSpace(), buildingModel.getUsableSpace());
-        assertEquals(buildingModel.getAddress().getStreet(), "Lavochkina St.");
+        assertEquals("Lavochkina St.", buildingModel.getAddress().getStreet());
     }
 
     @Test

@@ -4,7 +4,7 @@ import io.quarkus.test.junit.QuarkusTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.util.List;
 
@@ -27,7 +27,7 @@ class AddressRepositoryTest extends AbstractServiceTest {
     void hashCode_SUCCESS_addressValidationEntity() {
         final List<AddressValidationEntity> entities = repository.findAddressByZip(TestData.ADDRESS_ZIP);
         assertNotNull(entities);
-        assertTrue(entities.get(0).hashCode() != 0);
+        assertNotEquals(0, entities.get(0).hashCode());
     }
     
     @Test

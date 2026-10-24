@@ -64,36 +64,38 @@ class OrganizationEmployeeEntityTest {
 
     @Test
     void isEqual_SUCCESS_sameInstance() {
-        assertTrue(employee1.equals(employee1));
+        assertEquals(employee1, employee1);
     }
 
 
     @Test
     void isUnequal_SUCCESS_differentInstancesDifferentValues() {
         employee2.setRole(OrganizationEmployeeModel.EmployeeRole.MANAGER);
-        assertFalse(employee1.equals(employee2));
+        assertNotEquals(employee1, employee2);
     }
 
     @Test
     void isUnequal_SUCCESS_nullObject() {
-        assertFalse(employee1.equals(null));
+        // employee1 must be the receiver of equals(), so null is passed as actual value
+        final Object noValue = null;
+        assertNotEquals(employee1, noValue);
     }
 
     @Test
     void isUnequal_SUCCESS_differentClass() {
-        assertFalse(employee1.equals(new Object()));
+        assertNotEquals(employee1, new Object());
     }
 
     @Test
     void isUnequal_SUCCESS_differentOrganization() {
         employee2.setOrganization(organization2);
-        assertFalse(employee1.equals(employee2));
+        assertNotEquals(employee1, employee2);
     }
 
     @Test
     void isUnequal_SUCCESS_differentUser() {
         employee2.setUser(user2);
-        assertFalse(employee1.equals(employee2));
+        assertNotEquals(employee1, employee2);
     }
 
     @Test
