@@ -8,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
@@ -28,6 +30,7 @@ import de.remsfal.core.json.eventing.AffectedTenantJson;
 import de.remsfal.core.model.CustomerModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.AbstractServiceTest;
+import de.remsfal.service.boundary.authentication.AppleAuthenticator;
 import de.remsfal.service.boundary.eventing.UserEventProducer;
 import de.remsfal.service.control.exception.AlreadyExistsException;
 import de.remsfal.service.entity.dto.AddressEntity;
@@ -47,6 +50,9 @@ class UserControllerTest extends AbstractServiceTest {
 
     @InjectMock
     NotificationController notificationController;
+
+    @InjectMock
+    AppleAuthenticator appleAuthenticator;
 
     @Test
     void createUser_SUCCESS_simpleUserCreated() {
@@ -669,6 +675,65 @@ class UserControllerTest extends AbstractServiceTest {
         assertEquals(0, enties);
 
         assertFalse(controller.deleteUser(user.getId()));
+    }
+
+    @Test
+    void deleteUser_SUCCESS_appleTokenIsRevoked() {
+        UserModel user = controller.createUser(IdentityProvider.APPLE, "appleSubject", TestData.USER_EMAIL);
+        controller.updateIdentityToken(IdentityProvider.APPLE, "appleSubject", "appleRefreshToken",
+            "de.remsfal.test.app");
+
+        assertTrue(controller.deleteUser(user.getId()));
+
+        verify(appleAuthenticator).revoke("appleRefreshToken", "de.remsfal.test.app");
+    }
+
+    @Test
+    void deleteUser_SUCCESS_failedRevocationDoesNotPreventDeletion() {
+        UserModel user = controller.createUser(IdentityProvider.APPLE, "appleSubject", TestData.USER_EMAIL);
+        controller.updateIdentityToken(IdentityProvider.APPLE, "appleSubject", "appleRefreshToken",
+            "de.remsfal.test.web");
+        doThrow(new IllegalStateException("Apple is down")).when(appleAuthenticator).revoke(any(), any());
+
+        assertTrue(controller.deleteUser(user.getId()));
+
+        final long entities = entityManager
+            .createQuery("SELECT count(user) FROM UserEntity user where user.id = :userId", Long.class)
+            .setParameter("userId", user.getId())
+            .getSingleResult();
+        assertEquals(0, entities);
+    }
+
+    @Test
+    void deleteUser_SUCCESS_noRevocationWithoutAppleToken() {
+        UserModel user = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
+
+        assertTrue(controller.deleteUser(user.getId()));
+
+        verifyNoInteractions(appleAuthenticator);
+    }
+
+    @Test
+    void applyProviderProfile_SUCCESS_onlyEmptyNameIsSet() {
+        UserModel user = controller.createUser(IdentityProvider.APPLE, "appleSubject", TestData.USER_EMAIL);
+
+        controller.applyProviderProfile(user.getId(), " Jane ", "Appleseed");
+        controller.applyProviderProfile(user.getId(), "Other", "Name");
+
+        final UserEntity entity = controller.getUser(user.getId());
+        assertEquals("Jane", entity.getFirstName());
+        assertEquals("Appleseed", entity.getLastName());
+    }
+
+    @Test
+    void applyProviderProfile_SUCCESS_blankNameIsIgnored() {
+        UserModel user = controller.createUser(IdentityProvider.APPLE, "appleSubject", TestData.USER_EMAIL);
+
+        controller.applyProviderProfile(user.getId(), " ", null);
+
+        final UserEntity entity = controller.getUser(user.getId());
+        assertNull(entity.getFirstName());
+        assertNull(entity.getLastName());
     }
 
 }

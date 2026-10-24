@@ -3,6 +3,7 @@ package de.remsfal.service.control;
 import de.remsfal.service.entity.dao.AdditionalEmailRepository;
 import de.remsfal.service.entity.dto.AdditionalEmailEntity;
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
@@ -27,6 +28,7 @@ import de.remsfal.core.json.eventing.ImmutableAffectedTenantJson;
 import de.remsfal.core.model.CustomerModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.boundary.eventing.UserEventProducer;
+import de.remsfal.service.control.event.IdentityRevocationEvent;
 import de.remsfal.service.control.exception.AlreadyExistsException;
 import de.remsfal.service.entity.dao.TenantRepository;
 import de.remsfal.service.entity.dao.UserIdentityRepository;
@@ -67,6 +69,9 @@ public class UserController {
 
     @Inject
     UserEventProducer userEventProducer;
+
+    @Inject
+    Event<IdentityRevocationEvent> identityRevocation;
 
     private static final String DEFAULT_LOCALE = "de";
     private static final int ADDITIONAL_EMAIL_VERIFICATION_TOKEN_VALID_HOURS = 24;
@@ -244,14 +249,70 @@ public class UserController {
         userEventProducer.sendUserUpdated(userId, UserJson.valueOf(updatedUser), affectedTenants);
     }
     
+    /**
+     * Deletes a user. The authorizations of the user's Apple identities are revoked after the commit (App Review
+     * Guideline 5.1.1(v)); a failed revocation is logged and does not prevent the deletion.
+     */
     @Transactional
     public boolean deleteUser(final UUID userId) {
         logger.infov("Deleting a user (id = {0})", userId);
+        final List<UserIdentityEntity> appleIdentities = identityRepository
+            .findByUserIdAndProvider(userId, IdentityProvider.APPLE).stream()
+            .filter(identity -> identity.getRefreshToken() != null)
+            .toList();
         final boolean deleted = repository.remove(userId);
         if (deleted) {
             userEventProducer.sendUserDeleted(userId);
+            appleIdentities.forEach(identity -> identityRevocation.fire(new IdentityRevocationEvent(
+                identity.getProvider(), identity.getSubject(), identity.getRefreshToken(),
+                identity.getTokenClientId())));
         }
         return deleted;
+    }
+
+    /**
+     * Stores the name an identity provider reported on the user, unless the user already has a name. Apple
+     * provides the name only on the first authorization.
+     */
+    @Transactional
+    public void applyProviderProfile(final UUID userId, final String firstName, final String lastName) {
+        final UserEntity entity = repository.findByIdOptional(userId)
+            .orElseThrow(() -> new NotFoundException("User not found"));
+        if (isBlank(entity.getFirstName()) && isBlank(entity.getLastName())
+            && (!isBlank(firstName) || !isBlank(lastName))) {
+            logger.infov("Applying name reported by identity provider (id={0})", userId);
+            entity.setFirstName(isBlank(firstName) ? null : firstName.trim());
+            entity.setLastName(isBlank(lastName) ? null : lastName.trim());
+            repository.merge(entity);
+        }
+    }
+
+    private static boolean isBlank(final String value) {
+        return value == null || value.isBlank();
+    }
+
+    /**
+     * Stores the refresh token of an identity, which is required to revoke the authorization later.
+     */
+    public void updateIdentityToken(final IdentityProvider provider, final String subject,
+        final String refreshToken, final String clientId) {
+        identityRepository.updateRefreshToken(provider, subject, refreshToken, clientId);
+    }
+
+    /**
+     * Handles a server-to-server notification of Sign in with Apple. If the user stopped using the Apple ID with
+     * REMSFAL or deleted it, the identity is removed; a user without any identity left becomes inactive.
+     */
+    @Transactional
+    public void handleAppleNotification(final String type, final String subject) {
+        logger.infov("Handling Apple notification (type={0}, subject={1})", type, subject);
+        switch (type) {
+            case "consent-revoked", "account-delete" ->
+                identityRepository.deleteByProviderAndSubject(IdentityProvider.APPLE, subject);
+            case "email-disabled" -> identityRepository.updateEmailDisabled(IdentityProvider.APPLE, subject, true);
+            case "email-enabled" -> identityRepository.updateEmailDisabled(IdentityProvider.APPLE, subject, false);
+            default -> logger.warnv("Ignoring unknown Apple notification type {0}", type);
+        }
     }
 
     public boolean isVerifiedEmailForUser(final UUID userId, final String email) {

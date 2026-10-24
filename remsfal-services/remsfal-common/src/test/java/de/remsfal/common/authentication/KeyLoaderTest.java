@@ -9,9 +9,11 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
+import java.security.spec.ECGenParameterSpec;
 import java.security.spec.InvalidKeySpecException;
 
 import org.junit.jupiter.api.io.TempDir;
@@ -102,6 +104,29 @@ class KeyLoaderTest extends AbstractTest {
         final Exception exception = assertThrows(InvalidKeySpecException.class,
             () -> KeyLoader.loadPrivateKey("file:" + file));
         assertTrue(exception.getMessage().contains("PKCS#8"), exception.getMessage());
+    }
+
+    @Test
+    void testLoadEcPrivateKey(@TempDir final Path directory) throws Exception {
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
+        generator.initialize(new ECGenParameterSpec("secp256r1"));
+        final PrivateKey generated = generator.generateKeyPair().getPrivate();
+        final Path file = directory.resolve("AuthKey.p8");
+        Files.writeString(file, KeyLoader.toPem(generated));
+
+        final PrivateKey loaded = KeyLoader.loadPrivateKey("file:" + file, "EC");
+        assertEquals("EC", loaded.getAlgorithm());
+        assertEquals(generated, loaded);
+    }
+
+    @Test
+    void testLoadEcPrivateKeyAsRsaIsRejected(@TempDir final Path directory) throws Exception {
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
+        generator.initialize(new ECGenParameterSpec("secp256r1"));
+        final Path file = directory.resolve("AuthKey.p8");
+        Files.writeString(file, KeyLoader.toPem(generator.generateKeyPair().getPrivate()));
+
+        assertThrows(InvalidKeySpecException.class, () -> KeyLoader.loadPrivateKey("file:" + file));
     }
 
     private static boolean verifies(final PrivateKey privateKey, final PublicKey publicKey) throws Exception {

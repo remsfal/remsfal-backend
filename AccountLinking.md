@@ -60,6 +60,26 @@ provider reported, and `last_used_at`. The pair `(provider, subject)` is unique,
 one user, while a user may own any number of identities. The email of an identity is informational only (Apple
 may e.g. report a private relay address); the user's primary email stays in `users.email`.
 
+### Sign in with Apple specifics
+
+- **Private email relay.** Apple users may hide their email behind a relay address
+  (`…@privaterelay.appleid.com`, claim `is_private_email`). Apple reports these addresses as verified, so they are
+  handled like any other verified email: a new user gets the relay address as primary email, and it only links to
+  an existing account if that account already owns the relay address.
+- **First-login data.** Apple sends the user's name only on the first authorization (form field `user` in the web
+  flow, `given_name`/`family_name` from the iOS app). `UserController.applyProviderProfile` stores it right away,
+  but only if the user has neither a first nor a last name yet, so names maintained by the user are never
+  overwritten.
+- **Refresh token.** The refresh token Apple issues on the code exchange is stored on the identity
+  (`user_identities.refresh_token`, together with the client ID it was issued to in `token_client_id`). It is only
+  used to revoke the authorization, see [Data Protection Considerations](#data-protection-considerations).
+- **Server-to-server notifications.** Apple notifies `POST /api/v1/authentication/notifications/apple`
+  (`UserController.handleAppleNotification`):
+  - `consent-revoked` / `account-delete`: the Apple identity is removed. A user without any identity left becomes a
+    placeholder again (`isActive()` is `false`), all links of the account are kept.
+  - `email-disabled` / `email-enabled`: `user_identities.email_disabled` reflects whether Apple currently forwards
+    emails to the relay address.
+
 `AuthorizationController.authenticateUser(provider, subject, email, emailVerified, locale)` resolves the user in
 this order:
 
@@ -166,14 +186,18 @@ mechanics:
 2. **Placeholder accounts are data-minimal by construction.** `findOrCreateUser` stores only `id` and `email` —
    no profile data is collected on the invited person's behalf. Profile data is only added once that person logs
    in themselves.
-3. **Reclaiming an account does not collect additional data.** The first-login reclaim path
+3. **Reclaiming an account collects only minimal additional data.** The first-login reclaim path
    (`UserController.createUser`) stores only the identity (provider, subject, provider email), `locale`, and
-   `authenticatedAt`; it does not read the identity provider's profile name or picture. Name/address/phone remain fields the user fills in themselves via
-   `updateUser`.
+   `authenticatedAt`; it does not read the Google profile name or picture. The only exception is Sign in with
+   Apple: the name the user chose to share with Apple on the first authorization is stored, because Apple never
+   sends it again (see [Sign in with Apple specifics](#sign-in-with-apple-specifics)); it is not stored if the
+   account already has a name. Address and phone remain fields the user fills in themselves via `updateUser`.
 4. **Deletion behaviour is intentionally inconsistent across link types, which matters for erasure requests
    (GDPR Art. 17).** `UserController.deleteUser` hard-deletes the `users` row and emits a `USER_DELETED` event.
    - Cascade-linked data — `project_memberships`, `organization_employees`, `user_authentications`,
      `user_additional_email`, `user_identities` — is removed automatically with the user.
+   - The stored refresh tokens of Apple identities are revoked at Apple (`/auth/revoke`) after the deletion, as
+     required by App Review Guideline 5.1.1(v). A failed revocation is logged and does not prevent the deletion.
    - `tenants` and `contractors` are **not** deleted; their FK to the user is set to `NULL` and the record's own
      data (name, DOB, address, phone for tenants; company details for contractors) persists. This is deliberate:
      rental and contractor records typically have an independent retention basis (accounting/legal retention

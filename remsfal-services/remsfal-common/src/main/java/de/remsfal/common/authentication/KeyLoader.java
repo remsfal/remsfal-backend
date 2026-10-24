@@ -22,7 +22,8 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 /**
- * Loads, derives and generates the RSA keys used to sign JWTs.
+ * Loads, derives and generates the RSA keys used to sign JWTs. PKCS#8 private keys of other algorithms
+ * (e.g. EC) can be loaded as well.
  * <p>
  * Supported key locations:
  * <ul>
@@ -36,6 +37,7 @@ public class KeyLoader {
 
     private static final String FILE_PREFIX = "file:";
     private static final String CLASSPATH_PREFIX = "classpath:";
+    private static final String RSA = "RSA";
     private static final int KEY_SIZE = 2048;
 
     private KeyLoader() {
@@ -43,7 +45,15 @@ public class KeyLoader {
 
     public static PrivateKey loadPrivateKey(final String location)
         throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
-        return parsePrivateKey(readKey(location, "Private"));
+        return loadPrivateKey(location, RSA);
+    }
+
+    /**
+     * Loads a PKCS#8 private key of the given algorithm, e.g. {@code EC} for the keys of Sign in with Apple.
+     */
+    public static PrivateKey loadPrivateKey(final String location, final String algorithm)
+        throws IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+        return parsePrivateKey(readKey(location, "Private"), algorithm);
     }
 
     public static PublicKey loadPublicKey(final String location)
@@ -60,7 +70,7 @@ public class KeyLoader {
         }
         final RSAPublicKeySpec spec = new RSAPublicKeySpec(rsaPrivateKey.getModulus(),
             rsaPrivateKey.getPublicExponent());
-        return KeyFactory.getInstance("RSA").generatePublic(spec);
+        return KeyFactory.getInstance(RSA).generatePublic(spec);
     }
 
     /**
@@ -70,7 +80,7 @@ public class KeyLoader {
      * @return the generated private key
      */
     public static PrivateKey generateAndStore(final Path directory) throws IOException, GeneralSecurityException {
-        final KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+        final KeyPairGenerator generator = KeyPairGenerator.getInstance(RSA);
         generator.initialize(KEY_SIZE);
         final KeyPair keyPair = generator.generateKeyPair();
 
@@ -122,7 +132,7 @@ public class KeyLoader {
         }
     }
 
-    private static PrivateKey parsePrivateKey(final String pem)
+    private static PrivateKey parsePrivateKey(final String pem, final String algorithm)
         throws NoSuchAlgorithmException, InvalidKeySpecException {
         if (pem.contains("BEGIN RSA PRIVATE KEY")) {
             throw new InvalidKeySpecException("PKCS#1 keys are not supported, convert the key to PKCS#8: "
@@ -136,7 +146,7 @@ public class KeyLoader {
         final byte[] keyBytes = Base64.getDecoder().decode(base64Content);
 
         final PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(keyBytes);
-        return KeyFactory.getInstance("RSA").generatePrivate(keySpec);
+        return KeyFactory.getInstance(algorithm).generatePrivate(keySpec);
     }
 
     private static PublicKey parsePublicKey(final String pem)
@@ -149,7 +159,7 @@ public class KeyLoader {
         final byte[] keyBytes = Base64.getDecoder().decode(base64Content);
 
         final X509EncodedKeySpec keySpec = new X509EncodedKeySpec(keyBytes);
-        return KeyFactory.getInstance("RSA").generatePublic(keySpec);
+        return KeyFactory.getInstance(RSA).generatePublic(keySpec);
     }
 
 }
