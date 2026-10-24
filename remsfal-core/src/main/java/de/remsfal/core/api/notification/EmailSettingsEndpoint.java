@@ -23,7 +23,7 @@ public interface EmailSettingsEndpoint {
 
     String CONTEXT = "notification";
     String VERSION = "v1";
-    String SERVICE = "issues/settings/emails";
+    String SERVICE = "settings/issues/emails";
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)

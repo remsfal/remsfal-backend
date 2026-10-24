@@ -20,7 +20,7 @@ import io.quarkus.test.junit.QuarkusTest;
 @QuarkusTest
 class EmailSettingsResourceTest extends AbstractTest {
 
-    static final String BASE_PATH = "/notification/v1/issues/settings/emails";
+    static final String BASE_PATH = "/notification/v1/settings/issues/emails";
 
     @Inject
     EmailSettingsController controller;
