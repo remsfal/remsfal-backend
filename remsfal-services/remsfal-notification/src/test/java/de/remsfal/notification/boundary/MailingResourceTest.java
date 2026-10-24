@@ -54,13 +54,32 @@ class MailingResourceTest extends AbstractTest {
                 .statusCode(Status.ACCEPTED.getStatusCode());
 
         // verify that it was sent: welcome, new-membership, new-employment and
-        // additional-email-verification, each in English and German
+        // additional-email-verification and login-code, each in English and German
         List<MailMessage> sent = mailbox. getMailMessagesSentTo("test@example.com");
-        assertEquals(8, sent.size());
+        assertEquals(10, sent.size());
         MailMessage actual = sent.get(2);
         assertTrue(actual.getHtml().contains("You have been added to the project Test Project."));
         assertEquals("You’ve been added to a new project", actual.getSubject());
-        assertEquals(8, mailbox.getTotalMessagesSent());
+        assertEquals(10, mailbox.getTotalMessagesSent());
+    }
+
+    @Test
+    void testLoginCodeEmail() {
+        given()
+                .queryParam("to", "login@example.com")
+                .when()
+                .get(BASE_PATH + "/login-code")
+                .then()
+                .statusCode(Status.ACCEPTED.getStatusCode());
+
+        List<MailMessage> sent = mailbox.getMailMessagesSentTo("login@example.com");
+        assertEquals(2, sent.size());
+        assertEquals("Your REMSFAL login code", sent.get(0).getSubject());
+        assertTrue(sent.get(0).getHtml().contains("12345678"));
+        assertTrue(sent.get(0).getHtml().contains("valid for 15 minutes"));
+        assertEquals("Ihr Anmeldecode für REMSFAL", sent.get(1).getSubject());
+        assertTrue(sent.get(1).getHtml().contains("12345678"));
+        assertTrue(sent.get(1).getHtml().contains("15 Minuten gültig"));
     }
 
     @Test

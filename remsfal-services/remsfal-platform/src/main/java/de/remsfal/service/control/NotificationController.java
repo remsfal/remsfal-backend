@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.organization.OrganizationJson;
 import de.remsfal.core.json.project.ProjectJson;
@@ -67,6 +68,25 @@ public class NotificationController {
         final UserJson userJson = UserJson.valueOf(user).withEmail(additionalEmail).withLocale(resolveLocale(user));
         final String link = frontendBaseUrl + frontendAdditionalEmailVerificationPath + "?token=" + encodedToken;
         notificationEventProducer.sendAdditionalEmailVerification(userJson, link);
+    }
+
+    /**
+     * Sends the one-time code of the passwordless email login. The user is null if the email address is not
+     * registered yet, then the requested locale is used.
+     */
+    @WithSpan("NotificationController.informUserAboutLoginCode")
+    public void informUserAboutLoginCode(final CustomerModel user, final String email, final String code,
+        final String locale) {
+        final UserJson userJson;
+        if (user != null) {
+            userJson = UserJson.valueOf(user).withEmail(email).withLocale(resolveLocale(user));
+        } else {
+            userJson = ImmutableUserJson.builder()
+                .email(email)
+                .locale(locale != null && !locale.isBlank() ? locale : defaultLanguage)
+                .build();
+        }
+        notificationEventProducer.sendLoginCode(userJson, frontendBaseUrl, code);
     }
 
     private String resolveLocale(final CustomerModel user) {

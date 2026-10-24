@@ -63,7 +63,23 @@ public class MailingResource {
             .await().indefinitely();
         controller.sendAdditionalEmailVerificationEmail(recipient, "https://remsfal.de", Locale.GERMAN)
             .await().indefinitely();
+        controller.sendLoginCodeEmail(recipient, "12345678", Locale.ENGLISH).await().indefinitely();
+        controller.sendLoginCodeEmail(recipient, "12345678", Locale.GERMAN).await().indefinitely();
         return Response.accepted().build();
+    }
+
+    @GET
+    @Path("/login-code")
+    @Blocking
+    public Response testLoginCode(@QueryParam("to") @NotNull @Email final String to) {
+        final UserModel recipient = createMockUserModel(to);
+        try {
+            controller.sendLoginCodeEmail(recipient, "12345678", Locale.ENGLISH).await().indefinitely();
+            controller.sendLoginCodeEmail(recipient, "12345678", Locale.GERMAN).await().indefinitely();
+            return Response.accepted().entity("Login code email sent successfully").build();
+        } catch (Exception e) {
+            return Response.serverError().entity(ERROR_SEND_EMAIL).build();
+        }
     }
 
     @GET

@@ -58,6 +58,10 @@ public class MailingController {
     Template additionalEmailVerification;
 
     @Inject
+    @Location("login-code.html")
+    Template loginCode;
+
+    @Inject
     @Location("issue-created.html")
     Template issueCreated;
 
@@ -114,6 +118,19 @@ public class MailingController {
         final TemplateInstance instance = additionalEmailVerification.data("name", recipient.getName())
             .data("buttonLink", link);
         final String subject = getSubject("additional-email-verification", locale);
+
+        String html = setTemplateProperties(instance, locale).render();
+        Mail mail = Mail.withHtml(recipient.getEmail(), subject, html);
+        return sendWithAlias(mail, "info");
+    }
+
+    @WithSpan("MailingController.sendLoginCodeEmail")
+    public Uni<Void> sendLoginCodeEmail(final UserModel recipient, final String code, final Locale locale) {
+        // the code is a credential and must never be logged
+        logger.infov("Sending login code email to {0}", recipient.getEmail());
+        final TemplateInstance instance = loginCode.data("name", recipient.getName())
+            .data("code", code);
+        final String subject = getSubject("login-code", locale);
 
         String html = setTemplateProperties(instance, locale).render();
         Mail mail = Mail.withHtml(recipient.getEmail(), subject, html);

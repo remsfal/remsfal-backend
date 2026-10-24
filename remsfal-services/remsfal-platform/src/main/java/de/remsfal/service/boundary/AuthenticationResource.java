@@ -7,6 +7,8 @@ import de.remsfal.common.authentication.JWTManager;
 import de.remsfal.common.authentication.UnauthorizedException;
 import de.remsfal.core.api.AuthenticationEndpoint;
 import de.remsfal.core.json.AppleNotificationJson;
+import de.remsfal.core.json.EmailLoginRequestJson;
+import de.remsfal.core.json.EmailSessionJson;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.boundary.authentication.AbstractAuthenticationResource;
 import de.remsfal.service.boundary.authentication.AppleAuthenticator;
@@ -17,6 +19,7 @@ import de.remsfal.service.boundary.authentication.GoogleAuthenticator;
 import de.remsfal.service.boundary.authentication.OAuthStateManager;
 import de.remsfal.service.boundary.authentication.SessionManager;
 import de.remsfal.service.control.AuthorizationController;
+import de.remsfal.service.control.EmailLoginController;
 import de.remsfal.service.control.UserController;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
@@ -58,6 +61,9 @@ public class AuthenticationResource extends AbstractAuthenticationResource imple
     @Inject
     UserController userController;
 
+    @Inject
+    EmailLoginController emailLoginController;
+
     @Override
     @Timed("checks_timer_login")
     public Response login(final String route) {
@@ -87,6 +93,14 @@ public class AuthenticationResource extends AbstractAuthenticationResource imple
         final URI redirectUrl = appleAuthenticator.getAuthorizationCodeURI(
             getCallbackUri("appleSession").toASCIIString(), state.value(), state.nonce());
         return redirect(redirectUrl).cookie(state.cookie()).build();
+    }
+
+    @Override
+    @Timed("checks_timer_login")
+    public Response loginWithEmail(final EmailLoginRequestJson request) {
+        final String locale = request.getLocale() != null ? request.getLocale() : resolveLocale();
+        emailLoginController.requestCode(request.getEmail(), locale, resolveClientAddress());
+        return Response.accepted().build();
     }
 
     private Response redirectToDevLogin(final String route) {
@@ -144,6 +158,14 @@ public class AuthenticationResource extends AbstractAuthenticationResource imple
         final AppleUser appleUser = parseAppleUser(user);
         return createSession(authenticate(identity.withName(appleUser.firstName(), appleUser.lastName())), route,
             stateManager.removalCookie());
+    }
+
+    @Override
+    @Timed("checks_timer_session")
+    public Response emailSession(final EmailSessionJson session) {
+        final UserModel user = emailLoginController.verifyCode(session.getEmail(), session.getCode(),
+            resolveLocale(), resolveClientAddress());
+        return Response.noContent().cookie(sessionCookies(user)).build();
     }
 
     /**

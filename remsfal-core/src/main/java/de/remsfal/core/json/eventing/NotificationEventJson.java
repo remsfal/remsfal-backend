@@ -25,7 +25,8 @@ public interface NotificationEventJson {
         USER_REGISTRATION,
         PROJECT_ADMISSION,
         ADDITIONAL_EMAIL_VERIFICATION,
-        ORGANIZATION_ADMISSION
+        ORGANIZATION_ADMISSION,
+        LOGIN_CODE
     }
 
     /*
@@ -54,5 +55,11 @@ public interface NotificationEventJson {
      */
     @Nullable
     OrganizationJson getOrganization();
+
+    /*
+     * One-time code for the passwordless email login. Only present for LOGIN_CODE.
+     */
+    @Nullable
+    String getCode();
 
 }

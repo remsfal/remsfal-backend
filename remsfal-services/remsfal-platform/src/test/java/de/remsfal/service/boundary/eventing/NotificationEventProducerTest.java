@@ -114,4 +114,21 @@ class NotificationEventProducerTest extends AbstractKafkaTest {
                 "https://remsfal.de/api/v1/authentication/verify-additional-email?token=abc"));
     }
 
+    @Test
+    void testSendLoginCode_publishesEventToTopic() {
+        UserJson user = ImmutableUserJson.builder()
+            .email(TestData.USER_EMAIL)
+            .locale("de")
+            .build();
+
+        producer.sendLoginCode(user, "https://remsfal.de", "12345678");
+
+        given()
+            .topic(NotificationEventJson.TOPIC)
+        .assertThat()
+            .json("user.email", Matchers.equalTo(TestData.USER_EMAIL))
+            .json("notificationEventType", Matchers.equalTo("LOGIN_CODE"))
+            .json("code", Matchers.equalTo("12345678"));
+    }
+
 }

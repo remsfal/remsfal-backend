@@ -2,11 +2,8 @@ package de.remsfal.service.boundary.authentication;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.Base64;
-import java.util.HexFormat;
 import java.util.Map;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -18,6 +15,7 @@ import jakarta.ws.rs.core.UriBuilder;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import de.remsfal.common.authentication.UnauthorizedException;
+import de.remsfal.common.util.SecureTokens;
 import de.remsfal.core.api.AuthenticationEndpoint;
 
 /**
@@ -43,8 +41,6 @@ public class OAuthStateManager {
     private static final Base64.Encoder ENCODER = Base64.getUrlEncoder().withoutPadding();
 
     private static final Base64.Decoder DECODER = Base64.getUrlDecoder();
-
-    private final SecureRandom random = new SecureRandom();
 
     @ConfigProperty(name = "de.remsfal.auth.oauth-state.timeout", defaultValue = "PT10M")
     Duration stateTimeout;
@@ -75,9 +71,7 @@ public class OAuthStateManager {
      * {@code SameSite=None}, since a Lax cookie is not sent on a cross-site POST.
      */
     public State create(final String route, final SameSite sameSite) {
-        final byte[] bytes = new byte[NONCE_BYTES];
-        random.nextBytes(bytes);
-        final String nonce = ENCODER.encodeToString(bytes);
+        final String nonce = SecureTokens.randomBase64Url(NONCE_BYTES);
         final String value = nonce + SEPARATOR + ENCODER.encodeToString(route.getBytes(StandardCharsets.UTF_8));
         return new State(value, buildCookie(nonce, (int) stateTimeout.getSeconds(), sameSite));
     }
@@ -127,13 +121,7 @@ public class OAuthStateManager {
      * {@code nonce} claim of the ID token.
      */
     public static String hash(final String nonce) {
-        try {
-            final byte[] digest = MessageDigest.getInstance("SHA-256")
-                .digest(nonce.getBytes(StandardCharsets.UTF_8));
-            return HexFormat.of().formatHex(digest);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 is not available", e);
-        }
+        return SecureTokens.sha256Hex(nonce);
     }
 
     public NewCookie removalCookie() {
