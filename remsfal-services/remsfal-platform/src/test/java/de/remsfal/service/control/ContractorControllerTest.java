@@ -9,6 +9,7 @@ import de.remsfal.core.model.UserModel;
 import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.control.exception.AlreadyExistsException;
 import de.remsfal.service.entity.dto.ContractorEntity;
+import de.remsfal.service.entity.dto.UserIdentityEntity.IdentityProvider;
 import de.remsfal.service.entity.dto.OrganizationEntity;
 import de.remsfal.service.entity.dto.ProjectEntity;
 import de.remsfal.test.TestData;
@@ -54,7 +55,7 @@ class ContractorControllerTest extends AbstractServiceTest {
     @BeforeEach
     void setupTestData() {
         // Create a test user
-        user = userController.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        user = userController.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
         
         // Create a test project
         ProjectEntity project = (ProjectEntity) projectController.createProject(user,

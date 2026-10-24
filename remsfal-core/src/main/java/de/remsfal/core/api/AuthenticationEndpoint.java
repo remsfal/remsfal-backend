@@ -30,16 +30,24 @@ public interface AuthenticationEndpoint {
 
     @GET
     @Path("/login")
-    @Operation(summary = "Login user via oauth flow.")
+    @Operation(summary = "Login user via oauth flow of the default identity provider (Google).",
+        description = "Kept for backward compatibility, use the provider specific login endpoints instead.")
     @APIResponse(responseCode = "302", description = "Redirect user to the identity provider")
     Response login(@DefaultValue("/") @QueryParam("route") String route);
 
     @GET
+    @Path("/login/google")
+    @Operation(summary = "Login user via Google oauth flow.")
+    @APIResponse(responseCode = "302", description = "Redirect user to Google")
+    Response loginWithGoogle(@DefaultValue("/") @QueryParam("route") String route);
+
+    @GET
     @Path("/session")
-    @Operation(summary = "Start user session via oauth flow.")
+    @Operation(summary = "Start user session via Google oauth flow (Google callback).")
     @APIResponse(responseCode = "302", description = "Redirect user to the frontend spa")
+    @APIResponse(responseCode = "401", description = "Authentication failed or state does not match")
     Response session(@QueryParam("code") String code,
-        @DefaultValue("/") @QueryParam("state") String state,
+        @QueryParam("state") String state,
         @QueryParam("error") String error);
 
     @POST

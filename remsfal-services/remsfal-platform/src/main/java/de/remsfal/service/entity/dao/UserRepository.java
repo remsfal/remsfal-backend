@@ -3,7 +3,7 @@ package de.remsfal.service.entity.dao;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,10 +14,6 @@ import de.remsfal.service.entity.dto.UserEntity;
  */
 @ApplicationScoped
 public class UserRepository extends AbstractRepository<UserEntity> {
-
-    public Optional<UserEntity> findByTokenId(final String tokenId) {
-        return find("tokenId", tokenId).singleResultOptional();
-    }
 
     public Optional<UserEntity> findByEmail(final String email) {
         return find("email", email == null ? null : email.trim().toLowerCase()).singleResultOptional();
@@ -37,10 +33,10 @@ public class UserRepository extends AbstractRepository<UserEntity> {
     }
 
     @Transactional
-    public boolean updateAuthenticatedAt(final String googleId, final Date date) {
+    public boolean updateAuthenticatedAt(final UUID userId, final LocalDateTime timestamp) {
         return getEntityManager().createNamedQuery("UserEntity.updateAuthenticatedAt")
-            .setParameter("timestamp", date)
-            .setParameter("tokenId", googleId)
+            .setParameter("timestamp", timestamp)
+            .setParameter(PARAM_ID, userId)
             .executeUpdate() > 0;
     }
 

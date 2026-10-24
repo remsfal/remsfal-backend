@@ -11,6 +11,7 @@ import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 
 import de.remsfal.service.AbstractServiceTest;
+import de.remsfal.service.entity.dto.UserIdentityEntity.IdentityProvider;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.QuarkusTestProfile;
 import io.quarkus.test.junit.TestProfile;
@@ -36,11 +37,13 @@ class DevDataSeedControllerTest extends AbstractServiceTest {
         assertTrue(seeder.seed());
 
         for (final DevDataSeedController.SeedUser seedUser : DevDataSeedController.SEED_USERS) {
-            final String tokenId = entityManager
-                .createQuery("SELECT u.tokenId FROM UserEntity u WHERE u.email = :email", String.class)
+            final String subject = entityManager
+                .createQuery("SELECT i.subject FROM UserIdentityEntity i "
+                    + "WHERE i.user.email = :email AND i.provider = :provider", String.class)
                 .setParameter("email", seedUser.email())
+                .setParameter("provider", IdentityProvider.GOOGLE)
                 .getSingleResult();
-            assertEquals(seedUser.tokenId(), tokenId);
+            assertEquals(seedUser.subject(), subject);
         }
 
         final Long projects = entityManager

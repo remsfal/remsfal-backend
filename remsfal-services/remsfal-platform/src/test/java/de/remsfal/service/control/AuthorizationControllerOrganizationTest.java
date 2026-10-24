@@ -329,7 +329,6 @@ public class AuthorizationControllerOrganizationTest extends AbstractServiceTest
             UserEntity user = new UserEntity();
             user.setId(id);
             user.setEmail(email);
-            user.setTokenId("token-" + id);
             entityManager.persist(user);
             entityManager.flush();
             return user;

@@ -23,6 +23,7 @@ import de.remsfal.core.model.UserModel;
 import de.remsfal.service.control.AuthorizationController;
 import de.remsfal.service.control.DevDataSeedController;
 import de.remsfal.service.control.DevDataSeedController.SeedUser;
+import de.remsfal.service.entity.dto.UserIdentityEntity.IdentityProvider;
 import io.quarkus.arc.properties.IfBuildProperty;
 
 /**
@@ -109,8 +110,8 @@ public class DevLoginResource extends AbstractAuthenticationResource {
         checkEnabled();
         final String normalizedEmail = email.trim().toLowerCase();
         logger.warnv("Dev login used for {0} - this must never happen in production!", normalizedEmail);
-        final UserModel user = controller.authenticateUser(
-            DevDataSeedController.tokenIdOf(normalizedEmail), normalizedEmail, resolveLocale());
+        final UserModel user = controller.authenticateUser(IdentityProvider.GOOGLE,
+            DevDataSeedController.subjectOf(normalizedEmail), normalizedEmail, true, resolveLocale());
         return createSession(user, sanitizeRoute(route));
     }
 
@@ -118,13 +119,6 @@ public class DevLoginResource extends AbstractAuthenticationResource {
         if (!devLoginEnabled) {
             throw new NotFoundException();
         }
-    }
-
-    private static String sanitizeRoute(final String route) {
-        if (route == null || !route.startsWith("/") || route.startsWith("//")) {
-            return "/";
-        }
-        return route;
     }
 
     private static String escape(final String value) {

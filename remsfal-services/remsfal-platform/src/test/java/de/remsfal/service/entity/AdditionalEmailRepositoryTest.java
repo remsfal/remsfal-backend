@@ -36,7 +36,6 @@ class AdditionalEmailRepositoryTest extends AbstractServiceTest {
     void insertDuplicateEmail_FAIL_uniqueConstraint() {
         UserEntity user = new UserEntity();
         user.generateId();
-        user.setTokenId(TestData.USER_TOKEN);
         user.setEmail(TestData.USER_EMAIL);
         userRepository.persist(user);
 
@@ -66,7 +65,6 @@ class AdditionalEmailRepositoryTest extends AbstractServiceTest {
     void deleteUser_SUCCESS_cascadesToAdditionalEmails() {
         UserEntity user = new UserEntity();
         user.generateId();
-        user.setTokenId(TestData.USER_TOKEN);
         user.setEmail(TestData.USER_EMAIL);
         userRepository.persist(user);
 
@@ -102,7 +100,6 @@ class AdditionalEmailRepositoryTest extends AbstractServiceTest {
     void count_existing_emails() {
         UserEntity user = new UserEntity();
         user.generateId();
-        user.setTokenId(TestData.USER_TOKEN);
         user.setEmail(TestData.USER_EMAIL);
         userRepository.persist(user);
 
@@ -120,7 +117,6 @@ class AdditionalEmailRepositoryTest extends AbstractServiceTest {
     void equals_SUCCESS_additionalEmailEntity() {
         UserEntity user = new UserEntity();
         user.generateId();
-        user.setTokenId(TestData.USER_TOKEN);
         user.setEmail(TestData.USER_EMAIL);
 
         AdditionalEmailEntity entity = new AdditionalEmailEntity();

@@ -19,18 +19,23 @@ import de.remsfal.common.authentication.UnauthorizedException;
 import de.remsfal.core.model.UserAuthenticationModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.control.event.AuthenticationEvent;
+import de.remsfal.service.entity.dao.AdditionalEmailRepository;
 import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dao.RentalAgreementRepository;
 import de.remsfal.service.entity.dao.UserAuthenticationRepository;
+import de.remsfal.service.entity.dao.UserIdentityRepository;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
 import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
+import de.remsfal.service.entity.dto.AdditionalEmailEntity;
+import de.remsfal.service.entity.dto.UserIdentityEntity.IdentityProvider;
 import de.remsfal.service.entity.dto.OrganizationEmployeeEntity;
 import de.remsfal.service.entity.dto.ProjectMembershipEntity;
 import de.remsfal.service.entity.dto.ProjectOrganizationEntity;
 import de.remsfal.service.entity.dto.RentalAgreementEntity;
 import de.remsfal.service.entity.dto.UserAuthenticationEntity;
 import de.remsfal.service.entity.dto.UserEntity;
+import de.remsfal.service.entity.dto.UserIdentityEntity;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -43,6 +48,12 @@ public class AuthorizationController {
 
     @Inject
     UserRepository userRepository;
+
+    @Inject
+    UserIdentityRepository identityRepository;
+
+    @Inject
+    AdditionalEmailRepository additionalEmailRepository;
 
     @Inject
     UserController userController;
@@ -71,24 +82,53 @@ public class AuthorizationController {
             .orElseThrow(() -> new UnauthorizedException("User does not exist"));
     }
 
+    /**
+     * Authenticates a user by an external identity. Lookup order:
+     * <ol>
+     * <li>an identity with the same provider and subject</li>
+     * <li>an active user owning the (verified) email as primary or verified additional email, to which the
+     * identity is linked - an unverified email is never used for linking</li>
+     * <li>otherwise a new user is created or a placeholder user is reclaimed</li>
+     * </ol>
+     */
     @Transactional
-    public UserModel authenticateUser(final String googleId, final String email, final String locale) {
-        logger.infov("Authenticating a user (googleId={0}, email={1})", googleId, email);
+    public UserModel authenticateUser(final IdentityProvider provider, final String subject, final String email,
+        final boolean emailVerified, final String locale) {
+        logger.infov("Authenticating a user (provider={0}, subject={1}, email={2}, emailVerified={3})",
+            provider, subject, email, emailVerified);
 
-        final Optional<UserEntity> entity = userRepository.findByTokenId(googleId);
-        if (entity.isPresent()) {
-            authenticatedUser.fireAsync(new AuthenticationEvent(googleId, email));
-            return entity.get();
+        final Optional<UserIdentityEntity> identity = identityRepository.findByProviderAndSubject(provider, subject);
+        if (identity.isPresent()) {
+            final UserEntity user = identity.get().getUser();
+            authenticatedUser.fireAsync(new AuthenticationEvent(user.getId(), provider, subject, email));
+            return user;
         }
 
-        return userController.createUser(googleId, email, locale);
+        if (emailVerified) {
+            final Optional<UserEntity> linkable = findActiveUserByVerifiedEmail(email);
+            if (linkable.isPresent()) {
+                final UserEntity user = linkable.get();
+                userController.linkIdentity(user, provider, subject, email);
+                authenticatedUser.fireAsync(new AuthenticationEvent(user.getId(), provider, subject, email));
+                return user;
+            }
+        }
+
+        return userController.createUser(provider, subject, email, emailVerified, locale);
     }
-    
+
+    private Optional<UserEntity> findActiveUserByVerifiedEmail(final String email) {
+        return userRepository.findByEmail(email)
+            .or(() -> additionalEmailRepository.findVerifiedByEmail(email).map(AdditionalEmailEntity::getUser))
+            .filter(UserEntity::isActive);
+    }
+
     public void onPrincipalAuthentication(@ObservesAsync final AuthenticationEvent event) {
-        logger.infov("Updating authentication timestamp of user (googleId={0}, email={1})",
-            event.getGoogleId(), event.getEmail());
+        logger.infov("Updating authentication timestamp of user (id={0}, provider={1}, email={2})",
+            event.getUserId(), event.getProvider(), event.getEmail());
         try {
-            userRepository.updateAuthenticatedAt(event.getGoogleId(), event.getAuthenticatedAt());
+            userRepository.updateAuthenticatedAt(event.getUserId(), event.getAuthenticatedAt());
+            identityRepository.updateLastUsedAt(event.getProvider(), event.getSubject(), event.getAuthenticatedAt());
         } catch (Exception e) {
             logger.error("Unable to update authentication timestamp", e);
         }

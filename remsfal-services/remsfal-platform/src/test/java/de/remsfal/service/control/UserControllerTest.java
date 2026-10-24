@@ -31,6 +31,7 @@ import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.boundary.eventing.UserEventProducer;
 import de.remsfal.service.control.exception.AlreadyExistsException;
 import de.remsfal.service.entity.dto.AddressEntity;
+import de.remsfal.service.entity.dto.UserIdentityEntity.IdentityProvider;
 import de.remsfal.service.entity.dto.UserEntity;
 import de.remsfal.test.TestData;
 import io.quarkus.test.InjectMock;
@@ -49,7 +50,7 @@ class UserControllerTest extends AbstractServiceTest {
 
     @Test
     void createUser_SUCCESS_simpleUserCreated() {
-        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        UserModel user = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
         assertNotNull(user);
         assertEquals(36, user.getId().toString().length());
         assertEquals(TestData.USER_EMAIL, user.getEmail());
@@ -63,11 +64,11 @@ class UserControllerTest extends AbstractServiceTest {
 
     @Test
     void createUser_FAILED_userAlreadyExist() {
-        assertNotNull(controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL));
+        assertNotNull(controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL));
 
         assertThrows(
             AlreadyExistsException.class,
-            () -> controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL));
+            () -> controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL));
     }
 
     @Test
@@ -77,7 +78,7 @@ class UserControllerTest extends AbstractServiceTest {
         final UUID placeholderId = placeholder.getId();
         assertFalse(placeholder.isActive());
 
-        final UserModel reclaimed = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        final UserModel reclaimed = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
 
         assertNotNull(reclaimed);
         assertEquals(placeholderId, reclaimed.getId());
@@ -98,7 +99,7 @@ class UserControllerTest extends AbstractServiceTest {
         runInTransaction(() ->
             controller.findOrCreateUser(ImmutableUserJson.builder().email(TestData.USER_EMAIL).build()));
 
-        controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
 
         final ArgumentCaptor<CustomerModel> userCaptor = ArgumentCaptor.forClass(CustomerModel.class);
         verify(notificationController).informUserAboutRegistration(userCaptor.capture());
@@ -107,7 +108,7 @@ class UserControllerTest extends AbstractServiceTest {
 
     @Test
     void createUser_SUCCESS_localeFromParameter() {
-        final UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL, "en");
+        final UserModel user = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL, true, "en");
 
         assertEquals("en", ((CustomerModel) user).getLocale());
 
@@ -125,7 +126,7 @@ class UserControllerTest extends AbstractServiceTest {
         insertTenant(TestData.TENANT_ID_1, TestData.AGREEMENT_ID_1, TestData.PROJECT_ID_1,
             TestData.TENANT_FIRST_NAME_1, TestData.TENANT_LAST_NAME_1, TestData.USER_EMAIL);
 
-        final UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        final UserModel user = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
 
         final UUID linkedUserId = entityManager
             .createQuery("SELECT t.user.id FROM TenantEntity t WHERE t.id = :tenantId", UUID.class)
@@ -147,7 +148,7 @@ class UserControllerTest extends AbstractServiceTest {
         insertTenant(TestData.TENANT_ID_2, TestData.AGREEMENT_ID_2, TestData.PROJECT_ID_2,
             TestData.TENANT_FIRST_NAME_2, TestData.TENANT_LAST_NAME_2, TestData.USER_EMAIL);
 
-        final UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        final UserModel user = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
 
         final List<UUID> linkedUserIds = entityManager
             .createQuery("SELECT t.user.id FROM TenantEntity t WHERE t.id IN (:t1, :t2)", UUID.class)
@@ -176,7 +177,7 @@ class UserControllerTest extends AbstractServiceTest {
         insertTenant(TestData.TENANT_ID_1, TestData.AGREEMENT_ID_1, TestData.PROJECT_ID_1,
             TestData.TENANT_FIRST_NAME_1, TestData.TENANT_LAST_NAME_1, TestData.USER_EMAIL);
 
-        final UserModel reclaimed = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        final UserModel reclaimed = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
         assertEquals(placeholderId, reclaimed.getId());
 
         final UUID t1UserId = entityManager
@@ -220,7 +221,7 @@ class UserControllerTest extends AbstractServiceTest {
 
     @Test
     void updateUser_SUCCESS_userNameChanged() {
-        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        UserModel user = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
         final String email = entityManager
             .createQuery("SELECT user.email FROM UserEntity user where user.id = :userId", String.class)
             .setParameter("userId", user.getId())
@@ -245,7 +246,7 @@ class UserControllerTest extends AbstractServiceTest {
 
     @Test
     void updateUser_SUCCESS_notifiesLinkedTenantOnRelevantChange() {
-        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        UserModel user = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
         UUID userId = user.getId();
 
         insertProject(TestData.PROJECT_ID, TestData.PROJECT_TITLE_1);
@@ -280,7 +281,7 @@ class UserControllerTest extends AbstractServiceTest {
 
     @Test
     void updateUser_SUCCESS_noTenantNotificationWhenOnlyLocaleChanged() {
-        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        UserModel user = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
 
         CustomerModel updatedUser = ImmutableUserJson.builder().id(user.getId()).locale("en").build();
         controller.updateUser(user.getId(), updatedUser);
@@ -290,7 +291,7 @@ class UserControllerTest extends AbstractServiceTest {
 
     @Test
     void updateUser_SUCCESS_birthInfoChanged() {
-        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        UserModel user = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
 
         final String placeOfBirth = "Berlin";
         final java.time.LocalDate dateOfBirth = java.time.LocalDate.of(1990, 1, 1);
@@ -309,7 +310,7 @@ class UserControllerTest extends AbstractServiceTest {
 
     @Test
     void updateUser_SUCCESS_addressInserted() {
-        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        UserModel user = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
         assertNotNull(user.getId());
 
         CustomerModel updatedUser =
@@ -332,7 +333,7 @@ class UserControllerTest extends AbstractServiceTest {
 
     @Test
     void updateUser_SUCCESS_addressChanged() {
-        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        UserModel user = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
         assertNotNull(user.getId());
 
         CustomerModel updatedUser =
@@ -361,7 +362,7 @@ class UserControllerTest extends AbstractServiceTest {
 
     @Test
     void updateUser_SUCCESS_noLocaleInserted() {
-        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        UserModel user = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
         assertNotNull(user.getId());
 
         final String newUserName = "Dr. " + TestData.USER_LAST_NAME;
@@ -379,7 +380,7 @@ class UserControllerTest extends AbstractServiceTest {
 
     @Test
     void updateUser_SUCCESS_localeInserted() {
-        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        UserModel user = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
         assertNotNull(user.getId());
 
         final String insertedLocale = "en";
@@ -397,7 +398,7 @@ class UserControllerTest extends AbstractServiceTest {
 
     @Test
     void createUser_FAIL_loginEmailEqualsAlternativeEmail() {
-        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        UserModel user = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
         UUID userId = user.getId();
 
         CustomerModel updatedUser = ImmutableUserJson.builder()
@@ -409,7 +410,7 @@ class UserControllerTest extends AbstractServiceTest {
 
         AlreadyExistsException ex = assertThrows(
             AlreadyExistsException.class,
-            () -> controller.createUser(TestData.USER_TOKEN_2, TestData.ALTERNATIVE_EMAIL_1)
+            () -> controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN_2, TestData.ALTERNATIVE_EMAIL_1)
         );
 
         assertEquals("Unable to create user", ex.getMessage());
@@ -425,7 +426,7 @@ class UserControllerTest extends AbstractServiceTest {
 
     @Test
     void updateUser_SUCCESS_removeAdditionalEmailOnUpdate() {
-        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        UserModel user = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
         UUID userId = user.getId();
 
         CustomerModel updatedUser = ImmutableUserJson.builder()
@@ -467,7 +468,7 @@ class UserControllerTest extends AbstractServiceTest {
 
     @Test
     void updateUser_FAIL_alternativeEmailEqualsLoginEmail() {
-        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        UserModel user = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
         UUID userId = user.getId();
 
         ImmutableUserJson update = ImmutableUserJson.builder()
@@ -493,7 +494,7 @@ class UserControllerTest extends AbstractServiceTest {
 
     @Test
     void updateUser_SUCCESS_noDuplicateAdditionalEmailInserted() {
-        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        UserModel user = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
         UUID userId = user.getId();
 
         CustomerModel updatedUser = ImmutableUserJson.builder()
@@ -533,7 +534,7 @@ class UserControllerTest extends AbstractServiceTest {
 
     @Test
     void updateUser_FAIL_emailIsNotUnique() {
-        UserModel user1 = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        UserModel user1 = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
         UUID userId1 = user1.getId();
 
         CustomerModel update1 = ImmutableUserJson.builder()
@@ -543,7 +544,7 @@ class UserControllerTest extends AbstractServiceTest {
 
         controller.updateUser(userId1, update1);
 
-        UserModel user2 = controller.createUser(TestData.USER_TOKEN_2, TestData.USER_EMAIL_2);
+        UserModel user2 = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN_2, TestData.USER_EMAIL_2);
         UUID userId2 = user2.getId();
 
         CustomerModel update2 = ImmutableUserJson.builder()
@@ -571,7 +572,7 @@ class UserControllerTest extends AbstractServiceTest {
 
     @Test
     void updateUser_SUCCESS_additionalEmailVerificationTokenCreated() {
-        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        UserModel user = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
         UUID userId = user.getId();
 
         CustomerModel update = ImmutableUserJson.builder()
@@ -596,7 +597,7 @@ class UserControllerTest extends AbstractServiceTest {
 
     @Test
     void verifyAdditionalEmail_SUCCESS_marksEmailAsVerified() {
-        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        UserModel user = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
         UUID userId = user.getId();
 
         CustomerModel update = ImmutableUserJson.builder()
@@ -629,7 +630,7 @@ class UserControllerTest extends AbstractServiceTest {
 
     @Test
     void verifyAdditionalEmail_FAIL_tokenExpired() {
-        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        UserModel user = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
         UUID userId = user.getId();
 
         CustomerModel update = ImmutableUserJson.builder()
@@ -657,7 +658,7 @@ class UserControllerTest extends AbstractServiceTest {
 
     @Test
     void deleteUser_SUCCESS_repeatedRemove() {
-        UserModel user = controller.createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+        UserModel user = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
         assertNotNull(user.getId());
 
         assertTrue(controller.deleteUser(user.getId()));
