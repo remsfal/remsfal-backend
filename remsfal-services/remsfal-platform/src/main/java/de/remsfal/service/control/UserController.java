@@ -29,8 +29,11 @@ import de.remsfal.core.model.UserModel;
 import de.remsfal.service.boundary.eventing.UserEventProducer;
 import de.remsfal.service.control.exception.AlreadyExistsException;
 import de.remsfal.service.entity.dao.TenantRepository;
+import de.remsfal.service.entity.dao.UserIdentityRepository;
 import de.remsfal.service.entity.dao.UserRepository;
+import de.remsfal.service.entity.dto.UserIdentityEntity.IdentityProvider;
 import de.remsfal.service.entity.dto.UserEntity;
+import de.remsfal.service.entity.dto.UserIdentityEntity;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -52,6 +55,9 @@ public class UserController {
 
     @Inject
     AdditionalEmailRepository additionalEmailRepository;
+
+    @Inject
+    UserIdentityRepository identityRepository;
     
     @Inject
     AddressController addressController;
@@ -66,13 +72,18 @@ public class UserController {
     private static final int ADDITIONAL_EMAIL_VERIFICATION_TOKEN_VALID_HOURS = 24;
 
     @Transactional
-    protected UserModel createUser(final String googleId, final String email) {
-        return createUser(googleId, email, null);
+    protected UserModel createUser(final IdentityProvider provider, final String subject, final String email) {
+        return createUser(provider, subject, email, true, null);
     }
 
+    /**
+     * Creates a new active user for the given identity or reclaims a placeholder user with the same email.
+     * A placeholder is only reclaimed if the identity provider has verified the email.
+     */
     @Transactional
-    protected UserModel createUser(final String googleId, final String email, final String locale) {
-        final String normalizedEmail = email.toLowerCase();
+    protected UserModel createUser(final IdentityProvider provider, final String subject, final String email,
+        final boolean emailVerified, final String locale) {
+        final String normalizedEmail = email.trim().toLowerCase();
         final String resolvedLocale = locale != null && !locale.isBlank() ? locale : DEFAULT_LOCALE;
 
         if (additionalEmailRepository.existsByEmail(normalizedEmail)) {
@@ -82,35 +93,57 @@ public class UserController {
         final Optional<UserEntity> existingByEmail = repository.findByEmail(normalizedEmail);
         if (existingByEmail.isPresent()) {
             final UserEntity existing = existingByEmail.get();
-            if (existing.isActive()) {
+            if (existing.isActive() || !emailVerified) {
                 throw new AlreadyExistsException("Unable to create user");
             }
-            logger.infov("Reclaiming placeholder user for first login (id={0}, googleId={1}, email={2})",
-                existing.getId(), googleId, normalizedEmail);
-            existing.setTokenId(googleId);
+            logger.infov("Reclaiming placeholder user for first login (id={0}, provider={1}, subject={2}, email={3})",
+                existing.getId(), provider, subject, normalizedEmail);
             existing.setLocale(resolvedLocale);
             existing.setAuthenticatedAt(LocalDateTime.now());
             final UserEntity reclaimed = repository.mergeAndFlush(existing);
+            linkIdentity(reclaimed, provider, subject, normalizedEmail);
             tenantUserLinker.linkTenantsForNewUser(reclaimed);
             notificationController.informUserAboutRegistration(reclaimed);
             return reclaimed;
         }
 
-        logger.infov("Creating a new user (googleId={0}, email={1})", googleId, normalizedEmail);
+        logger.infov("Creating a new user (provider={0}, subject={1}, email={2})", provider, subject, normalizedEmail);
         final UserEntity entity = new UserEntity();
         entity.generateId();
-        entity.setTokenId(googleId);
         entity.setEmail(normalizedEmail);
         entity.setLocale(resolvedLocale);
         entity.setAuthenticatedAt(LocalDateTime.now());
         try {
             repository.persistAndFlush(entity);
+            linkIdentity(entity, provider, subject, normalizedEmail);
             tenantUserLinker.linkTenantsForNewUser(entity);
             notificationController.informUserAboutRegistration(entity);
             return entity;
         } catch (PersistenceException e) {
             throw new AlreadyExistsException("Unable to create user", e);
         }
+    }
+
+    /**
+     * Links an external identity to the given user, which makes the user active.
+     */
+    @Transactional
+    protected void linkIdentity(final UserEntity user, final IdentityProvider provider, final String subject,
+        final String email) {
+        logger.infov("Linking identity to user (id={0}, provider={1}, subject={2})", user.getId(), provider, subject);
+        final UserIdentityEntity identity = new UserIdentityEntity();
+        identity.generateId();
+        identity.setUser(user);
+        identity.setProvider(provider);
+        identity.setSubject(subject);
+        identity.setEmail(email);
+        identity.setLastUsedAt(LocalDateTime.now());
+        try {
+            identityRepository.persistAndFlush(identity);
+        } catch (PersistenceException e) {
+            throw new AlreadyExistsException("Identity is already linked to a user", e);
+        }
+        user.markActive();
     }
 
     public UserEntity getUser(final UUID userId) {

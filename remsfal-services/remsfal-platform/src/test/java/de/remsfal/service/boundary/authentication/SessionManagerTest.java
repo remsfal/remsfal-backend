@@ -97,7 +97,7 @@ class SessionManagerTest {
         user.setEmail(email);
         user.setFirstName("John");
         user.setLastName("Doe");
-        user.setTokenId("active-token");
+        user.markActive();
 
         UserAuthenticationEntity auth = new UserAuthenticationEntity();
         auth.setUser(user);
@@ -146,7 +146,7 @@ class SessionManagerTest {
         user.setEmail(TestData.USER_EMAIL);
         user.setFirstName("Jane");
         user.setLastName("Roe");
-        user.setTokenId("active");
+        user.markActive();
 
         when(controller.getAuthenticatedUser(TestData.USER_ID)).thenReturn(user);
         when(controller.getProjectAuthorization(TestData.USER_ID))
@@ -198,7 +198,7 @@ class SessionManagerTest {
         user.setEmail(TestData.USER_EMAIL);
         user.setFirstName("Jane");
         user.setLastName("Roe");
-        user.setTokenId("active");
+        user.markActive();
 
         when(controller.getAuthenticatedUser(TestData.USER_ID)).thenReturn(user);
         when(controller.getProjectAuthorization(TestData.USER_ID))

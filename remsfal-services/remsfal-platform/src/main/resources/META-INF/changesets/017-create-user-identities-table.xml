@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="remsfal-platform-017-user-identities" author="alexander.stanik@htw-berlin.de">
+        <comment>Create table for external identities (Google, Apple, email) of a user</comment>
+
+        <createTable tableName="user_identities">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+            <column name="provider" type="varchar(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="subject" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="varchar(255)"/>
+            <column name="last_used_at" type="timestamp"/>
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addUniqueConstraint tableName="user_identities" columnNames="provider, subject"
+                             constraintName="unique_user_identity_provider_subject"/>
+
+        <createIndex tableName="user_identities" indexName="idx_user_identities_user_id">
+            <column name="user_id"/>
+        </createIndex>
+
+        <addForeignKeyConstraint
+                baseTableName="user_identities"
+                baseColumnNames="user_id"
+                constraintName="fk_user_identities_user"
+                referencedTableName="users"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="remsfal-platform-017-migrate-google-token-ids" author="alexander.stanik@htw-berlin.de">
+        <comment>Migrate users.token_id into user_identities as GOOGLE identities and drop the column</comment>
+
+        <sql>
+            INSERT INTO user_identities (id, user_id, provider, subject, email, last_used_at)
+            SELECT gen_random_uuid(), id, 'GOOGLE', token_id, email, authenticated_at
+            FROM users
+            WHERE token_id IS NOT NULL
+        </sql>
+
+        <dropUniqueConstraint tableName="users" constraintName="unique_user_token_id"/>
+        <dropColumn tableName="users" columnName="token_id"/>
+
+        <rollback>
+            <addColumn tableName="users">
+                <column name="token_id" type="varchar(255)"/>
+            </addColumn>
+            <sql>
+                UPDATE users SET token_id = ui.subject
+                FROM user_identities ui
+                WHERE ui.user_id = users.id AND ui.provider = 'GOOGLE'
+            </sql>
+            <addUniqueConstraint tableName="users" columnNames="token_id" constraintName="unique_user_token_id"/>
+            <delete tableName="user_identities"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

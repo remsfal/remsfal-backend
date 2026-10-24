@@ -2,11 +2,14 @@ package de.remsfal.service.boundary;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.matcher.RestAssuredMatchers;
+import io.restassured.response.ExtractableResponse;
+import io.restassured.response.Response;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 import de.remsfal.common.authentication.KeyLoader;
+import de.remsfal.service.boundary.authentication.OAuthStateManager;
 import de.remsfal.test.TestData;
 
 import static io.restassured.RestAssured.given;
@@ -14,6 +17,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import jakarta.ws.rs.core.Response.Status;
 
 import java.math.BigInteger;
+import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPublicKey;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -27,9 +33,24 @@ class AuthenticationResourceTest extends AbstractResourceTest {
 
     static final String REDIRECT_URI_URL = "http%3A%2F%2Flocalhost%3A8081%2Fapi%2Fv1%2Fauthentication%2Fsession";
 
+    /**
+     * Asserts that the state parameter of the redirect carries the route and a nonce matching the state cookie.
+     */
+    private static void assertStateCarriesRoute(final ExtractableResponse<Response> response, final String route) {
+        final String location = response.header("location");
+        final String state = Arrays.stream(URI.create(location).getRawQuery().split("&"))
+            .filter(param -> param.startsWith("state="))
+            .map(param -> URLDecoder.decode(param.substring("state=".length()), StandardCharsets.UTF_8))
+            .findFirst()
+            .orElseThrow();
+        final String[] parts = state.split("\\.", 2);
+        assertEquals(response.cookie(OAuthStateManager.STATE_COOKIE_NAME), parts[0]);
+        assertEquals(route, new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8));
+    }
+
     @Test
     void login_SUCCESS_userIsRedirected() {
-        given()
+        final ExtractableResponse<Response> response = given()
             .redirects().follow(false)
             .when().get(BASE_PATH + "/login")
             .then()
@@ -40,26 +61,57 @@ class AuthenticationResourceTest extends AbstractResourceTest {
             .header("location", Matchers.containsString("redirect_uri="))
             .header("location", Matchers.containsString(REDIRECT_URI_URL))
             .header("location", Matchers.containsString("scope=openid+email"))
-            .header("location", Matchers.containsString("state=%2F"));
+            .cookie(OAuthStateManager.STATE_COOKIE_NAME, RestAssuredMatchers.detailedCookie()
+                .path("/api/v1/authentication")
+                .sameSite("Lax")
+                .httpOnly(true)
+                .secured(true)
+                .maxAge(60 * 10))
+            .extract();
+        assertStateCarriesRoute(response, "/");
+    }
+
+    @Test
+    void loginWithGoogle_SUCCESS_userIsRedirected() {
+        final ExtractableResponse<Response> response = given()
+            .queryParam("route", "/projects")
+            .redirects().follow(false)
+            .when().get(BASE_PATH + "/login/google")
+            .then()
+            .statusCode(Status.FOUND.getStatusCode())
+            .header("location", Matchers.startsWith("https://accounts.google.com/o/oauth2/auth?"))
+            .header("location", Matchers.containsString(REDIRECT_URI_URL))
+            .cookie(OAuthStateManager.STATE_COOKIE_NAME, Matchers.notNullValue())
+            .extract();
+        assertStateCarriesRoute(response, "/projects");
     }
 
     @Test
     void login_SUCCESS_userProvidesState() {
-        final String route = "%2Fmy%2Fcallback%2Froute";
+        final String route = "/my/callback/route";
 
-        given()
+        final ExtractableResponse<Response> response = given()
             .queryParam("route", route)
             .redirects().follow(false)
             .when().get(BASE_PATH + "/login")
             .then()
             .statusCode(Status.FOUND.getStatusCode())
             .header("location", Matchers.startsWith("https://accounts.google.com/o/oauth2/auth?"))
-            .header("location", Matchers.containsString("response_type=code"))
-            .header("location", Matchers.containsString("client_id="))
-            .header("location", Matchers.containsString("redirect_uri="))
             .header("location", Matchers.containsString(REDIRECT_URI_URL))
-            .header("location", Matchers.containsString("scope=openid+email"))
-            .header("location", Matchers.containsString("state=" + route));
+            .extract();
+        assertStateCarriesRoute(response, route);
+    }
+
+    @Test
+    void login_SUCCESS_unsafeRouteIsReplaced() {
+        final ExtractableResponse<Response> response = given()
+            .queryParam("route", "https://evil.example.org")
+            .redirects().follow(false)
+            .when().get(BASE_PATH + "/login/google")
+            .then()
+            .statusCode(Status.FOUND.getStatusCode())
+            .extract();
+        assertStateCarriesRoute(response, "/");
     }
 
     @Test
@@ -81,7 +133,7 @@ class AuthenticationResourceTest extends AbstractResourceTest {
             .header("location", Matchers.containsString("redirect_uri="))
             .header("location", Matchers.containsString(proxyRedirectUri))
             .header("location", Matchers.containsString("scope=openid+email"))
-            .header("location", Matchers.containsString("state=%2F"));
+            .header("location", Matchers.containsString("state="));
     }
 
     @Test

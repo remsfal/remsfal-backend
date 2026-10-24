@@ -26,6 +26,7 @@ import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.ProjectMemberModel;
 import de.remsfal.core.model.project.ProjectModel;
+import de.remsfal.service.entity.dto.UserIdentityEntity.IdentityProvider;
 import de.remsfal.service.entity.dto.OrganizationEntity;
 import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 import de.remsfal.service.AbstractServiceTest;
@@ -50,7 +51,7 @@ class ProjectControllerTest extends AbstractServiceTest {
     @Test
     void createProject_SUCCESS_defaultProjectCreated() {
         final UserModel user = userController
-            .createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+            .createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
 
         ProjectModel projectRequest =
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build();
@@ -85,7 +86,7 @@ class ProjectControllerTest extends AbstractServiceTest {
     @Test
     void getProject_SUCCESS_getSingleUser() {
         final UserModel user = userController
-            .createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+            .createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
 
         final ProjectModel project = projectController.createProject(user, ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
         assertNotNull(project);
@@ -99,7 +100,7 @@ class ProjectControllerTest extends AbstractServiceTest {
     @Test
     void createProject_SUCCESS_setOwnerAndAddressFromCreator() {
         final UserModel user = userController
-            .createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+            .createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
         userController.updateUser(user.getId(), ImmutableUserJson.builder()
             .firstName(TestData.USER_FIRST_NAME)
             .lastName(TestData.USER_LAST_NAME)
@@ -124,13 +125,13 @@ class ProjectControllerTest extends AbstractServiceTest {
     @Test
     void getProjects_SUCCESS_getMultipleUsers() {
         final UserModel user1 = userController
-            .createUser(TestData.USER_TOKEN_1, TestData.USER_EMAIL_1);
+            .createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN_1, TestData.USER_EMAIL_1);
 
         final UserModel user2 = userController
-            .createUser(TestData.USER_TOKEN_2, TestData.USER_EMAIL_2);
+            .createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN_2, TestData.USER_EMAIL_2);
 
         final UserModel user3 = userController
-            .createUser(TestData.USER_TOKEN_3, TestData.USER_EMAIL_3);
+            .createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN_3, TestData.USER_EMAIL_3);
 
         final ProjectModel project1 = projectController
             .createProject(user1, ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE_1).build());
@@ -183,7 +184,7 @@ class ProjectControllerTest extends AbstractServiceTest {
     @Test
     void updateProject_SUCCESS_changeTitle() {
         final UserModel user = userController
-            .createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+            .createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
 
         final ProjectModel project = projectController.createProject(user, 
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE_1).build());
@@ -205,7 +206,7 @@ class ProjectControllerTest extends AbstractServiceTest {
     @Test
     void updateProject_SUCCESS_withOwnerAndCareOf() {
         final UserModel user = userController
-            .createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+            .createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
 
         final ProjectModel project = projectController.createProject(user,
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE_1).build());
@@ -236,7 +237,7 @@ class ProjectControllerTest extends AbstractServiceTest {
     @Test
     void updateProject_SUCCESS_reuseAddressIdFromUserOrOrganization() {
         final UserModel user = userController
-            .createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+            .createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
         userController.updateUser(user.getId(), ImmutableUserJson.builder()
             .firstName(TestData.USER_FIRST_NAME)
             .lastName(TestData.USER_LAST_NAME)
@@ -275,7 +276,7 @@ class ProjectControllerTest extends AbstractServiceTest {
     @Test
     void updateProject_SUCCESS_createDedicatedAddressId() {
         final UserModel user = userController
-            .createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+            .createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
         userController.updateUser(user.getId(), ImmutableUserJson.builder()
             .firstName(TestData.USER_FIRST_NAME)
             .lastName(TestData.USER_LAST_NAME)
@@ -310,10 +311,10 @@ class ProjectControllerTest extends AbstractServiceTest {
     @Test
     void updateProject_FAILED_changeTitle() {
         final UserModel user1 = userController
-            .createUser(TestData.USER_TOKEN_1, TestData.USER_EMAIL_1);
+            .createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN_1, TestData.USER_EMAIL_1);
 
         final UserModel user2 = userController
-            .createUser(TestData.USER_TOKEN_2, TestData.USER_EMAIL_2);
+            .createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN_2, TestData.USER_EMAIL_2);
 
         final ProjectModel project = projectController.createProject(user1, 
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE_1).build());
@@ -327,7 +328,7 @@ class ProjectControllerTest extends AbstractServiceTest {
     @Test
     void deleteProject_SUCCESS_deleteSingleProject() {
         final UserModel user = userController
-            .createUser(TestData.USER_TOKEN, TestData.USER_EMAIL);
+            .createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
 
         final ProjectModel project = projectController.createProject(user, 
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
@@ -346,10 +347,10 @@ class ProjectControllerTest extends AbstractServiceTest {
     @Test
     void addProjectMember_SUCCESS_addSecondUser() {
         final UserModel user1 = userController
-            .createUser(TestData.USER_TOKEN_1, TestData.USER_EMAIL_1);
+            .createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN_1, TestData.USER_EMAIL_1);
 
         final UserModel user2 = userController
-            .createUser(TestData.USER_TOKEN_2, TestData.USER_EMAIL_2);
+            .createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN_2, TestData.USER_EMAIL_2);
 
         final ProjectModel project = projectController.createProject(user1, 
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
@@ -389,7 +390,7 @@ class ProjectControllerTest extends AbstractServiceTest {
     @Test
     void getProjectMembers_SUCCESS_multipleUsers() throws InterruptedException {
         final UserModel user = userController
-            .createUser(TestData.USER_TOKEN_1, TestData.USER_EMAIL_1);
+            .createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN_1, TestData.USER_EMAIL_1);
 
         ProjectModel project = projectController.createProject(user, 
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
@@ -431,7 +432,7 @@ class ProjectControllerTest extends AbstractServiceTest {
     @Test
     void removeProjectMember_SUCCESS_removeAnotherUser() {
         final UserModel user = userController
-            .createUser(TestData.USER_TOKEN_1, TestData.USER_EMAIL_1);
+            .createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN_1, TestData.USER_EMAIL_1);
 
         final ProjectModel project = projectController.createProject(user, 
             ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
@@ -471,7 +472,7 @@ class ProjectControllerTest extends AbstractServiceTest {
     @Test
     void changeProjectMemberRole_SUCCESS_roleChanged(){
         final UserModel user = userController
-                .createUser(TestData.USER_TOKEN_1, TestData.USER_EMAIL_1);
+                .createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN_1, TestData.USER_EMAIL_1);
 
         final ProjectModel project = projectController.createProject(user,
                 ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
