@@ -80,12 +80,12 @@ class OrganizationEntityTest extends AbstractTest {
 
     @Test
     void isEqual_SUCCESS_sameInstance() {
-        assertTrue(organization1.equals(organization1));
+        assertEquals(organization1, organization1);
     }
 
     @Test
     void isUnequal_SUCCESS_differentInstancesDifferentValues() {
         organization2.setName(TestData.ORGANIZATION_NAME_2);
-        assertFalse(organization1.equals(organization2));
+        assertNotEquals(organization1, organization2);
     }
 }

@@ -47,12 +47,12 @@ public class OrganizationEmployeeKeyTest extends AbstractTest {
 
     @Test
     void isEqual_SUCCESS_sameInstance() {
-        assertTrue(organizationEmployeeKey1.equals(organizationEmployeeKey1));
+        assertEquals(organizationEmployeeKey1, organizationEmployeeKey1);
     }
 
     @Test
     void isUnequal_SUCCESS_differentInstancesDifferentValues() {
         organizationEmployeeKey2.setUserId(UUID.randomUUID());
-        assertFalse(organizationEmployeeKey1.equals(organizationEmployeeKey2));
+        assertNotEquals(organizationEmployeeKey1, organizationEmployeeKey2);
     }
 }

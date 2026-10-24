@@ -39,9 +39,14 @@ public abstract class AbstractAuthenticationResource {
 
     protected Response createSession(final UserModel user, final String route, final NewCookie... cookies) {
         final URI redirectUri = getAbsoluteUriBuilder().replacePath(route).build();
+        return redirect(redirectUri).cookie(sessionCookies(user)).cookie(cookies).build();
+    }
+
+    /** Access and refresh token cookies of a new session of the given user. */
+    protected NewCookie[] sessionCookies(final UserModel user) {
         final NewCookie refreshToken = sessionManager.generateRefreshToken(user.getId(), user.getEmail());
         final NewCookie accessToken = sessionManager.generateAccessToken(user.getId(), user.getEmail());
-        return redirect(redirectUri).cookie(accessToken, refreshToken).cookie(cookies).build();
+        return new NewCookie[] {accessToken, refreshToken};
     }
 
     /** Only allows local, absolute paths of the frontend as redirect targets. */

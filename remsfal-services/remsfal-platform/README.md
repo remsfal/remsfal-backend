@@ -19,8 +19,8 @@ mvn compile quarkus:dev -pl remsfal-services/remsfal-platform
 In dev mode no Google credentials are required. The platform replaces the Google login with a simple
 dev login and seeds a small, linked sample data set on startup.
 
-**Dev login:** the frontend still calls `/api/v1/authentication/login`, but in dev mode the backend
-redirects to `/api/v1/authentication/dev-login` instead of Google. There you pick one of the seed users
+**Dev login:** the frontend still calls `/api/v1/authentication/login` (or `/login/google`, `/login/apple`),
+but in dev mode the backend redirects to `/api/v1/authentication/dev-login` instead of Google or Apple. There you pick one of the seed users
 or enter any email address; unknown users are created on first login, exactly like after a Google login
 (including linking to tenants/contractors with the same email and the welcome email).
 To work with several users at the same time, use a private window or a second browser profile.
@@ -49,7 +49,7 @@ not even part of a production build:
 ### Testing the real Google login locally (optional)
 
 1. Create your own OAuth client as described in [Creating a Google OAuth client](#creating-a-google-oauth-client)
-   with the redirect URI `http://localhost:5173/api/v1/authentication/session`.
+   with the redirect URI `http://localhost:5173/api/v1/authentication/session/google`.
 2. Put the credentials into `./remsfal-services/remsfal-platform/.env` (ignored by Git):
    ```shell script
    DE_REMSFAL_AUTH_OIDC_CLIENT_ID=<YOUR-ID>.apps.googleusercontent.com
@@ -67,7 +67,8 @@ We recommend using ready-made container images for productive use. A complete li
 ### Configuration
 
 For production you need to configure at least the [database](#database), [Google OAuth](#google-oauth)
-and your own [JWT keys](#jwt-token). Configure them via environment
+and your own [JWT keys](#jwt-token). [Sign in with Apple](#sign-in-with-apple) is optional, but required by the
+App Store as soon as the iOS app offers the Google login. Configure them via environment
 variables (or your deployment's secret store) or as JVM arguments &ndash; **never commit secrets to
 [application.properties](src/main/resources/application.properties)**.
 
@@ -78,6 +79,9 @@ variables (or your deployment's secret store) or as JVM arguments &ndash; **neve
 | `QUARKUS_DATASOURCE_USERNAME` / `_PASSWORD` / `QUARKUS_DATASOURCE_JDBC_URL` | Database connection                   |
 | `DE_REMSFAL_AUTH_OIDC_CLIENT_ID`                | Google OAuth client ID                                              |
 | `GOOGLE_CLIENT_SECRET`                          | Google OAuth client secret                                          |
+| `APPLE_TEAM_ID` / `APPLE_KEY_ID`                | Team ID and key ID of the Sign in with Apple key (see [Sign in with Apple](#sign-in-with-apple)) |
+| `APPLE_PRIVATE_KEY_LOCATION`                    | Location of the Sign in with Apple private key (`.p8`), e.g. `file:/run/secrets/remsfal_apple_private_key` |
+| `APPLE_SERVICES_ID` / `APPLE_BUNDLE_ID`         | Services ID (web login) and bundle ID (iOS app) |
 | `DE_REMSFAL_AUTH_JWT_PRIVATE_KEY_LOCATION`      | Location of the JWT signing key, e.g. `file:/run/secrets/remsfal_jwt_private_key` (see [JWT Token](#jwt-token)) |
 | `QUARKUS_MAILER_*`                              | SMTP settings, see the [notification service](../remsfal-notification/README.md#mailer-configuration) |
 
@@ -126,14 +130,78 @@ GOOGLE_CLIENT_SECRET=<YOUR-SECRET>
    - **Data access:** the scopes `openid` and `.../auth/userinfo.email` are sufficient.
 3. Under **Clients** click **Create client**, choose the application type **Web application** and add the
    authorized redirect URI of your deployment:
-   `https://<your-host>/api/v1/authentication/session`
-   (for a local test of the real Google login: `http://localhost:5173/api/v1/authentication/session`).
+   `https://<your-host>/api/v1/authentication/session/google`
+   (for a local test of the real Google login: `http://localhost:5173/api/v1/authentication/session/google`).
+   The former redirect URI `/api/v1/authentication/session` is still accepted for backward compatibility;
+   keep it registered until no deployment uses it anymore.
 4. Copy the client ID and the client secret. Download the JSON or store the secret in your password
    manager right away &ndash; it is only shown once.
 5. Configure the platform service with `DE_REMSFAL_AUTH_OIDC_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`
    (e.g. as GitHub Actions / Kubernetes secrets of your deployment).
 6. **Rotating the secret:** open the client, click **Add secret**, deploy the new secret, then disable
    and delete the old one. This keeps the login working without downtime.
+
+#### Sign in with Apple
+
+Users can log in with their Apple ID, both in the browser and in the iOS app:
+
+- **Web:** the frontend calls `GET /api/v1/authentication/login/apple`, the user is redirected to Apple, and
+  Apple posts the authorization response (`response_mode=form_post`) to
+  `POST /api/v1/authentication/session/apple`. The platform exchanges the code, verifies the ID token
+  against Apple's public keys and starts the session exactly like the Google login.
+- **iOS app:** the app signs in with `ASAuthorizationAppleIDProvider` and posts the identity token, the
+  authorization code and the raw nonce to `POST /api/v1/authentication/token` (`app_id=apple`). The request
+  passed to Apple must carry the SHA-256 hash (hex) of that nonce. On success the session cookies are set.
+
+Apple sends the name of the user only on the first authorization; the platform stores it right away (unless
+the user already has a name). Users may hide their email address behind Apple's private email relay
+(`@privaterelay.appleid.com`); such addresses are accepted like any other email address. The refresh token of
+an Apple identity is stored to revoke the authorization when the user deletes the account. Apple informs
+the platform about revoked consents, deleted Apple IDs and disabled email forwarding via server-to-server
+notifications to `POST /api/v1/authentication/notifications/apple`.
+
+Provide the configuration as environment variables:
+
+```shell script
+APPLE_TEAM_ID=<YOUR-TEAM-ID>
+APPLE_KEY_ID=<YOUR-KEY-ID>
+APPLE_PRIVATE_KEY_LOCATION=file:/run/secrets/remsfal_apple_private_key
+APPLE_SERVICES_ID=<YOUR-SERVICES-ID>       # e.g. de.remsfal.web
+APPLE_BUNDLE_ID=<YOUR-BUNDLE-ID>           # e.g. de.remsfal.app
+```
+
+The private key is mounted like the [JWT signing key](#jwt-token) (Docker secret or Kubernetes secret) and must
+never be committed. If the configuration is missing, the Apple endpoints answer with `503 Service Unavailable`
+and the Google login keeps working. The platform signs the client secret for Apple's REST API itself and renews
+it before it expires (`de.remsfal.auth.apple.client-secret.timeout`, default 30 days, at most 6 months).
+
+##### Creating a Sign in with Apple configuration
+
+All steps take place in the [Apple Developer account](https://developer.apple.com/account) under
+**Certificates, Identifiers & Profiles**:
+
+1. **App ID:** open the App ID of the iOS app (or create one) and enable the capability
+   **Sign in with Apple**. Its bundle ID is `APPLE_BUNDLE_ID`.
+2. **Services ID:** create a new identifier of type *Services IDs* (e.g. `de.remsfal.web`), enable
+   **Sign in with Apple** and click **Configure**:
+   - primary App ID: the App ID of step 1,
+   - domain: your host (e.g. `remsfal.de`),
+   - return URL: `https://<your-host>/api/v1/authentication/session/apple`.
+
+   The identifier is `APPLE_SERVICES_ID`.
+3. **Key:** create a new key under **Keys**, enable **Sign in with Apple** and assign the App ID of step 1.
+   Download the `.p8` file &ndash; it can only be downloaded once. The key ID is `APPLE_KEY_ID`, the team ID
+   (shown at the top right of the account) is `APPLE_TEAM_ID`.
+4. **Server-to-server notifications:** in the Sign in with Apple configuration of the App ID, set the
+   notification endpoint to `https://<your-host>/api/v1/authentication/notifications/apple`.
+5. **Private email relay:** under **Services &rarr; Sign in with Apple for Email Communication**, register the
+   sender domains and sender addresses of the [notification service](../remsfal-notification/README.md).
+   Apple only forwards emails from registered senders that pass SPF and DKIM, so configure both records for
+   the sender domain.
+6. **Rotating the key:** create a second key, deploy it together with its key ID, then revoke the old key.
+
+> **_NOTE:_** Apple does not accept `localhost` or plain HTTP as return URL. To test the real Apple login
+> locally, expose the frontend via an HTTPS tunnel and register that host; otherwise use the dev login.
 
 #### JWT Token
 

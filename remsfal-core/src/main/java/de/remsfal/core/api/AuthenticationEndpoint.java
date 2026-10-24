@@ -1,7 +1,9 @@
 package de.remsfal.core.api;
 
 import jakarta.annotation.security.PermitAll;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.CookieParam;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.FormParam;
@@ -16,6 +18,8 @@ import jakarta.ws.rs.core.Response;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
+
+import de.remsfal.core.json.AppleNotificationJson;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -42,22 +46,76 @@ public interface AuthenticationEndpoint {
     Response loginWithGoogle(@DefaultValue("/") @QueryParam("route") String route);
 
     @GET
+    @Path("/login/apple")
+    @Operation(summary = "Login user via Sign in with Apple oauth flow.")
+    @APIResponse(responseCode = "302", description = "Redirect user to Apple")
+    @APIResponse(responseCode = "503", description = "Sign in with Apple is not configured")
+    Response loginWithApple(@DefaultValue("/") @QueryParam("route") String route);
+
+    /**
+     * @deprecated use {@link #googleSession(String, String, String)} instead; kept until all Google OAuth
+     * clients use the redirect URI /session/google
+     */
+    @Deprecated(since = "1.0.15", forRemoval = true)
+    @GET
     @Path("/session")
-    @Operation(summary = "Start user session via Google oauth flow (Google callback).")
+    @Operation(summary = "Start user session via Google oauth flow (Google callback).",
+        description = "Kept for backward compatibility, use /session/google instead.")
     @APIResponse(responseCode = "302", description = "Redirect user to the frontend spa")
     @APIResponse(responseCode = "401", description = "Authentication failed or state does not match")
     Response session(@QueryParam("code") String code,
         @QueryParam("state") String state,
         @QueryParam("error") String error);
 
+    @GET
+    @Path("/session/google")
+    @Operation(summary = "Start user session via Google oauth flow (Google callback).")
+    @APIResponse(responseCode = "302", description = "Redirect user to the frontend spa")
+    @APIResponse(responseCode = "401", description = "Authentication failed or state does not match")
+    Response googleSession(@QueryParam("code") String code,
+        @QueryParam("state") String state,
+        @QueryParam("error") String error);
+
+    @POST
+    @Path("/session/apple")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Operation(summary = "Start user session via Sign in with Apple oauth flow (Apple form_post callback).",
+        description = "The user form field is only sent by Apple on the first authorization and carries the "
+            + "name of the user as JSON.")
+    @APIResponse(responseCode = "302", description = "Redirect user to the frontend spa")
+    @APIResponse(responseCode = "401", description = "Authentication failed or state does not match")
+    Response appleSession(@FormParam("code") String code,
+        @FormParam("state") String state,
+        @FormParam("user") String user,
+        @FormParam("error") String error);
+
     @POST
     @Path("/token")
-    @Operation(summary = "Login user via app token directly.")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Operation(summary = "Login user via app token directly.",
+        description = "For app_id=apple the app_token is the identity token of ASAuthorizationAppleIDProvider. "
+            + "The raw nonce is required, the token must carry its SHA-256 hash. The authorization code and the "
+            + "name are optional; Apple provides the name only on the first authorization.")
     @APIResponse(responseCode = "204", description = "Tokens are set as cookies")
     @APIResponse(responseCode = "401", description = "Unauthorized - Invalid token")
+    @APIResponse(responseCode = "501", description = "The app is not supported")
+    @APIResponse(responseCode = "503", description = "Sign in with Apple is not configured")
     Response token(@FormParam("app_id") @NotNull String appId,
         @FormParam("app_token") String appToken,
-        @FormParam("dev_services") @DefaultValue("false") Boolean devService);
+        @FormParam("dev_services") @DefaultValue("false") Boolean devService,
+        @FormParam("authorization_code") String authorizationCode,
+        @FormParam("nonce") String nonce,
+        @FormParam("given_name") String givenName,
+        @FormParam("family_name") String familyName);
+
+    @POST
+    @Path("/notifications/apple")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Receive server-to-server notifications of Sign in with Apple.",
+        description = "Handles the events consent-revoked, account-delete, email-disabled and email-enabled.")
+    @APIResponse(responseCode = "200", description = "Notification processed")
+    @APIResponse(responseCode = "400", description = "Notification payload is invalid")
+    Response appleNotification(@Valid @NotNull AppleNotificationJson notification);
 
     @GET
     @Path("/logout")

@@ -10,8 +10,9 @@ class OAuthStateManagerTest {
 
     @Test
     void stateCookiePath_SUCCESS_matchesAuthenticationEndpoint() {
+        final String cookiePath = OAuthStateManager.STATE_COOKIE_PATH;
         assertEquals("/" + AuthenticationEndpoint.CONTEXT + "/" + AuthenticationEndpoint.VERSION
-            + "/" + AuthenticationEndpoint.SERVICE, OAuthStateManager.STATE_COOKIE_PATH);
+            + "/" + AuthenticationEndpoint.SERVICE, cookiePath);
     }
 
 }

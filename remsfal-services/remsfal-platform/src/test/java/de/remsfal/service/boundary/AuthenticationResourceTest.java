@@ -1,6 +1,7 @@
 package de.remsfal.service.boundary;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.http.ContentType;
 import io.restassured.matcher.RestAssuredMatchers;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
@@ -14,6 +15,7 @@ import de.remsfal.test.TestData;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import jakarta.ws.rs.core.Response.Status;
 
 import java.math.BigInteger;
@@ -31,7 +33,11 @@ class AuthenticationResourceTest extends AbstractResourceTest {
 
     static final String BASE_PATH = "/api/v1/authentication";
 
-    static final String REDIRECT_URI_URL = "http%3A%2F%2Flocalhost%3A8081%2Fapi%2Fv1%2Fauthentication%2Fsession";
+    static final String REDIRECT_URI_URL =
+        "http%3A%2F%2Flocalhost%3A8081%2Fapi%2Fv1%2Fauthentication%2Fsession%2Fgoogle";
+
+    static final String APPLE_REDIRECT_URI_URL =
+        "http%3A%2F%2Flocalhost%3A8081%2Fapi%2Fv1%2Fauthentication%2Fsession%2Fapple";
 
     /**
      * Asserts that the state parameter of the redirect carries the route and a nonce matching the state cookie.
@@ -134,6 +140,74 @@ class AuthenticationResourceTest extends AbstractResourceTest {
             .header("location", Matchers.containsString(proxyRedirectUri))
             .header("location", Matchers.containsString("scope=openid+email"))
             .header("location", Matchers.containsString("state="));
+    }
+
+    @Test
+    void loginWithApple_SUCCESS_userIsRedirected() {
+        final ExtractableResponse<Response> response = given()
+            .queryParam("route", "/projects")
+            .redirects().follow(false)
+            .when().get(BASE_PATH + "/login/apple")
+            .then()
+            .statusCode(Status.FOUND.getStatusCode())
+            .header("location", Matchers.startsWith("https://appleid.apple.com/auth/authorize?"))
+            .header("location", Matchers.containsString("response_type=code"))
+            .header("location", Matchers.containsString("response_mode=form_post"))
+            .header("location", Matchers.containsString("client_id=de.remsfal.test.web"))
+            .header("location", Matchers.containsString(APPLE_REDIRECT_URI_URL))
+            .header("location", Matchers.containsString("scope=name+email"))
+            .header("location", Matchers.containsString("nonce="))
+            .cookie(OAuthStateManager.STATE_COOKIE_NAME, RestAssuredMatchers.detailedCookie()
+                .path("/api/v1/authentication")
+                .sameSite("None")
+                .httpOnly(true)
+                .secured(true)
+                .maxAge(60 * 10))
+            .extract();
+        assertStateCarriesRoute(response, "/projects");
+        final String nonce = response.cookie(OAuthStateManager.STATE_COOKIE_NAME);
+        assertTrue(response.header("location").contains("nonce=" + OAuthStateManager.hash(nonce)));
+    }
+
+    @Test
+    void token_FAILED_appleTokenIsInvalid() {
+        given()
+            .formParam("app_id", "apple")
+            .formParam("app_token", "not-a-jwt")
+            .formParam("nonce", "anyNonce")
+            .when().post(BASE_PATH + "/token")
+            .then()
+            .statusCode(Status.UNAUTHORIZED.getStatusCode());
+    }
+
+    @Test
+    void token_FAILED_appleNonceIsMissing() {
+        given()
+            .formParam("app_id", "apple")
+            .formParam("app_token", "not-a-jwt")
+            .when().post(BASE_PATH + "/token")
+            .then()
+            .statusCode(Status.UNAUTHORIZED.getStatusCode());
+    }
+
+    @Test
+    void appleNotification_FAILED_invalidPayload() {
+        given()
+            .contentType(ContentType.JSON)
+            .body("{\"payload\":\"not-a-jwt\"}")
+            .when().post(BASE_PATH + "/notifications/apple")
+            .then()
+            .statusCode(Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
+    void appleNotification_FAILED_missingPayload() {
+        given()
+            .contentType(ContentType.JSON)
+            .body("{}")
+            .when().post(BASE_PATH + "/notifications/apple")
+            .then()
+            .statusCode(Status.BAD_REQUEST.getStatusCode());
     }
 
     @Test

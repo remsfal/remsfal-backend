@@ -21,6 +21,16 @@ import de.remsfal.service.entity.dto.superclass.AbstractEntity;
 @NamedQuery(name = "UserIdentityEntity.updateLastUsedAt",
     query = "update UserIdentityEntity identity set identity.lastUsedAt = :timestamp "
         + "where identity.provider = :provider and identity.subject = :subject")
+@NamedQuery(name = "UserIdentityEntity.updateRefreshToken",
+    query = "update UserIdentityEntity identity set identity.refreshToken = :refreshToken, "
+        + "identity.tokenClientId = :clientId "
+        + "where identity.provider = :provider and identity.subject = :subject")
+@NamedQuery(name = "UserIdentityEntity.updateEmailDisabled",
+    query = "update UserIdentityEntity identity set identity.emailDisabled = :emailDisabled "
+        + "where identity.provider = :provider and identity.subject = :subject")
+@NamedQuery(name = "UserIdentityEntity.deleteByProviderAndSubject",
+    query = "delete from UserIdentityEntity identity "
+        + "where identity.provider = :provider and identity.subject = :subject")
 @Entity
 @Table(name = "user_identities")
 public class UserIdentityEntity extends AbstractEntity {
@@ -50,6 +60,18 @@ public class UserIdentityEntity extends AbstractEntity {
 
     @Column(name = "last_used_at")
     private LocalDateTime lastUsedAt;
+
+    /** Refresh token of the provider, required to revoke the authorization (Sign in with Apple). */
+    @Column(name = "refresh_token")
+    private String refreshToken;
+
+    /** Client ID the refresh token was issued to (Services ID or bundle ID for Sign in with Apple). */
+    @Column(name = "token_client_id")
+    private String tokenClientId;
+
+    /** Whether the user disabled the email forwarding of the provider's private email relay. */
+    @Column(name = "email_disabled", nullable = false)
+    private boolean emailDisabled;
 
     public UserEntity getUser() {
         return user;
@@ -89,6 +111,30 @@ public class UserIdentityEntity extends AbstractEntity {
 
     public void setLastUsedAt(final LocalDateTime lastUsedAt) {
         this.lastUsedAt = lastUsedAt;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(final String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
+
+    public String getTokenClientId() {
+        return tokenClientId;
+    }
+
+    public void setTokenClientId(final String tokenClientId) {
+        this.tokenClientId = tokenClientId;
+    }
+
+    public boolean isEmailDisabled() {
+        return emailDisabled;
+    }
+
+    public void setEmailDisabled(final boolean emailDisabled) {
+        this.emailDisabled = emailDisabled;
     }
 
     @Override

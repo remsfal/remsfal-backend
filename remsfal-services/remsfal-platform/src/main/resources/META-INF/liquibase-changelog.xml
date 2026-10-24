@@ -27,4 +27,5 @@
     <include file="META-INF/changesets/015-create-project-organizations-table.xml"/>
     <include file="META-INF/changesets/016-create-rental-agreement-keys-table.xml"/>
     <include file="META-INF/changesets/017-create-user-identities-table.xml"/>
+    <include file="META-INF/changesets/018-add-apple-identity-columns.xml"/>
 </databaseChangeLog>

@@ -21,6 +21,7 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -28,6 +29,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.core.Response.Status;
 
+import java.net.URI;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -91,7 +93,7 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
             .queryParam("code", CODE)
             .queryParam("anyOtherParam", "toBeIgnored")
             .redirects().follow(false)
-            .get(BASE_PATH + "/session")
+            .get(BASE_PATH + "/session/google")
             .then()
             .statusCode(Status.FOUND.getStatusCode())
             .header("location", Matchers.equalTo("http://localhost:8081/my/callback"))
@@ -117,6 +119,38 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
     }
 
     @Test
+    void session_SUCCESS_deprecatedCallbackUsesItsOwnRedirectUri() {
+        mockGoogleIdentity(true);
+
+        givenValidState("/")
+            .when()
+            .queryParam("code", CODE)
+            .redirects().follow(false)
+            .get(BASE_PATH + "/session")
+            .then()
+            .statusCode(Status.FOUND.getStatusCode())
+            .cookie("remsfal_access_token", Matchers.notNullValue());
+
+        verify(authenticator).authenticate(CODE, URI.create("http://localhost:8081" + BASE_PATH + "/session"));
+    }
+
+    @Test
+    void googleSession_SUCCESS_usesGoogleRedirectUri() {
+        mockGoogleIdentity(true);
+
+        givenValidState("/")
+            .when()
+            .queryParam("code", CODE)
+            .redirects().follow(false)
+            .get(BASE_PATH + "/session/google")
+            .then()
+            .statusCode(Status.FOUND.getStatusCode());
+
+        verify(authenticator).authenticate(CODE,
+            URI.create("http://localhost:8081" + BASE_PATH + "/session/google"));
+    }
+
+    @Test
     void session_SUCCESS_userAlreadyExists() {
         mockGoogleIdentity(true);
         setupTestUsers();
@@ -127,7 +161,7 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
             .when()
             .queryParam("code", CODE)
             .redirects().follow(false)
-            .get(BASE_PATH + "/session")
+            .get(BASE_PATH + "/session/google")
             .then()
             .statusCode(Status.FOUND.getStatusCode())
             .header("location", Matchers.equalTo("http://localhost:8081/"))
@@ -162,7 +196,7 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
             .when()
             .queryParam("code", CODE)
             .redirects().follow(false)
-            .get(BASE_PATH + "/session")
+            .get(BASE_PATH + "/session/google")
             .then()
             .statusCode(Status.FOUND.getStatusCode());
 
@@ -186,7 +220,7 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
             .when()
             .queryParam("code", CODE)
             .redirects().follow(false)
-            .get(BASE_PATH + "/session")
+            .get(BASE_PATH + "/session/google")
             .then()
             .statusCode(Status.FOUND.getStatusCode());
 
@@ -211,7 +245,7 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
             .when()
             .queryParam("code", CODE)
             .redirects().follow(false)
-            .get(BASE_PATH + "/session")
+            .get(BASE_PATH + "/session/google")
             .then()
             .statusCode(Status.CONFLICT.getStatusCode());
     }
@@ -228,7 +262,7 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
             .when()
             .queryParam("code", CODE)
             .redirects().follow(false)
-            .get(BASE_PATH + "/session")
+            .get(BASE_PATH + "/session/google")
             .then()
             .statusCode(Status.FOUND.getStatusCode());
 
@@ -252,7 +286,7 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
             .when()
             .queryParam("code", CODE)
             .redirects().follow(false)
-            .get(BASE_PATH + "/session")
+            .get(BASE_PATH + "/session/google")
             .then()
             .statusCode(Status.CONFLICT.getStatusCode());
 
@@ -272,7 +306,7 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
             .header("Accept-Language", "en-US,en;q=0.9")
             .queryParam("code", CODE)
             .redirects().follow(false)
-            .get(BASE_PATH + "/session")
+            .get(BASE_PATH + "/session/google")
             .then()
             .statusCode(Status.FOUND.getStatusCode());
 
@@ -291,7 +325,7 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
             .when()
             .queryParam("code", CODE)
             .redirects().follow(false)
-            .get(BASE_PATH + "/session")
+            .get(BASE_PATH + "/session/google")
             .then()
             .statusCode(Status.FOUND.getStatusCode())
             .header("location", Matchers.equalTo("http://localhost:8081/"));
@@ -305,7 +339,7 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
             .queryParam("code", CODE)
             .queryParam("state", state.value())
             .when()
-            .get(BASE_PATH + "/session")
+            .get(BASE_PATH + "/session/google")
             .then()
             .statusCode(Status.UNAUTHORIZED.getStatusCode());
         verifyNoInteractions(authenticator);
@@ -321,7 +355,7 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
             .queryParam("code", CODE)
             .queryParam("state", state.value())
             .when()
-            .get(BASE_PATH + "/session")
+            .get(BASE_PATH + "/session/google")
             .then()
             .statusCode(Status.UNAUTHORIZED.getStatusCode());
         verifyNoInteractions(authenticator);
@@ -334,7 +368,7 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
             .queryParam("code", CODE)
             .queryParam("state", "/my/callback")
             .when()
-            .get(BASE_PATH + "/session")
+            .get(BASE_PATH + "/session/google")
             .then()
             .statusCode(Status.UNAUTHORIZED.getStatusCode());
         verifyNoInteractions(authenticator);
@@ -344,7 +378,7 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
     void session_FAILED_noCode() {
         given()
             .when()
-            .get(BASE_PATH + "/session")
+            .get(BASE_PATH + "/session/google")
             .then()
             .statusCode(Status.UNAUTHORIZED.getStatusCode());
     }
@@ -354,7 +388,7 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
         given()
             .queryParam("error", "Any Error from Google")
             .when()
-            .get(BASE_PATH + "/session")
+            .get(BASE_PATH + "/session/google")
             .then()
             .statusCode(Status.UNAUTHORIZED.getStatusCode());
     }
@@ -367,7 +401,7 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
         givenValidState("/")
             .when()
             .queryParam("code", "anyValidCode")
-            .get(BASE_PATH + "/session")
+            .get(BASE_PATH + "/session/google")
             .then()
             .statusCode(Status.FORBIDDEN.getStatusCode());
     }
