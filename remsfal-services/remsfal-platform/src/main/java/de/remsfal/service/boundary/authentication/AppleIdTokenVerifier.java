@@ -4,6 +4,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.text.ParseException;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -37,7 +38,7 @@ public class AppleIdTokenVerifier {
     @ConfigProperty(name = "de.remsfal.auth.apple.auth-server-url", defaultValue = ISSUER)
     String authServerUrl;
 
-    private volatile JWKSource<SecurityContext> jwkSource;
+    private final AtomicReference<JWKSource<SecurityContext>> jwkSource = new AtomicReference<>();
 
     public AppleIdTokenVerifier() {
         // CDI
@@ -45,7 +46,7 @@ public class AppleIdTokenVerifier {
 
     /** Uses the given key source instead of Apple's JWKS endpoint, e.g. a mocked JWKS in tests. */
     AppleIdTokenVerifier(final JWKSource<SecurityContext> jwkSource) {
-        this.jwkSource = jwkSource;
+        this.jwkSource.set(jwkSource);
     }
 
     /**
@@ -100,15 +101,16 @@ public class AppleIdTokenVerifier {
     }
 
     private JWKSource<SecurityContext> getJwkSource() {
-        if (jwkSource == null) {
-            try {
-                jwkSource = JWKSourceBuilder.<SecurityContext>create(URI.create(authServerUrl + "/auth/keys").toURL())
-                    .build();
-            } catch (MalformedURLException e) {
-                throw new IllegalStateException("Invalid Sign in with Apple server URL: " + authServerUrl, e);
-            }
+        return jwkSource.updateAndGet(source -> source != null ? source : createJwkSource());
+    }
+
+    private JWKSource<SecurityContext> createJwkSource() {
+        try {
+            return JWKSourceBuilder.<SecurityContext>create(URI.create(authServerUrl + "/auth/keys").toURL())
+                .build();
+        } catch (MalformedURLException e) {
+            throw new IllegalStateException("Invalid Sign in with Apple server URL: " + authServerUrl, e);
         }
-        return jwkSource;
     }
 
     /**

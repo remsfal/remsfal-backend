@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -52,7 +53,7 @@ public class AppleClientSecretGenerator {
 
     private final Map<String, ClientSecret> secrets = new ConcurrentHashMap<>();
 
-    private volatile ECPrivateKey privateKey;
+    private final AtomicReference<ECPrivateKey> privateKey = new AtomicReference<>();
 
     record ClientSecret(String value, Instant expiresAt) {
     }
@@ -87,18 +88,19 @@ public class AppleClientSecretGenerator {
     }
 
     private ECPrivateKey getPrivateKey() {
-        if (privateKey == null) {
-            try {
-                final PrivateKey key = KeyLoader.loadPrivateKey(privateKeyLocation, "EC");
-                if (!(key instanceof ECPrivateKey ecKey)) {
-                    throw new IllegalStateException("Sign in with Apple private key is not an EC key");
-                }
-                privateKey = ecKey;
-            } catch (IOException | GeneralSecurityException e) {
-                throw new IllegalStateException("Unable to load the Sign in with Apple private key", e);
+        return privateKey.updateAndGet(key -> key != null ? key : loadPrivateKey());
+    }
+
+    private ECPrivateKey loadPrivateKey() {
+        try {
+            final PrivateKey key = KeyLoader.loadPrivateKey(privateKeyLocation, "EC");
+            if (!(key instanceof ECPrivateKey ecKey)) {
+                throw new IllegalStateException("Sign in with Apple private key is not an EC key");
             }
+            return ecKey;
+        } catch (IOException | GeneralSecurityException e) {
+            throw new IllegalStateException("Unable to load the Sign in with Apple private key", e);
         }
-        return privateKey;
     }
 
 }
