@@ -44,8 +44,11 @@ class MetaDataEntityTest {
 
         assertEquals(entity, entity);
         assertEquals(entity, other);
-        assertNotEquals(entity, null);
-        assertNotEquals(entity, "no entity");
+        // the entity must be the receiver of equals(), so the compared values are passed as actual values
+        final Object noValue = null;
+        final Object noEntity = "no entity";
+        assertNotEquals(entity, noValue);
+        assertNotEquals(entity, noEntity);
 
         // same createdAt (null), different modifiedAt
         other.modified();
