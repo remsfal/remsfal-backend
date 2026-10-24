@@ -102,7 +102,7 @@ public class AuthenticationResource extends AbstractAuthenticationResource imple
      * @deprecated use {@link #googleSession(String, String, String)} instead
      */
     @Override
-    @Deprecated
+    @Deprecated(since = "1.0.15", forRemoval = true)
     @Timed("checks_timer_session")
     public Response session(final String code, final String state, final String error) {
         // the code exchange requires the redirect URI the code was obtained with

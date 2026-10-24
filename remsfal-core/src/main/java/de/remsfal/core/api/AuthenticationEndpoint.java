@@ -53,9 +53,10 @@ public interface AuthenticationEndpoint {
     Response loginWithApple(@DefaultValue("/") @QueryParam("route") String route);
 
     /**
-     * @deprecated use {@link #googleSession(String, String, String)} instead
+     * @deprecated use {@link #googleSession(String, String, String)} instead; kept until all Google OAuth
+     * clients use the redirect URI /session/google
      */
-    @Deprecated
+    @Deprecated(since = "1.0.15", forRemoval = true)
     @GET
     @Path("/session")
     @Operation(summary = "Start user session via Google oauth flow (Google callback).",
