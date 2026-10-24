@@ -68,7 +68,7 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
 
         List<Row> rows = cqlSession.execute(
             "SELECT project_id, issue_id, initiator_id, contractor_id, scope_of_work, status "
-                + "FROM remsfal.quotation_requests WHERE issue_id = ?",
+                + "FROM quotation_requests WHERE issue_id = ?",
             UUID.fromString(issueId))
             .all();
 
@@ -175,7 +175,7 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
             .statusCode(404);
 
         assertEquals(0, cqlSession.execute(
-            "SELECT request_id FROM remsfal.quotation_requests WHERE issue_id = ?",
+            "SELECT request_id FROM quotation_requests WHERE issue_id = ?",
             UUID.fromString(issueId)).all().size());
     }
 
@@ -212,7 +212,7 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
             "SELECT place_of_performance_address_1, place_of_performance_address_2,"
                 + " place_of_performance_address_3, rental_unit_type, rental_unit_title,"
                 + " rental_unit_location, tenants"
-                + " FROM remsfal.quotation_requests WHERE issue_id = ?",
+                + " FROM quotation_requests WHERE issue_id = ?",
             UUID.fromString(issueId))
             .all();
 
@@ -298,7 +298,7 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
             .statusCode(201);
 
         List<Row> rows = cqlSession.execute(
-            "SELECT request_id, status FROM remsfal.quotation_requests WHERE issue_id = ? AND contractor_id = ?"
+            "SELECT request_id, status FROM quotation_requests WHERE issue_id = ? AND contractor_id = ?"
                 + " ALLOW FILTERING",
             UUID.fromString(issueId), contractorId)
             .all();
@@ -351,7 +351,7 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
             .statusCode(201);
 
         List<Row> rows = cqlSession.execute(
-            "SELECT contractor_id, status FROM remsfal.quotation_requests WHERE issue_id = ?",
+            "SELECT contractor_id, status FROM quotation_requests WHERE issue_id = ?",
             UUID.fromString(issueId))
             .all();
 
@@ -390,11 +390,11 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
             .statusCode(201);
 
         UUID firstRequestId = cqlSession.execute(
-            "SELECT request_id FROM remsfal.quotation_requests WHERE issue_id = ?",
+            "SELECT request_id FROM quotation_requests WHERE issue_id = ?",
             UUID.fromString(issueId))
             .one().getUuid("request_id");
 
-        cqlSession.execute("UPDATE remsfal.quotation_requests SET status = 'SUBMITTED'"
+        cqlSession.execute("UPDATE quotation_requests SET status = 'SUBMITTED'"
             + " WHERE issue_id = ? AND request_id = ?",
             UUID.fromString(issueId), firstRequestId);
 
@@ -408,7 +408,7 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
             .statusCode(201);
 
         List<Row> rows = cqlSession.execute(
-            "SELECT request_id, status FROM remsfal.quotation_requests WHERE issue_id = ?",
+            "SELECT request_id, status FROM quotation_requests WHERE issue_id = ?",
             UUID.fromString(issueId))
             .all();
 
@@ -862,7 +862,7 @@ class IssueQuotationRequestResourceTest extends AbstractTicketingTest {
         List<Row> rows = cqlSession.execute(
             "SELECT issue_id, quotation_id, project_id, orderer_id, ordered_by, contractor_id,"
                 + " organization_id, status "
-                + "FROM remsfal.order_placements WHERE issue_id = ?",
+                + "FROM order_placements WHERE issue_id = ?",
             UUID.fromString(issueId))
             .all();
 

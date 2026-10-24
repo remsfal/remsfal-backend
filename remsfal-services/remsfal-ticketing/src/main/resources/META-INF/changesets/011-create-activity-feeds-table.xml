@@ -10,7 +10,7 @@
     <changeSet id="remsfal-ticketing-011-create-activity-feeds-table" author="alexander.stanik@htw-berlin.de">
         <comment>Create activity feed schema</comment>
         <sql>
-            CREATE TABLE IF NOT EXISTS REMSFAL.activity_feeds (
+            CREATE TABLE IF NOT EXISTS activity_feeds (
                 user_id UUID,
                 activity_id UUID,
                 project_id UUID,
@@ -35,7 +35,7 @@
             ) WITH CLUSTERING ORDER BY (activity_id DESC);
         </sql>
         <rollback>
-            <sql>DROP TABLE IF EXISTS REMSFAL.activity_feeds;</sql>
+            <sql>DROP TABLE IF EXISTS activity_feeds;</sql>
         </rollback>
     </changeSet>
 

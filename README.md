@@ -94,7 +94,7 @@ newer versions of Docker Compose. Please make sure your Docker Desktop or Docker
 
 | Container   | Port(s)                     | Purpose                                     |
 |-------------|-----------------------------|---------------------------------------------|
-| postgres    | 5432                        | Database of the platform service            |
+| postgres    | 5432                        | Databases of the platform and notification services |
 | cassandra   | 9042                        | Database of the ticketing service           |
 | kafka-broker / kafka-ui | 39092 / [8090](http://localhost:8090) | Event streaming           |
 | localstack  | 9000                        | S3 compatible file storage                  |

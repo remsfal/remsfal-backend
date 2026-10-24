@@ -93,7 +93,7 @@ public class UserController {
         final Optional<UserEntity> existingByEmail = repository.findByEmail(normalizedEmail);
         if (existingByEmail.isPresent()) {
             final UserEntity existing = existingByEmail.get();
-            if (existing.isActive() || !emailVerified) {
+            if (Boolean.TRUE.equals(existing.isActive()) || !emailVerified) {
                 throw new AlreadyExistsException("Unable to create user");
             }
             logger.infov("Reclaiming placeholder user for first login (id={0}, provider={1}, subject={2}, email={3})",

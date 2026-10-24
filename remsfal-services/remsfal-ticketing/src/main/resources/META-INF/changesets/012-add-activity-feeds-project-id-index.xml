@@ -12,11 +12,11 @@
                  can be found and removed, even though the table is partitioned by user_id.</comment>
         <sql>
             CREATE CUSTOM INDEX IF NOT EXISTS activity_feeds_project_id_sai
-            ON REMSFAL.activity_feeds (project_id)
+            ON activity_feeds (project_id)
             USING 'StorageAttachedIndex';
         </sql>
         <rollback>
-            <sql>DROP INDEX IF EXISTS REMSFAL.activity_feeds_project_id_sai;</sql>
+            <sql>DROP INDEX IF EXISTS activity_feeds_project_id_sai;</sql>
         </rollback>
     </changeSet>
 
