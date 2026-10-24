@@ -210,15 +210,32 @@ public abstract class AbstractServiceTest extends AbstractTest {
                 .executeUpdate());
     }
 
+    /**
+     * Inserts a user. params: id, Google subject (optional, makes the user active), email, first name,
+     * last name, address id
+     */
     protected void insertUser(Object... params) {
         runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO users (id, token_id, email, first_name, last_name, address_id) VALUES (?,?,?,?,?,?)")
+                .createNativeQuery("INSERT INTO users (id, email, first_name, last_name, address_id) VALUES (?,?,?,?,?)")
                 .setParameter(1, params[0])
-                .setParameter(2, params[1])
-                .setParameter(3, params[2])
-                .setParameter(4, params[3])
-                .setParameter(5, params[4])
-                .setParameter(6, params[5])
+                .setParameter(2, params[2])
+                .setParameter(3, params[3])
+                .setParameter(4, params[4])
+                .setParameter(5, params[5])
+                .executeUpdate());
+        if (params[1] != null) {
+            insertUserIdentity(params[0], "GOOGLE", params[1], params[2]);
+        }
+    }
+
+    protected void insertUserIdentity(Object userId, String provider, Object subject, Object email) {
+        runInTransaction(() -> entityManager
+                .createNativeQuery("INSERT INTO user_identities (id, user_id, provider, subject, email) VALUES (?,?,?,?,?)")
+                .setParameter(1, UUID.randomUUID())
+                .setParameter(2, userId)
+                .setParameter(3, provider)
+                .setParameter(4, subject)
+                .setParameter(5, email)
                 .executeUpdate());
     }
 

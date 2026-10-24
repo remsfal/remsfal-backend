@@ -20,6 +20,8 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 
+import org.hibernate.annotations.Formula;
+
 import de.remsfal.core.model.CustomerModel;
 import de.remsfal.service.entity.dto.superclass.AbstractEntity;
 
@@ -27,7 +29,7 @@ import de.remsfal.service.entity.dto.superclass.AbstractEntity;
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
 @NamedQuery(name = "UserEntity.updateAuthenticatedAt",
-    query = "update UserEntity user set user.authenticatedAt = :timestamp where user.tokenId = :tokenId")
+    query = "update UserEntity user set user.authenticatedAt = :timestamp where user.id = :id")
 @NamedQuery(name = "UserEntity.deleteById",
     query = "delete from UserEntity user where user.id = :id")
 @NamedQuery(name = "UserEntity.findByIdWithAdditionalEmails",
@@ -36,8 +38,9 @@ import de.remsfal.service.entity.dto.superclass.AbstractEntity;
 @Table(name = "users")
 public class UserEntity extends AbstractEntity implements CustomerModel {
 
-    @Column(name = "token_id", unique = true)
-    private String tokenId;
+    /** A user is active as soon as at least one external identity is linked (see AccountLinking.md). */
+    @Formula("(exists (select 1 from user_identities ui where ui.user_id = id))")
+    private boolean active;
 
     @Email
     @Column(name = "email", nullable = false, unique = true)
@@ -80,17 +83,17 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<AdditionalEmailEntity> additionalEmails = new HashSet<>();
 
-    public String getTokenId() {
-        return tokenId;
-    }
-
-    public void setTokenId(final String tokenId) {
-        this.tokenId = tokenId;
-    }
-
     @Override
     public Boolean isActive() {
-        return tokenId != null;
+        return active;
+    }
+
+    /**
+     * Marks this already loaded entity as active after an identity has been linked to it.
+     * The formula is only evaluated when the entity is loaded from the database.
+     */
+    public void markActive() {
+        this.active = true;
     }
 
     @Override
@@ -257,7 +260,6 @@ public class UserEntity extends AbstractEntity implements CustomerModel {
         }
         if (o instanceof UserEntity e) {
             return super.equals(e)
-                && Objects.equals(tokenId, e.tokenId)
                 && Objects.equals(email, e.email)
                 && Objects.equals(firstName, e.firstName)
                 && Objects.equals(lastName, e.lastName)

@@ -37,14 +37,8 @@ class ContractorRepositoryTest extends AbstractServiceTest {
     @BeforeEach
     protected void setupTestData() {
         // Insert test users and projects
-        runInTransaction(() -> entityManager
-                .createNativeQuery("INSERT INTO users (id, token_id, email, first_name, last_name) VALUES (?,?,?,?,?)")
-                .setParameter(1, TestData.USER_ID)
-                .setParameter(2, TestData.USER_TOKEN)
-                .setParameter(3, TestData.USER_EMAIL)
-                .setParameter(4, TestData.USER_FIRST_NAME)
-                .setParameter(5, TestData.USER_LAST_NAME)
-                .executeUpdate());
+        insertUser(TestData.USER_ID, TestData.USER_TOKEN, TestData.USER_EMAIL,
+                TestData.USER_FIRST_NAME, TestData.USER_LAST_NAME, null);
 
         runInTransaction(() -> entityManager
                 .createNativeQuery("INSERT INTO projects (id, title) VALUES (?,?)")

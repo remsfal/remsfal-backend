@@ -26,7 +26,8 @@ import de.remsfal.core.model.project.BuildingModel;
 import de.remsfal.core.model.project.ProjectModel;
 import de.remsfal.core.model.project.PropertyModel;
 import de.remsfal.core.model.project.RentModel.BillingCycle;
-import de.remsfal.service.entity.dao.UserRepository;
+import de.remsfal.service.entity.dao.UserIdentityRepository;
+import de.remsfal.service.entity.dto.UserIdentityEntity.IdentityProvider;
 import io.quarkus.arc.properties.IfBuildProperty;
 import io.quarkus.runtime.StartupEvent;
 
@@ -66,8 +67,8 @@ public class DevDataSeedController {
 
     public record SeedUser(String email, String firstName, String lastName, String description) {
 
-        public String tokenId() {
-            return tokenIdOf(email);
+        public String subject() {
+            return subjectOf(email);
         }
 
     }
@@ -76,7 +77,7 @@ public class DevDataSeedController {
     Logger logger;
 
     @Inject
-    UserRepository userRepository;
+    UserIdentityRepository identityRepository;
 
     @Inject
     AuthorizationController authorizationController;
@@ -105,7 +106,7 @@ public class DevDataSeedController {
     @Inject
     ContractorController contractorController;
 
-    public static String tokenIdOf(final String email) {
+    public static String subjectOf(final String email) {
         return DEV_TOKEN_PREFIX + email.trim().toLowerCase();
     }
 
@@ -123,7 +124,7 @@ public class DevDataSeedController {
      * @return {@code true} if data was seeded, {@code false} if it already existed
      */
     public boolean seed() {
-        if (userRepository.findByTokenId(MANAGER.tokenId()).isPresent()) {
+        if (identityRepository.findByProviderAndSubject(IdentityProvider.GOOGLE, MANAGER.subject()).isPresent()) {
             logger.info("Dev seed data already present, skipping");
             return false;
         }
@@ -191,7 +192,8 @@ public class DevDataSeedController {
     }
 
     private UserModel createUser(final SeedUser seedUser) {
-        final UserModel user = authorizationController.authenticateUser(seedUser.tokenId(), seedUser.email(), "de");
+        final UserModel user = authorizationController.authenticateUser(IdentityProvider.GOOGLE,
+            seedUser.subject(), seedUser.email(), true, "de");
         userController.updateUser(user.getId(), ImmutableUserJson.builder()
             .firstName(seedUser.firstName())
             .lastName(seedUser.lastName())
