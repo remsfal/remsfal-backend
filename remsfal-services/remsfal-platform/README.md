@@ -84,6 +84,7 @@ variables (or your deployment's secret store) or as JVM arguments &ndash; **neve
 | `APPLE_SERVICES_ID` / `APPLE_BUNDLE_ID`         | Services ID (web login) and bundle ID (iOS app) |
 | `DE_REMSFAL_AUTH_JWT_PRIVATE_KEY_LOCATION`      | Location of the JWT signing key, e.g. `file:/run/secrets/remsfal_jwt_private_key` (see [JWT Token](#jwt-token)) |
 | `QUARKUS_MAILER_*`                              | SMTP settings, see the [notification service](../remsfal-notification/README.md#mailer-configuration) |
+| `QUARKUS_S3_*`                                  | S3 connection and credentials, see [file storage](#file-storage-s3) |
 
 #### database
 
@@ -104,6 +105,21 @@ java -Dquarkus.datasource.username=remsfaladmin \
      -Dquarkus.datasource.jdbc.url=jdbc:postgresql://localhost:5432/remsfal_platform \
      -Dquarkus.datasource.devservices.enabled=false \
      -jar remsfal-services/remsfal-platform/target/remsfal-platform-runner.jar
+```
+
+#### File storage (S3)
+
+The platform stores files (e.g. profile photos) in the bucket `remsfal`, which it shares with the
+notification service. Locally the `localstack` container is used (see [docker-compose.yml](../docker-compose.yml)),
+in tests the S3 Dev Services. For production configure the S3 endpoint and credentials with read/write access:
+
+```properties
+remsfal.storage.bucket-name=remsfal
+quarkus.s3.endpoint-override=https://<s3-endpoint>
+quarkus.s3.aws.region=<region>
+quarkus.s3.aws.credentials.type=static
+quarkus.s3.aws.credentials.static-provider.access-key-id=...
+quarkus.s3.aws.credentials.static-provider.secret-access-key=...
 ```
 
 #### Google OAuth

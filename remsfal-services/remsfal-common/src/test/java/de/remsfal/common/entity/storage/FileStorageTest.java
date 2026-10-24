@@ -1,4 +1,4 @@
-package de.remsfal.ticketing.entity.storage;
+package de.remsfal.common.entity.storage;
 
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +24,9 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -37,7 +39,7 @@ import static org.mockito.Mockito.when;
  * Covers the generic-{@code S3Exception}/unexpected-exception branches in {@link FileStorage}
  * that a real S3-compatible backend (LocalStack) never actually returns (it always throws the
  * typed {@code NoSuchKeyException}/{@code NoSuchBucketException}), so they can't be exercised
- * by the LocalStack-backed tests in {@code FileStorageControllerTest}/{@code AbstractTicketingTest}.
+ * by the LocalStack-backed service tests (e.g. {@code FileStorageControllerTest} in ticketing).
  */
 class FileStorageTest {
 
@@ -51,6 +53,7 @@ class FileStorageTest {
         s3Client = mock(S3Client.class);
         storage = new FileStorage();
         storage.bucketName = BUCKET_NAME;
+        storage.createBucket = true;
         storage.logger = Logger.getLogger(FileStorage.class);
         storage.s3Client = s3Client;
     }
@@ -199,5 +202,52 @@ class FileStorageTest {
         String result = storage.uploadFile(inputStream, "file", MediaType.TEXT_PLAIN_TYPE);
 
         assertEquals("file(1)", result);
+    }
+
+    @Test
+    void onStartup_bucketCreationDisabled_doesNotTouchBucket() throws Exception {
+        storage.createBucket = false;
+
+        storage.onStartup(null);
+
+        verify(s3Client, never()).headBucket(any(HeadBucketRequest.class));
+        verify(s3Client, never()).createBucket(any(CreateBucketRequest.class));
+    }
+
+    @Test
+    void putFile_overwritesWithoutExistenceCheck() {
+        storage.putFile("users/1/avatar/abc-64.jpg", "data".getBytes(), MediaType.valueOf("image/jpeg"));
+
+        verify(s3Client, never()).headObject(any(HeadObjectRequest.class));
+        verify(s3Client, times(1)).putObject(any(PutObjectRequest.class), any(RequestBody.class));
+    }
+
+    @Test
+    void putFile_putObjectFails_throwsInternalServerError() {
+        when(s3Client.putObject(any(PutObjectRequest.class), any(RequestBody.class)))
+            .thenThrow(new RuntimeException("boom"));
+        byte[] content = "data".getBytes();
+        MediaType contentType = MediaType.valueOf("image/jpeg");
+
+        assertThrows(InternalServerErrorException.class,
+            () -> storage.putFile("key.jpg", content, contentType));
+    }
+
+    @Test
+    void fileExists_returnsTrueIfHeadObjectSucceeds() {
+        assertTrue(storage.fileExists("file.txt"));
+    }
+
+    @Test
+    void fileExists_returnsFalseIfNoSuchKey() {
+        when(s3Client.headObject(any(HeadObjectRequest.class)))
+            .thenThrow(NoSuchKeyException.builder().message("not found").build());
+
+        assertFalse(storage.fileExists("file.txt"));
+    }
+
+    @Test
+    void getBucketName_returnsConfiguredBucket() {
+        assertEquals(BUCKET_NAME, storage.getBucketName());
     }
 }

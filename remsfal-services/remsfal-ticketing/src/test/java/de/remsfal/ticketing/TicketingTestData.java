@@ -8,6 +8,9 @@ import de.remsfal.test.TestData;
 
 public class TicketingTestData extends TestData {
 
+    /** S3 bucket used by the ticketing service (configured via {@code remsfal.storage.bucket-name}). */
+    public static final String BUCKET_NAME = "remsfal-ticketing";
+
     /**
      * A minimal {@link UserModel} for tests that only care about a sender/actor's id and name,
      * without pulling in a full CustomerModel mock.

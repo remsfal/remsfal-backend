@@ -18,7 +18,6 @@ import de.remsfal.core.model.ticketing.IssueModel.IssueStatus;
 import de.remsfal.core.model.ticketing.IssueModel.IssueType;
 import de.remsfal.core.model.ticketing.MessagePurpose;
 import de.remsfal.test.AbstractTest;
-import de.remsfal.ticketing.entity.storage.FileStorage;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.Delete;
@@ -41,7 +40,7 @@ public abstract class AbstractTicketingTest extends AbstractTest {
         // find objects in the bucket
         ListObjectsV2Response results = s3Client.listObjectsV2(
             ListObjectsV2Request.builder()
-                .bucket(FileStorage.DEFAULT_BUCKET_NAME)
+                .bucket(TicketingTestData.BUCKET_NAME)
                 .build());
 
         // collect delete command
@@ -54,7 +53,7 @@ public abstract class AbstractTicketingTest extends AbstractTest {
         if (!toDelete.isEmpty()) {
             s3Client.deleteObjects(
                 DeleteObjectsRequest.builder()
-                    .bucket(FileStorage.DEFAULT_BUCKET_NAME)
+                    .bucket(TicketingTestData.BUCKET_NAME)
                     .delete(Delete.builder().objects(toDelete).build())
                     .build());
         }
@@ -90,7 +89,7 @@ public abstract class AbstractTicketingTest extends AbstractTest {
             // upload files
             s3Client.putObject(
                 PutObjectRequest.builder()
-                    .bucket(FileStorage.DEFAULT_BUCKET_NAME)
+                    .bucket(TicketingTestData.BUCKET_NAME)
                     .key(objectPath)
                     .contentType(mediaType)
                     .build(),

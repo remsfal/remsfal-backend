@@ -5,9 +5,9 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.core.MediaType;
 
+import de.remsfal.common.entity.storage.FileStorage;
 import de.remsfal.common.model.FileUploadData;
 import de.remsfal.common.validation.MediaTypeValidator;
-import de.remsfal.ticketing.entity.storage.FileStorage;
 
 import java.io.InputStream;
 

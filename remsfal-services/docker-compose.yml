@@ -21,6 +21,21 @@ services:
     networks:
       - remsfal
 
+  # S3 compatible file storage shared by all services (platform, notification, ticketing, ocr)
+  localstack:
+    image: localstack/localstack:4.9
+    container_name: localstack
+    restart: unless-stopped
+    environment:
+      - SERVICES=s3
+      - PERSISTENCE=1
+    ports:
+      - "9000:4566"
+    volumes:
+      - localstack_data:/var/lib/localstack
+    networks:
+      - remsfal
+
   kafka-broker:
     image: apache/kafka:latest
     hostname: kafka-broker
@@ -80,6 +95,7 @@ services:
 
 volumes:
   otel_data:
+  localstack_data:
 
 networks:
   remsfal:
