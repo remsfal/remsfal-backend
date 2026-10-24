@@ -48,7 +48,7 @@ public class TenantTimelineRepository extends AbstractRepository<TenantTimelineE
      */
     public List<TenantTimelineEntity> findByIssueIdOnly(final UUID issueId) {
         return cassandraTemplate.<TenantTimelineEntity>cql(
-            "SELECT * FROM remsfal.tenant_timelines WHERE " + ISSUE_ID + " = ? ALLOW FILTERING", issueId)
+            "SELECT * FROM tenant_timelines WHERE " + ISSUE_ID + " = ? ALLOW FILTERING", issueId)
             .toList();
     }
 

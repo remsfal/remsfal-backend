@@ -13,11 +13,11 @@
                  (part of the table's partition key).</comment>
         <sql>
             CREATE CUSTOM INDEX IF NOT EXISTS contractor_timelines_issue_id_sai
-            ON REMSFAL.contractor_timelines (issue_id)
+            ON contractor_timelines (issue_id)
             USING 'StorageAttachedIndex';
         </sql>
         <rollback>
-            <sql>DROP INDEX IF EXISTS REMSFAL.contractor_timelines_issue_id_sai;</sql>
+            <sql>DROP INDEX IF EXISTS contractor_timelines_issue_id_sai;</sql>
         </rollback>
     </changeSet>
 

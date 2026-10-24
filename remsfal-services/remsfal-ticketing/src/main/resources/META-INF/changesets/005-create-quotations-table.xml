@@ -10,7 +10,7 @@
     <changeSet id="remsfal-ticketing-005-quotations" author="alexander.stanik@htw-berlin.de">
         <comment>Create quotations table</comment>
         <sql>
-            CREATE TABLE IF NOT EXISTS REMSFAL.quotations (
+            CREATE TABLE IF NOT EXISTS quotations (
                 issue_id UUID,
                 quotation_id UUID,
                 request_id UUID,
@@ -34,11 +34,11 @@
         </sql>
         <sql>
             CREATE INDEX IF NOT EXISTS quotations_organization_id_idx
-            ON REMSFAL.quotations (organization_id);
+            ON quotations (organization_id);
         </sql>
         <rollback>
             <sql>DROP INDEX IF EXISTS quotations_organization_id_idx;</sql>
-            <sql>DROP TABLE IF EXISTS REMSFAL.quotations;</sql>
+            <sql>DROP TABLE IF EXISTS quotations;</sql>
         </rollback>
     </changeSet>
 

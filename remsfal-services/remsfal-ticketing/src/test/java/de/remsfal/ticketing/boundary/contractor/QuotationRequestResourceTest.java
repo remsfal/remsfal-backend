@@ -356,9 +356,9 @@ class QuotationRequestResourceTest extends AbstractTicketingTest {
 
         // simulate the enrichment applied from the enriched QUOTATION_REQUEST_CREATED event
         final UUID requestId = cqlSession.execute(
-            "SELECT request_id FROM remsfal.quotation_requests WHERE issue_id = ?", UUID.fromString(issueId))
+            "SELECT request_id FROM quotation_requests WHERE issue_id = ?", UUID.fromString(issueId))
             .one().getUuid("request_id");
-        cqlSession.execute("UPDATE remsfal.quotation_requests SET place_of_performance_address_1 = ?,"
+        cqlSession.execute("UPDATE quotation_requests SET place_of_performance_address_1 = ?,"
                 + " place_of_performance_address_2 = ?, place_of_performance_address_3 = ?,"
                 + " rental_unit_title = ?, rental_unit_location = ?, tenants = ?"
                 + " WHERE issue_id = ? AND request_id = ?",

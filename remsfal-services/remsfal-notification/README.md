@@ -4,6 +4,10 @@ This microservice is responsible for all customer notification functionalities.
 
 ## Service-specific Prerequisites
 
+The notification microservice stores user preferences (e.g. which issue emails a user receives) in its own
+PostgreSQL database `remsfal_notification`. The database is created by the shared `postgres` container
+(see [docker-compose.yml](../docker-compose.yml)); the schema is managed by Liquibase on startup.
+
 Since the notification microservice is designed to send emails, it needs an outgoing SMTP server.
 **For local development no SMTP account is required:** in dev mode all emails are delivered to
 [Mailpit](https://mailpit.axllent.org/), which is started together with the other infrastructure

@@ -7,6 +7,8 @@ import jakarta.persistence.MappedSuperclass;
 import java.util.Objects;
 import java.util.UUID;
 
+import de.remsfal.common.entity.MetaDataEntity;
+
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */

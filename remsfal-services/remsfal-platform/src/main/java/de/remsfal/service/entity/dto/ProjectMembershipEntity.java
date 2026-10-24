@@ -15,7 +15,7 @@ import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
 import de.remsfal.core.model.project.ProjectMemberModel;
 import de.remsfal.service.entity.dto.embeddable.ProjectMembershipKey;
-import de.remsfal.service.entity.dto.superclass.MetaDataEntity;
+import de.remsfal.common.entity.MetaDataEntity;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]

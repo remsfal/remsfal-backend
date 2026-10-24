@@ -10,7 +10,7 @@
     <changeSet id="remsfal-ticketing-006-order-placements" author="alexander.stanik@htw-berlin.de">
         <comment>Create order placements table</comment>
         <sql>
-            CREATE TABLE IF NOT EXISTS REMSFAL.order_placements (
+            CREATE TABLE IF NOT EXISTS order_placements (
                 issue_id UUID,
                 placement_id UUID,
                 quotation_id UUID,
@@ -35,11 +35,11 @@
         </sql>
         <sql>
             CREATE INDEX IF NOT EXISTS order_placements_organization_id_idx
-            ON REMSFAL.order_placements (organization_id);
+            ON order_placements (organization_id);
         </sql>
         <rollback>
             <sql>DROP INDEX IF EXISTS order_placements_organization_id_idx;</sql>
-            <sql>DROP TABLE IF EXISTS REMSFAL.order_placements;</sql>
+            <sql>DROP TABLE IF EXISTS order_placements;</sql>
         </rollback>
     </changeSet>
 

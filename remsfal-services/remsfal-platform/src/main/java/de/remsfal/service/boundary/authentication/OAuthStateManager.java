@@ -13,6 +13,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.ws.rs.core.Cookie;
 import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.NewCookie.SameSite;
+import jakarta.ws.rs.core.UriBuilder;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -33,8 +34,7 @@ public class OAuthStateManager {
 
     public static final String STATE_COOKIE_NAME = "remsfal_oauth_state";
 
-    static final String STATE_COOKIE_PATH = "/" + AuthenticationEndpoint.CONTEXT + "/"
-        + AuthenticationEndpoint.VERSION + "/" + AuthenticationEndpoint.SERVICE;
+    static final String STATE_COOKIE_PATH = UriBuilder.fromPath("/").path(AuthenticationEndpoint.class).toTemplate();
 
     private static final String SEPARATOR = ".";
 

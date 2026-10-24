@@ -10,7 +10,7 @@
     <changeSet id="remsfal-ticketing-008-issue-chat-messages" author="Parham.Rahmani@Student.HTW-Berlin.de">
         <comment>Create table for internal per-issue chat messages between project members</comment>
         <sql>
-            CREATE TABLE IF NOT EXISTS REMSFAL.issue_chat_messages (
+            CREATE TABLE IF NOT EXISTS issue_chat_messages (
                 project_id UUID,
                 issue_id UUID,
                 message_id UUID,
@@ -23,7 +23,7 @@
             ) WITH CLUSTERING ORDER BY (message_id ASC);
         </sql>
         <rollback>
-            <sql>DROP TABLE IF EXISTS REMSFAL.issue_chat_messages;</sql>
+            <sql>DROP TABLE IF EXISTS issue_chat_messages;</sql>
         </rollback>
     </changeSet>
 

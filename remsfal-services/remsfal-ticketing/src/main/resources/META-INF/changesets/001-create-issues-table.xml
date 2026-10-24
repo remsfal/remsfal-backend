@@ -10,7 +10,7 @@
     <changeSet id="remsfal-ticketing-001-issues" author="alexander.stanik@htw-berlin.de">
         <comment>Create issue tracking schema</comment>
         <sql>
-            CREATE TABLE IF NOT EXISTS REMSFAL.issues (
+            CREATE TABLE IF NOT EXISTS issues (
                 project_id UUID,
                 issue_id UUID,
                 title TEXT,
@@ -41,10 +41,10 @@
             ) WITH CLUSTERING ORDER BY (issue_id DESC);
         </sql>
         <sql>
-            CREATE INDEX IF NOT EXISTS issues_issue_id_idx ON REMSFAL.issues (issue_id);
+            CREATE INDEX IF NOT EXISTS issues_issue_id_idx ON issues (issue_id);
         </sql>
         <rollback>
-            <sql>DROP TABLE IF EXISTS REMSFAL.issues;</sql>
+            <sql>DROP TABLE IF EXISTS issues;</sql>
             <sql>DROP INDEX IF EXISTS issues_issue_id_idx;</sql>
         </rollback>
     </changeSet>

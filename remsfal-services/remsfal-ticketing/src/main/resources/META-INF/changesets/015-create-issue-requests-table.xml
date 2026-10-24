@@ -11,7 +11,7 @@
         <comment>Create issue requests table for requests a contractor sends to the tenant about an
         issue (e.g. asking for additional images)</comment>
         <sql>
-            CREATE TABLE IF NOT EXISTS REMSFAL.issue_requests (
+            CREATE TABLE IF NOT EXISTS issue_requests (
                 issue_id UUID,
                 issue_request_id UUID,
                 organization_id UUID,
@@ -25,18 +25,18 @@
         </sql>
         <sql>
             CREATE CUSTOM INDEX IF NOT EXISTS issue_requests_organization_id_sai
-            ON REMSFAL.issue_requests (organization_id)
+            ON issue_requests (organization_id)
             USING 'StorageAttachedIndex';
         </sql>
         <sql>
             CREATE CUSTOM INDEX IF NOT EXISTS issue_requests_agreement_id_sai
-            ON REMSFAL.issue_requests (agreement_id)
+            ON issue_requests (agreement_id)
             USING 'StorageAttachedIndex';
         </sql>
         <rollback>
-            <sql>DROP TABLE IF EXISTS REMSFAL.issue_requests;</sql>
-            <sql>DROP INDEX IF EXISTS REMSFAL.issue_requests_organization_id_sai;</sql>
-            <sql>DROP INDEX IF EXISTS REMSFAL.issue_requests_agreement_id_sai;</sql>
+            <sql>DROP TABLE IF EXISTS issue_requests;</sql>
+            <sql>DROP INDEX IF EXISTS issue_requests_organization_id_sai;</sql>
+            <sql>DROP INDEX IF EXISTS issue_requests_agreement_id_sai;</sql>
         </rollback>
     </changeSet>
 </databaseChangeLog>

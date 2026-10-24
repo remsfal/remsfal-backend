@@ -14,11 +14,11 @@
                  prior RENTAL_AGREEMENT_DELETED event).</comment>
         <sql>
             CREATE CUSTOM INDEX IF NOT EXISTS tenant_timelines_issue_id_sai
-            ON REMSFAL.tenant_timelines (issue_id)
+            ON tenant_timelines (issue_id)
             USING 'StorageAttachedIndex';
         </sql>
         <rollback>
-            <sql>DROP INDEX IF EXISTS REMSFAL.tenant_timelines_issue_id_sai;</sql>
+            <sql>DROP INDEX IF EXISTS tenant_timelines_issue_id_sai;</sql>
         </rollback>
     </changeSet>
 

@@ -92,7 +92,7 @@ Adjust the configuration for your database, don't use the provided ones in produ
 ```properties
 quarkus.datasource.username=remsfaladmin
 quarkus.datasource.password=remsfalSecret
-quarkus.datasource.jdbc.url=jdbc:postgresql://localhost:5432/REMSFAL
+quarkus.datasource.jdbc.url=jdbc:postgresql://localhost:5432/remsfal_platform
 quarkus.datasource.devservices.enabled=false
 ```
 
@@ -101,7 +101,7 @@ Or use JVM arguments
 ```sh
 java -Dquarkus.datasource.username=remsfaladmin \
      -Dquarkus.datasource.password=remsfalSecret \
-     -Dquarkus.datasource.jdbc.url=jdbc:postgresql://localhost:5432/REMSFAL \
+     -Dquarkus.datasource.jdbc.url=jdbc:postgresql://localhost:5432/remsfal_platform \
      -Dquarkus.datasource.devservices.enabled=false \
      -jar remsfal-services/remsfal-platform/target/remsfal-platform-runner.jar
 ```

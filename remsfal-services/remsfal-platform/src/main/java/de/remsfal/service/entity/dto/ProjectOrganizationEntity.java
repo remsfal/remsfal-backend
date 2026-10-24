@@ -16,7 +16,7 @@ import jakarta.persistence.Table;
 import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 import de.remsfal.core.model.project.OrganizationMemberModel;
 import de.remsfal.service.entity.dto.embeddable.ProjectOrganizationKey;
-import de.remsfal.service.entity.dto.superclass.MetaDataEntity;
+import de.remsfal.common.entity.MetaDataEntity;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]

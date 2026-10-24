@@ -1,4 +1,4 @@
-package de.remsfal.service.entity.dto.superclass;
+package de.remsfal.common.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;

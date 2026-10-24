@@ -10,7 +10,7 @@
     <changeSet id="remsfal-ticketing-003-issue-attachments" author="alexander.stanik@htw-berlin.de">
         <comment>Create issue attachments table for storing file references from MinIO</comment>
         <sql>
-            CREATE TABLE IF NOT EXISTS REMSFAL.issue_attachments (
+            CREATE TABLE IF NOT EXISTS issue_attachments (
                 issue_id UUID,
                 attachment_id UUID,
                 file_name TEXT,
@@ -24,7 +24,7 @@
             ) WITH CLUSTERING ORDER BY (attachment_id DESC);
         </sql>
         <rollback>
-            <sql>DROP TABLE IF EXISTS REMSFAL.issue_attachments;</sql>
+            <sql>DROP TABLE IF EXISTS issue_attachments;</sql>
         </rollback>
     </changeSet>
 

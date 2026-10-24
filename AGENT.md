@@ -17,7 +17,7 @@ REMSFAL Backend is a multi-module Maven project implementing a microservices arc
 - **remsfal-common**: Shared implementations for authentication, JWT handling, and common utilities
 - **remsfal-platform**: Primary microservice handling user auth, metadata storage, and core CRUD operations (port 8080, PostgreSQL database)
 - **remsfal-ticketing**: Document storage and ticketing functionality (port 8081, Cassandra database)
-- **remsfal-notification**: Email and notification services (port 8082, Kafka-based)
+- **remsfal-notification**: Email and notification services (port 8082, PostgreSQL database, Kafka-based)
 
 ### Service Communication
 
@@ -137,6 +137,7 @@ When implementing a new feature:
 ### Data Layer
 
 - **Platform Service**: PostgreSQL with Liquibase migrations; master changelog at `remsfal-services/remsfal-platform/src/main/resources/META-INF/liquibase-changelog.xml`, individual changesets (one per file, numbered `NNN-description.xml`) in `META-INF/changesets/`
+- **Notification Service**: PostgreSQL with Liquibase migrations; master changelog at `remsfal-services/remsfal-notification/src/main/resources/META-INF/liquibase-changelog.xml`, individual changesets (one per file, numbered `NNN-description.xml`) in `META-INF/changesets/`
 - **Ticketing Service**: Cassandra for document/chat storage with Liquibase migrations; master changelog at `remsfal-services/remsfal-ticketing/src/main/resources/META-INF/liquibase-changelog.xml`, individual changesets (one per file, numbered `NNN-description.xml`) in `META-INF/changesets/`
 - All JPA entities extend from base classes and must end with `Entity` suffix
 - JSON DTOs use `@Immutable` with `@ImmutableStyle` annotation and Jackson for serialization

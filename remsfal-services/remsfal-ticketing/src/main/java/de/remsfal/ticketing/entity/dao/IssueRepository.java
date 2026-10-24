@@ -143,7 +143,7 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
      * bound, so filtering is scoped to a single partition rather than a full-table scan.
      */
     public List<IssueEntity> findByQuery(final IssueFilter filter, final UUID cursor, final Integer limit) {
-        final StringBuilder cql = new StringBuilder("SELECT * FROM remsfal.issues WHERE ")
+        final StringBuilder cql = new StringBuilder("SELECT * FROM issues WHERE ")
             .append(PROJECT_ID).append(" = ?");
         final List<Object> params = new ArrayList<>();
         params.add(filter.projectId());
@@ -319,7 +319,7 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
     private SimpleStatement buildSetUpdateStatement(final String column, final boolean add,
         final UUID projectId, final UUID issueId, final UUID deltaId) {
         final String updateTemplateQuery =
-            "UPDATE remsfal.issues SET %s = %s %s ?, modified_at = ? WHERE project_id = ? AND issue_id = ?";
+            "UPDATE issues SET %s = %s %s ?, modified_at = ? WHERE project_id = ? AND issue_id = ?";
         // '+' add / '-' remove
         String op = add ? "+" : "-";
         String cql = String.format(updateTemplateQuery, column, column, op);
@@ -370,7 +370,7 @@ public class IssueRepository extends AbstractRepository<IssueEntity, IssueKey> {
 
     private SimpleStatement buildSetParentStatement(final UUID projectId, final UUID issueId, final UUID parentId) {
         final String setParentQuery =
-            "UPDATE remsfal.issues SET parent_issue_id = ?, modified_at = ? WHERE project_id = ? AND issue_id = ?";
+            "UPDATE issues SET parent_issue_id = ?, modified_at = ? WHERE project_id = ? AND issue_id = ?";
         return SimpleStatement.newInstance(setParentQuery, parentId, Instant.now(), projectId, issueId);
     }
 
