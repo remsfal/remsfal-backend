@@ -15,6 +15,8 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.model.UserModel;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.net.SocketAddress;
 
 /**
  * Shared helpers for resources that establish a user session (identity provider login and dev login).
@@ -30,6 +32,9 @@ public abstract class AbstractAuthenticationResource {
 
     @Context
     protected HttpHeaders headers;
+
+    @Context
+    protected HttpServerRequest request;
 
     @Inject
     protected SessionManager sessionManager;
@@ -65,6 +70,15 @@ public abstract class AbstractAuthenticationResource {
             }
         }
         return null;
+    }
+
+    /**
+     * IP address of the client. Behind a reverse proxy it is only taken from the forwarding headers if
+     * {@code quarkus.http.proxy.proxy-address-forwarding} is enabled for trusted proxies.
+     */
+    protected String resolveClientAddress() {
+        final SocketAddress address = request.remoteAddress();
+        return address != null ? address.hostAddress() : null;
     }
 
     protected Response.ResponseBuilder redirect(final URI redirectUrl) {

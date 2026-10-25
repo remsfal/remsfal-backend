@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="remsfal-platform-019-email-login-codes" author="alexander.stanik@htw-berlin.de">
+        <comment>Create table for the hashed one-time codes of the passwordless email login</comment>
+
+        <createTable tableName="email_login_codes">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="email" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code_hash" type="varchar(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code_salt" type="varchar(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="expires_at" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="used_at" type="timestamp"/>
+            <column name="attempts" type="int" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="email_login_codes" indexName="idx_email_login_codes_email">
+            <column name="email"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="remsfal-platform-019-email-login-attempts" author="alexander.stanik@htw-berlin.de">
+        <comment>Create table for the login attempts of the passwordless email login (rate limiting, abuse detection)</comment>
+
+        <createTable tableName="email_login_attempts">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="email" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ip_address" type="varchar(45)"/>
+            <column name="type" type="varchar(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="result" type="varchar(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="email_login_attempts" indexName="idx_email_login_attempts_email_created_at">
+            <column name="email"/>
+            <column name="created_at"/>
+        </createIndex>
+
+        <createIndex tableName="email_login_attempts" indexName="idx_email_login_attempts_ip_created_at">
+            <column name="ip_address"/>
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

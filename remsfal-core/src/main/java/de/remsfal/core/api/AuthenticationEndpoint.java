@@ -20,6 +20,8 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import de.remsfal.core.json.AppleNotificationJson;
+import de.remsfal.core.json.EmailLoginRequestJson;
+import de.remsfal.core.json.EmailSessionJson;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -51,6 +53,17 @@ public interface AuthenticationEndpoint {
     @APIResponse(responseCode = "302", description = "Redirect user to Apple")
     @APIResponse(responseCode = "503", description = "Sign in with Apple is not configured")
     Response loginWithApple(@DefaultValue("/") @QueryParam("route") String route);
+
+    @POST
+    @Path("/login/email")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Login user via passwordless email login.",
+        description = "Sends a one-time code to the email address that is valid for a short time. The response "
+            + "is the same whether or not the address is registered. A new request invalidates older codes.")
+    @APIResponse(responseCode = "202", description = "The login code is sent if the request is accepted")
+    @APIResponse(responseCode = "400", description = "The email address is invalid")
+    @APIResponse(responseCode = "429", description = "Too many login requests for this email address or client")
+    Response loginWithEmail(@Valid @NotNull EmailLoginRequestJson request);
 
     /**
      * @deprecated use {@link #googleSession(String, String, String)} instead; kept until all Google OAuth
@@ -88,6 +101,18 @@ public interface AuthenticationEndpoint {
         @FormParam("state") String state,
         @FormParam("user") String user,
         @FormParam("error") String error);
+
+    @POST
+    @Path("/session/email")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Start user session via passwordless email login.",
+        description = "Validates the one-time code sent to the email address. On the first login a new user is "
+            + "created or an existing user with this verified email address is linked.")
+    @APIResponse(responseCode = "204", description = "Tokens are set as cookies")
+    @APIResponse(responseCode = "400", description = "The email address or the code is malformed")
+    @APIResponse(responseCode = "401", description = "The code is invalid, expired or already used")
+    @APIResponse(responseCode = "429", description = "Too many login attempts from this client")
+    Response emailSession(@Valid @NotNull EmailSessionJson session);
 
     @POST
     @Path("/token")

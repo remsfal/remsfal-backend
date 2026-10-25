@@ -122,4 +122,18 @@ class NotificationControllerTest extends AbstractKafkaTest {
             .json("user.locale", Matchers.equalTo("en"));
     }
 
+    @Test
+    void testInformUserAboutLoginCode_unregisteredAddress() {
+        notificationController.informUserAboutLoginCode(null, "new@example.com", "12345678", "en");
+
+        given()
+            .topic(NotificationEventJson.TOPIC)
+            .assertThat()
+            .json("user.email", Matchers.equalTo("new@example.com"))
+            .json("user.locale", Matchers.equalTo("en"))
+            .json("notificationEventType", Matchers.equalTo("LOGIN_CODE"))
+            .json("code", Matchers.equalTo("12345678"))
+            .json("link", Matchers.equalTo("https://remsfal.de"));
+    }
+
 }

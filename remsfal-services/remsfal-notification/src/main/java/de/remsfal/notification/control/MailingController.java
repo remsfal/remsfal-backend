@@ -58,6 +58,10 @@ public class MailingController {
     Template additionalEmailVerification;
 
     @Inject
+    @Location("login-code.html")
+    Template loginCode;
+
+    @Inject
     @Location("issue-created.html")
     Template issueCreated;
 
@@ -120,8 +124,21 @@ public class MailingController {
         return sendWithAlias(mail, "info");
     }
 
+    @WithSpan("MailingController.sendLoginCodeEmail")
+    public Uni<Void> sendLoginCodeEmail(final UserModel recipient, final String code, final Locale locale) {
+        // the code is a credential and must never be logged
+        logger.infov("Sending login code email to {0}", recipient.getEmail());
+        final TemplateInstance instance = loginCode.data("name", recipient.getName())
+            .data("code", code);
+        final String subject = getSubject("login-code", locale);
+
+        String html = setTemplateProperties(instance, locale).render();
+        Mail mail = Mail.withHtml(recipient.getEmail(), subject, html);
+        return sendWithAlias(mail, "info");
+    }
+
     private TemplateInstance setTemplateProperties(TemplateInstance template, final Locale locale) {
-        ResourceBundle bundle = ResourceBundle.getBundle("i18n.messages", locale);
+        ResourceBundle bundle = getBundle(locale);
         for (String key : bundle.keySet()) {
             String value = bundle.getString(key);
             template = template.data(key, value);
@@ -130,8 +147,15 @@ public class MailingController {
     }
 
     private String getSubject(final String template, final Locale locale) {
-        ResourceBundle bundle = ResourceBundle.getBundle("i18n.messages", locale);
+        ResourceBundle bundle = getBundle(locale);
         return bundle.getString(template + "_subject");
+    }
+
+    private static ResourceBundle getBundle(final Locale locale) {
+        // without this control a missing messages_de falls back to the JVM default locale
+        // (e.g. messages_en on an English host) instead of the German base bundle
+        return ResourceBundle.getBundle("i18n.messages", locale,
+            ResourceBundle.Control.getNoFallbackControl(ResourceBundle.Control.FORMAT_DEFAULT));
     }
 
     private Uni<Void> sendWithAlias(final Mail mail, final String alias) {

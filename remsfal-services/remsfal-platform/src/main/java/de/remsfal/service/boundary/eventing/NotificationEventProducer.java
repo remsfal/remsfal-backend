@@ -66,4 +66,16 @@ public class NotificationEventProducer {
         emitter.send(event);
     }
 
+    public void sendLoginCode(final UserJson user, final String link, final String code) {
+        // the code is a credential and must never be logged
+        logger.infov("Sending email login code (email={0})", user.getEmail());
+        final NotificationEventJson event = ImmutableNotificationEventJson.builder()
+            .user(user)
+            .notificationEventType(NotificationEventType.LOGIN_CODE)
+            .link(link)
+            .code(code)
+            .build();
+        emitter.send(event);
+    }
+
 }

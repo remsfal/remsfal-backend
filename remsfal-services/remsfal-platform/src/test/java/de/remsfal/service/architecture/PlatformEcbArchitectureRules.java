@@ -45,6 +45,8 @@ public final class PlatformEcbArchitectureRules {
             "io.quarkus..",
             "org.eclipse.microprofile..",
             "io.smallrye..",
+            "io.vertx.core.http..",
+            "io.vertx.core.net..",
 
             "com.google.api.client..",
             "com.nimbusds.."

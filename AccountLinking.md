@@ -80,6 +80,23 @@ may e.g. report a private relay address); the user's primary email stays in `use
   - `email-disabled` / `email-enabled`: `user_identities.email_disabled` reflects whether Apple currently forwards
     emails to the relay address.
 
+### Passwordless email login specifics
+
+- **Flow.** `POST /api/v1/authentication/login/email` sends an 8-digit one-time code to the address
+  (`EmailLoginController.requestCode`), `POST /api/v1/authentication/session/email` exchanges address and code for
+  the session cookies (`EmailLoginController.verifyCode`). The frontend keeps the route in its own state, so the
+  code can also be read on another device.
+- **Identity.** A valid code proves the ownership of the address, so it is passed as *verified* email. The
+  identity is stored with `provider = EMAIL` and the normalized address as `subject`; it is created once on the
+  first login and found by the identity lookup afterwards.
+- **No account enumeration.** The code request answers `202 Accepted` for registered and unknown addresses alike;
+  a user or identity is only created after a successful verification.
+- **Codes** (`email_login_codes`) are stored as salted SHA-256 hashes, expire after 15 minutes, are single use, allow
+  5 attempts and are invalidated by a newer request.
+- **Login attempts** (`email_login_attempts`: email, IP address, type, result, timestamp) are logged for rate
+  limiting and abuse detection and deleted after the retention period (`de.remsfal.auth.email-login.attempt-retention`,
+  default 30 days) by a scheduled job.
+
 `AuthorizationController.authenticateUser(provider, subject, email, emailVerified, locale)` resolves the user in
 this order:
 
@@ -212,7 +229,7 @@ mechanics:
    display email. The *primary* linking email used for tenant/project/organization invites has no equivalent
    verification step — an inviter's claim that "this email belongs to this person" is trusted outright, and the
    actual owner only implicitly confirms it by choosing to log in with an identity provider that has verified the
-   matching email. Until that
+   matching email, or with the passwordless email login, which verifies the email by the one-time code. Until that
    happens, the data exists under an unconfirmed placeholder identity.
 6. **Normalization and uniqueness are data-integrity controls, not just a lookup convenience.** Without
    case-insensitive matching and the unique constraints described above, the same natural person could end up

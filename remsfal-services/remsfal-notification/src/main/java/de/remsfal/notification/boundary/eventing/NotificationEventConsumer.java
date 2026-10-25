@@ -52,6 +52,9 @@ public class NotificationEventConsumer {
                 sendUni = mailingController.sendNewEmploymentEmail(
                     mail.getUser(), link, locale, mail.getOrganization());
                 break;
+            case LOGIN_CODE:
+                sendUni = mailingController.sendLoginCodeEmail(mail.getUser(), mail.getCode(), locale);
+                break;
             default:
                 sendUni = Uni.createFrom().voidItem();
         }

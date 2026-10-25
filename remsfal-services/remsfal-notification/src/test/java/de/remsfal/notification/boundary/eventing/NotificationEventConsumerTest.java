@@ -180,4 +180,30 @@ class NotificationEventConsumerTest extends AbstractKafkaTest {
                 );
     }
 
+    @Test
+    void testConsumeUserNotification_LoginCode() {
+        UserJson user = ImmutableUserJson.builder()
+                .email("login@example.com")
+                .locale("de")
+                .build();
+
+        ImmutableNotificationEventJson json = ImmutableNotificationEventJson.builder()
+                .user(user)
+                .notificationEventType(NotificationEventType.LOGIN_CODE)
+                .link("https://remsfal.de")
+                .code("12345678")
+                .build();
+
+        companion.produce(ImmutableNotificationEventJson.class)
+            .fromRecords(new ProducerRecord<>(NotificationEventJson.TOPIC, json))
+            .awaitCompletion();
+
+        Awaitility.await()
+            .atMost(Duration.ofSeconds(30))
+            .untilAsserted(() ->
+                verify(mailingController, atLeastOnce())
+                    .sendLoginCodeEmail(user, "12345678", Locale.GERMAN)
+                );
+    }
+
 }
