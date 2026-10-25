@@ -37,6 +37,7 @@ import java.util.UUID;
 public class MailingResource {
 
     private static final String ERROR_SEND_EMAIL = "Failed to send email";
+    private static final String TEST_LOGIN_CODE = "12345678";
 
     @Inject
     MailingController controller;
@@ -63,8 +64,8 @@ public class MailingResource {
             .await().indefinitely();
         controller.sendAdditionalEmailVerificationEmail(recipient, "https://remsfal.de", Locale.GERMAN)
             .await().indefinitely();
-        controller.sendLoginCodeEmail(recipient, "12345678", Locale.ENGLISH).await().indefinitely();
-        controller.sendLoginCodeEmail(recipient, "12345678", Locale.GERMAN).await().indefinitely();
+        controller.sendLoginCodeEmail(recipient, TEST_LOGIN_CODE, Locale.ENGLISH).await().indefinitely();
+        controller.sendLoginCodeEmail(recipient, TEST_LOGIN_CODE, Locale.GERMAN).await().indefinitely();
         return Response.accepted().build();
     }
 
@@ -74,8 +75,8 @@ public class MailingResource {
     public Response testLoginCode(@QueryParam("to") @NotNull @Email final String to) {
         final UserModel recipient = createMockUserModel(to);
         try {
-            controller.sendLoginCodeEmail(recipient, "12345678", Locale.ENGLISH).await().indefinitely();
-            controller.sendLoginCodeEmail(recipient, "12345678", Locale.GERMAN).await().indefinitely();
+            controller.sendLoginCodeEmail(recipient, TEST_LOGIN_CODE, Locale.ENGLISH).await().indefinitely();
+            controller.sendLoginCodeEmail(recipient, TEST_LOGIN_CODE, Locale.GERMAN).await().indefinitely();
             return Response.accepted().entity("Login code email sent successfully").build();
         } catch (Exception e) {
             return Response.serverError().entity(ERROR_SEND_EMAIL).build();
