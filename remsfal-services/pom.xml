@@ -21,7 +21,7 @@
     </modules>
 
     <properties>
-        <quarkus.version>3.40.1</quarkus.version>
+        <quarkus.version>3.40.1.1</quarkus.version>
         <quarkus.package.jar.type>uber-jar</quarkus.package.jar.type>
         <skipITs>true</skipITs>
         <twelvemonkeys.version>3.15.3</twelvemonkeys.version>
