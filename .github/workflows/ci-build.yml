@@ -26,14 +26,14 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
       - name: Upload Surefire Reports
-        if: always()
+        if: failure()
         uses: actions/upload-artifact@v7
         with:
           name: surefire-reports-jdk-${{ matrix.java }}-${{ github.run_id }}
           path: |
             remsfal-core/target/surefire-reports/
             remsfal-services/*/target/surefire-reports/
-          retention-days: 14
+          retention-days: 7
       - name: Build JaCoCo Reports (only on JDK 25)
         if: ${{ matrix.java == 25 }}
         run: mvn -B verify
