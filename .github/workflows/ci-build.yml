@@ -2,14 +2,57 @@ name: "CI Build"
 
 on:
   push:
-    branches: ["main", "dev"]
+    branches: ["main"]
   pull_request:
     types: [opened, synchronize, reopened]
 
 jobs:
+  check-branches:
+    name: "Check Pull Request Conditions"
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-slim' }}
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: read
+    env:
+      HEAD_REF: ${{ github.head_ref }}
+      BASE_REF: ${{ github.base_ref }}
+    steps:
+      - name: Check that the source branch is not main
+        run: |
+          if [ "$HEAD_REF" == "main" ] && [ "$BASE_REF" == "main" ]; then
+            echo "::error::Pull requests to main must come from a branch that is not named 'main'."
+            exit 1
+          fi
+          echo "Source branch '$HEAD_REF' is valid."
+      - name: Check that the branch name only uses allowed characters
+        run: |
+          if ! LC_ALL=C grep -qE '^[A-Za-z0-9._+/-]+$' <<< "$HEAD_REF"; then
+            echo "::error::Branch name '$HEAD_REF' may only contain A-Z, a-z, 0-9, '.', '_', '-', '+' and '/' (no umlauts or spaces)."
+            exit 1
+          fi
+          echo "Branch name '$HEAD_REF' is valid."
+      - name: Check that external pull requests do not modify .github
+        if: github.event.pull_request.head.repo.full_name != github.repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          CHANGED=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/files" --paginate \
+            --jq '.[] | .filename, (.previous_filename // empty)' | grep -E '^\.github/' || true)
+          if [ -n "$CHANGED" ]; then
+            echo "::error::Pull requests from forks must not modify files in .github/:"
+            echo "$CHANGED"
+            exit 1
+          fi
+          echo "No changes in .github/"
+
   run-tests:
     name: JDK ${{ matrix.java }} Build
-    runs-on: ubuntu-latest
+    needs: check-branches
+    # check-branches only runs for pull requests and is skipped on push
+    if: ${{ !cancelled() && (needs.check-branches.result == 'success' || needs.check-branches.result == 'skipped') }}
+    runs-on: ${{ vars.CI_RUNNER || 'ubuntu-latest' }}
     permissions:
       contents: read
     strategy:
@@ -34,11 +77,13 @@ jobs:
             remsfal-core/target/surefire-reports/
             remsfal-services/*/target/surefire-reports/
           retention-days: 7
+
+      # Generate reports for Sonar Analysis (only in the upstream repository)
       - name: Build JaCoCo Reports (only on JDK 25)
-        if: ${{ matrix.java == 25 }}
+        if: ${{ matrix.java == 25 && github.repository == 'remsfal/remsfal-backend' }}
         run: mvn -B verify
       - name: Upload Coverage Reports (only on JDK 25)
-        if: ${{ matrix.java == 25 }}
+        if: ${{ matrix.java == 25 && github.repository == 'remsfal/remsfal-backend' }}
         uses: actions/upload-artifact@v7
         with:
           name: coverage-${{ github.run_id }}
@@ -46,7 +91,7 @@ jobs:
           retention-days: 1
           if-no-files-found: error
       - name: Upload Compiled Classes (only on JDK 25)
-        if: ${{ matrix.java == 25 }}
+        if: ${{ matrix.java == 25 && github.repository == 'remsfal/remsfal-backend' }}
         uses: actions/upload-artifact@v7
         with:
           name: binaries-${{ github.run_id }}
@@ -55,32 +100,13 @@ jobs:
             **/target/generated-sources/
           retention-days: 1
       - name: Build Checkstyle Reports (only on JDK 25)
-        if: ${{ matrix.java == 25 }}
+        if: ${{ matrix.java == 25 && github.repository == 'remsfal/remsfal-backend' }}
         run: mvn -B checkstyle:checkstyle-aggregate
       - name: Upload Checkstyle Reports (only on JDK 25)
-        if: ${{ matrix.java == 25 }}
+        if: ${{ matrix.java == 25 && github.repository == 'remsfal/remsfal-backend' }}
         uses: actions/upload-artifact@v7
         with:
           name: checkstyle-${{ github.run_id }}
           path: target/checkstyle-result.xml
           retention-days: 1
           if-no-files-found: error
-
-  check-branches:
-    name: "Check Pull Request Conditions"
-    runs-on: ubuntu-slim
-    permissions:
-      contents: read
-    if: github.event_name == 'pull_request' && github.actor != 'remsfal-bot[bot]'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-      - name: Check PR branches
-        env:
-          HEAD_REF: ${{ github.head_ref }}
-          BASE_REF: ${{ github.base_ref }}
-        run: |
-          if [ "$HEAD_REF" == "main" ] && [ "$BASE_REF" == "main" ]; then
-            echo "Pull Requests to main branch are only allowed from developer branches that are not named <main>."
-            exit 1
-          fi
