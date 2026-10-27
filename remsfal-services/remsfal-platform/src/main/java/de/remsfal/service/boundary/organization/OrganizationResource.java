@@ -13,6 +13,7 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.container.ResourceContext;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import io.micrometer.core.annotation.Timed;
 
 import java.util.UUID;
 
@@ -29,6 +30,7 @@ public class OrganizationResource extends OrganizationSubResource implements Org
     ResourceContext resourceContext;
 
     @Override
+    @Timed("checks_timer_search_organizations")
     public OrganizationListJson searchOrganizations(final String name, final Integer offset,
         final Integer limit) {
         return OrganizationListJson.valueOf(
@@ -38,6 +40,7 @@ public class OrganizationResource extends OrganizationSubResource implements Org
     }
 
     @Override
+    @Timed("checks_timer_get_contractors")
     public OrganizationListJson getContractors(final Integer offset, final Integer limit) {
         return OrganizationListJson.valueOf(
             controller.getContractorOrganizations(principal, offset, limit),
@@ -46,22 +49,26 @@ public class OrganizationResource extends OrganizationSubResource implements Org
     }
 
     @Override
+    @Timed("checks_timer_get_clients")
     public ClientProjectListJson getClients(final UUID organizationId) {
         checkReadPermissions(organizationId);
         return controller.getClients(organizationId);
     }
 
     @Override
+    @Timed("checks_timer_get_organization_employments")
     public OrganizationEmployeeListJson getOrganizationEmployments() {
         return OrganizationEmployeeListJson.valueOfList(controller.getOrganizationEmployments(principal));
     }
 
     @Override
+    @Timed("checks_timer_get_organizations")
     public OrganizationListJson getOrganizations() {
         return OrganizationListJson.valueOf(controller.getOrganizations(principal));
     }
 
     @Override
+    @Timed("checks_timer_create_organization")
     public Response createOrganization(final OrganizationJson organization) {
         OrganizationModel model = controller.createOrganization(organization, principal);
         return getCreatedResponseBuilder(model.getId())
@@ -71,18 +78,21 @@ public class OrganizationResource extends OrganizationSubResource implements Org
     }
 
     @Override
+    @Timed("checks_timer_get_organization")
     public OrganizationJson getOrganization(final UUID organizationId) {
         checkReadPermissions(organizationId);
         return OrganizationJson.valueOf(controller.getOrganizationById(organizationId));
     }
 
     @Override
+    @Timed("checks_timer_update_organization")
     public OrganizationJson updateOrganization(final UUID organizationId, final OrganizationJson organization) {
         checkOwnerPermissions(organizationId);
         return OrganizationJson.valueOf(controller.updateOrganization(principal, organizationId, organization));
     }
 
     @Override
+    @Timed("checks_timer_delete_organization")
     public void deleteOrganization(final UUID organizationId) {
         checkOwnerPermissions(organizationId);
         if (!controller.deleteOrganization(organizationId)) {
@@ -91,6 +101,7 @@ public class OrganizationResource extends OrganizationSubResource implements Org
     }
 
     @Override
+    @Timed("checks_timer_get_employee_endpoint")
     public EmployeeResource getEmployeeEndpoint() {
         return resourceContext.initResource(employeeResource.get());
     }
