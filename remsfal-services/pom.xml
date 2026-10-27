@@ -18,6 +18,7 @@
         <module>remsfal-notification</module>
         <module>remsfal-ticketing</module>
         <module>remsfal-platform</module>
+        <module>remsfal-appointment</module>
     </modules>
 
     <properties>
