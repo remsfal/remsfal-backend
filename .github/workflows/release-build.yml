@@ -20,6 +20,9 @@ jobs:
   release:
     name: "Release and Deployment"
     runs-on: ubuntu-latest
+    # Maven/npm release with version commits is only done in the upstream repository.
+    # Downstream repositories use their own release workflow.
+    if: github.repository == 'remsfal/remsfal-backend'
     steps:
       - name: Generate GitHub App Token
         id: generate-token
@@ -27,8 +30,8 @@ jobs:
         with:
           client-id: ${{ secrets.REMSFAL_BOT_ID }}
           private-key: ${{ secrets.REMSFAL_BOT_KEY }}
-          owner: remsfal
-          repositories: remsfal-backend
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
       - name: Checkout
         uses: actions/checkout@v7
         with:
