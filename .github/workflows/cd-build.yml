@@ -34,6 +34,16 @@ jobs:
           # Tests and Checkstyle already run in the CI Build
           skip-tests: 'true'
           skip-checkstyle: 'true'
+      - name: Determine image name and version
+        id: image
+        # The image prefix follows the repository name, like in the frontend:
+        # remsfal-backend -> remsfal-platform, online-backend -> online-platform
+        env:
+          REPOSITORY: ${{ github.event.repository.name }}
+          MICROSERVICE: ${{ matrix.microservice }}
+        run: |
+          echo "name=${REPOSITORY%%-*}-${MICROSERVICE#remsfal-}" >> "$GITHUB_OUTPUT"
+          echo "version=$(mvn -B -q -N help:evaluate -Dexpression=project.version -DforceStdout)" >> "$GITHUB_OUTPUT"
       - name: Verify ${{ matrix.microservice }} JAR exists
         run: ls -l remsfal-services/${{ matrix.microservice }}/target/${{ matrix.microservice }}-runner.jar
       - name: Verify ${{ matrix.microservice }} JAR contains no keys
@@ -59,10 +69,13 @@ jobs:
         id: meta
         uses: docker/metadata-action@v6.2.0
         with:
-          images: ${{ vars.REGISTRY_HOST || 'ghcr.io' }}/${{ github.repository_owner }}/${{ matrix.microservice }}
+          images: ${{ vars.REGISTRY_HOST || 'ghcr.io' }}/${{ github.repository_owner }}/${{ steps.image.outputs.name }}
           tags: |
             type=raw,value=latest
+            type=raw,value=${{ steps.image.outputs.version }}
             type=sha
+          labels: |
+            org.opencontainers.image.version=${{ steps.image.outputs.version }}
       - name: Build and push Docker image
         id: push
         uses: docker/build-push-action@v7.4.0
@@ -80,6 +93,6 @@ jobs:
         id: attest
         uses: actions/attest-build-provenance@v4
         with:
-          subject-name: ${{ vars.REGISTRY_HOST || 'ghcr.io' }}/${{ github.repository_owner }}/${{ matrix.microservice }}
+          subject-name: ${{ vars.REGISTRY_HOST || 'ghcr.io' }}/${{ github.repository_owner }}/${{ steps.image.outputs.name }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
