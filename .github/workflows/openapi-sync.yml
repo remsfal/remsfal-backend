@@ -152,9 +152,12 @@ jobs:
 
           git push origin "$BRANCH_NAME"
           echo "Branch $BRANCH_NAME is pushed"
-          gh api repos/remsfal/remsfal-frontend/pulls \
-            -f base="main" \
-            -f head="$BRANCH_NAME" \
-            -f title="$PR_TITLE" \
-            -f body="$PR_BODY" \
-            -f labels="openapi,javascript"
+          # The pulls API ignores labels, gh pr create sets them
+          gh pr create \
+            --repo remsfal/remsfal-frontend \
+            --base main \
+            --head "$BRANCH_NAME" \
+            --title "$PR_TITLE" \
+            --body "$PR_BODY" \
+            --label openapi \
+            --label javascript
