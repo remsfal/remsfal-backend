@@ -100,12 +100,23 @@ jobs:
             -Dgoals=deploy \
             -Dmaven.test.skip=true
 
+      - name: Determine Release Version
+        id: release_version
+        env:
+          RELEASE_TAG: ${{ steps.determine_tag.outputs.RELEASE_TAG }}
+        # The images and packages are tagged without the leading 'v'
+        run: echo "version=${RELEASE_TAG#v}" >> "$GITHUB_OUTPUT"
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.determine_tag.outputs.RELEASE_TAG }}
-          # Simple release notes body
+          # The generated notes list the merged pull requests and contributors since the previous release
+          generate_release_notes: true
           body: |
-            Release version ${{ steps.determine_tag.outputs.RELEASE_TAG }}
+            Release ${{ steps.release_version.outputs.version }} of the REMSFAL backend, started by ${{ github.actor }}.
+
+            - Maven artifacts: [GitHub Packages](https://github.com/orgs/${{ github.repository_owner }}/packages?repo_name=${{ github.event.repository.name }})
+            - Container images: `ghcr.io/${{ github.repository_owner }}/remsfal-platform:${{ steps.release_version.outputs.version }}`, `remsfal-ticketing:${{ steps.release_version.outputs.version }}`, `remsfal-notification:${{ steps.release_version.outputs.version }}` (built by the CD Build of the release commit)
