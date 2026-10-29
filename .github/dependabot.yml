@@ -12,6 +12,7 @@ updates:
     directory: "/.github/workflows"
     schedule:
       interval: "weekly"
-    # Labels on pull requests for version updates only
+    # Labels on pull requests for version updates only; "dependencies" groups them in the release notes
     labels:
-      - "GitHub actions versions"
+      - "dependencies"
+      - "github_actions"
