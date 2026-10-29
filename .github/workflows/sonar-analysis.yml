@@ -18,12 +18,16 @@ jobs:
     if: github.actor != 'dependabot[bot]' && github.repository == 'remsfal/remsfal-backend' && github.event.workflow_run.conclusion == 'success'
 
     steps:
-      - name: Checkout at triggering ref (read-only)
+      # Fork PR code is only checked out as data for the scanner. Maven itself must not
+      # evaluate any fork-controlled build config (see "Use trusted Maven build config").
+      - name: Checkout at triggering commit (read-only)
         uses: actions/checkout@v7
         with:
           repository: ${{ github.event.workflow_run.head_repository.full_name }}
-          ref: ${{ github.event.workflow_run.head_branch }}
+          ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 0
+          persist-credentials: false
+          allow-unsafe-pr-checkout: true
       - name: Download Coverage Report from CI Build
         uses: actions/download-artifact@v8
         with:
@@ -70,26 +74,41 @@ jobs:
             mkdir -p "$rel"
             cp -R "$src/"* "$rel/"
           done
+      # mvn sonar:sonar runs with SONAR_TOKEN, so a fork must not control plugins, extensions
+      # or JVM options. Replace all POMs and Maven config with the default branch versions.
+      - name: Use trusted Maven build config from the default branch
+        run: |
+          git fetch --no-tags --depth=1 "https://github.com/${GITHUB_REPOSITORY}.git" "$GITHUB_SHA"
+          find . -name pom.xml -not -path "./.git/*" -delete
+          rm -rf .mvn mvnw mvnw.cmd
+          git checkout FETCH_HEAD -- ':(glob)**/pom.xml' .mvn mvnw mvnw.cmd
 
       # --- Sonar -> PULL REQUESTS ---
-      - name: Find Pull Request for Branch
+      # Match on head repository and branch, so that equally named fork branches
+      # (e.g. "main") cannot be mapped to the wrong pull request.
+      - name: Find Pull Request by Head Repository and Branch
         if: ${{ github.event.workflow_run.event == 'pull_request' }}
         id: pr_by_branch
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.event.workflow_run.repository.full_name }}
+          HEAD_REPO: ${{ github.event.workflow_run.head_repository.full_name }}
+          HEAD_OWNER: ${{ github.event.workflow_run.head_repository.owner.login }}
           HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
         run: |
-          pr_json=$(gh pr list \
-            --repo "${{ github.event.workflow_run.repository.full_name }}" \
-            --head "$HEAD_BRANCH" \
-            --state all \
-            --json number,headRefName,baseRefName \
-            --limit 1)
+          pr_json=$(gh api -X GET "repos/${REPO}/pulls" \
+            -f state=all -f head="${HEAD_OWNER}:${HEAD_BRANCH}" -f sort=updated -f direction=desc \
+            --jq "[.[] | select(.head.repo.full_name == \"${HEAD_REPO}\")][0] // empty
+              | {number, headRef: .head.ref, baseRef: .base.ref}")
           echo "$pr_json"
+          if [ -z "$pr_json" ]; then
+            echo "::error::No pull request found for ${HEAD_REPO}:${HEAD_BRANCH}."
+            exit 1
+          fi
           # set outputs
-          echo "number=$(echo "$pr_json" | jq -r '.[0].number')" >> "$GITHUB_OUTPUT"
-          echo "headRef=$(echo "$pr_json" | jq -r '.[0].headRefName')" >> "$GITHUB_OUTPUT"
-          echo "baseRef=$(echo "$pr_json" | jq -r '.[0].baseRefName')" >> "$GITHUB_OUTPUT"
+          echo "number=$(echo "$pr_json" | jq -r '.number')" >> "$GITHUB_OUTPUT"
+          echo "headRef=$(echo "$pr_json" | jq -r '.headRef')" >> "$GITHUB_OUTPUT"
+          echo "baseRef=$(echo "$pr_json" | jq -r '.baseRef')" >> "$GITHUB_OUTPUT"
       - name: SonarCloud Scan (PR decoration)
         if: ${{ github.event.workflow_run.event == 'pull_request' }}
         env:
