@@ -15,13 +15,12 @@ import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.MessagingErrorCode;
 import com.google.firebase.messaging.Notification;
 
-import de.remsfal.notification.control.PushProducer;
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class FirebasePushProducer implements PushProducer {
 
-    public FirebasePushProducer(@ConfigProperty(name = "fcm.service-account-path") String path) {
+    public FirebasePushProducer(@ConfigProperty(name = "fcm.service-account-path") final String path) {
         if (FirebaseApp.getApps().isEmpty()) {
             try (var in = new FileInputStream(path)) {
                 FirebaseApp.initializeApp(FirebaseOptions.builder()
@@ -34,7 +33,7 @@ public class FirebasePushProducer implements PushProducer {
     }
 
     @Override
-    public Result send(String fid, String title, String body) {
+    public Result send(final String fid, final String title, final String body) {
         Message msg = Message.builder()
                 .setFid(fid)
                 .setNotification(Notification.builder().setTitle(title).setBody(body).build())

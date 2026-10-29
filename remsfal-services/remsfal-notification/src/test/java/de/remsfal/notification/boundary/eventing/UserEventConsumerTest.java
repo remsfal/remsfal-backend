@@ -1,6 +1,8 @@
 package de.remsfal.notification.boundary.eventing;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
@@ -18,7 +20,9 @@ import de.remsfal.core.json.eventing.UserEventJson;
 import de.remsfal.core.json.eventing.UserEventJson.UserEventType;
 import de.remsfal.core.json.notification.ImmutableEmailSettingsJson;
 import de.remsfal.notification.control.EmailSettingsController;
+import de.remsfal.notification.control.PushController;
 import de.remsfal.notification.entity.dao.UserEmailSettingsRepository;
+import de.remsfal.notification.entity.dao.PushSubscriptionRepository;
 import de.remsfal.test.kafka.AbstractKafkaTest;
 import io.quarkus.kafka.client.serialization.ObjectMapperSerde;
 import io.quarkus.narayana.jta.QuarkusTransaction;
@@ -40,6 +44,12 @@ class UserEventConsumerTest extends AbstractKafkaTest {
 
     @Inject
     UserEmailSettingsRepository repository;
+
+    @Inject
+    PushController pushController;
+
+    @Inject
+    PushSubscriptionRepository pushRepository;
 
     @Override
     @BeforeEach
@@ -86,6 +96,31 @@ class UserEventConsumerTest extends AbstractKafkaTest {
             .untilAsserted(() ->
                 assertNull(QuarkusTransaction.requiringNew().call(() -> repository.findById(userId)))
             );
+    }
+
+    @Test
+    void testConsumeUserDeleted_deletesPushSubscriptions() {
+        final UUID userId = UUID.randomUUID();
+        pushController.registerFid(userId, "fid-" + UUID.randomUUID(), "WEB");
+        pushController.registerFid(userId, "fid-" + UUID.randomUUID(), "ANDROID");
+        assertEquals(2, QuarkusTransaction.requiringNew()
+                .call(() -> pushRepository.findByUserId(userId)).size());
+
+        final ImmutableUserEventJson event = ImmutableUserEventJson.builder()
+                .userEventType(UserEventType.USER_DELETED)
+                .userId(userId)
+                .build();
+
+        companion.produce(ImmutableUserEventJson.class)
+                .fromRecords(new ProducerRecord<>(UserEventJson.TOPIC, event))
+                .awaitCompletion();
+
+        Awaitility.await()
+                .atMost(Duration.ofSeconds(30))
+                .untilAsserted(() ->
+                        assertTrue(QuarkusTransaction.requiringNew()
+                                .call(() -> pushRepository.findByUserId(userId)).isEmpty())
+                );
     }
 
 }

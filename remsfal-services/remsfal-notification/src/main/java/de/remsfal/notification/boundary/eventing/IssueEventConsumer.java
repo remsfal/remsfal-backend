@@ -4,9 +4,11 @@ import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.notification.control.EmailSettingsController;
 import de.remsfal.notification.control.MailingController;
+import de.remsfal.notification.control.PushController;
 import io.smallrye.common.annotation.Blocking;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.control.ActivateRequestContext;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
@@ -29,8 +31,12 @@ public class IssueEventConsumer {
     @Inject
     EmailSettingsController emailSettingsController;
 
+    @Inject
+    PushController pushController;
+
     @Blocking
     @Incoming(IssueEventJson.TOPIC_ENRICHED)
+    @ActivateRequestContext
     public CompletionStage<Void> consumeIssueEvent(Message<IssueEventJson> msg) {
         IssueEventJson event = msg.getPayload();
 
@@ -65,6 +71,7 @@ public class IssueEventConsumer {
 
     private Uni<Void> handleIssueCreated(IssueEventJson event) {
         logger.infov("Handling ISSUE_CREATED for issue: {0}", event.getIssue().getTitle());
+        // pushToRecipients(event, "New issue created"); /* Title der Message ist falsch und statisch UND Nachricht geht an Mieter selbst, wenn Issue von Mieter erstellt wird */
         Uni<Void> result = Uni.createFrom().voidItem();
         if (isRecipient(event, event.getAssignee())) {
             result = result.chain(v -> mailingController.sendIssueCreatedEmail(event, event.getAssignee()));
@@ -79,6 +86,7 @@ public class IssueEventConsumer {
 
     private Uni<Void> handleIssueUpdated(IssueEventJson event) {
         logger.infov("Handling ISSUE_UPDATED for issue: {0}", event.getIssue().getTitle());
+        pushToRecipients(event, "Issue updated: " + event.getIssue().getStatus());
         Uni<Void> result = Uni.createFrom().voidItem();
         if (isRecipient(event, event.getAssignee())) {
             result = result.chain(v -> mailingController.sendIssueUpdatedEmail(event, event.getAssignee()));
@@ -93,6 +101,7 @@ public class IssueEventConsumer {
 
     private Uni<Void> handleIssueAssigned(IssueEventJson event) {
         logger.infov("Handling ISSUE_ASSIGNED for issue: {0}", event.getIssue().getTitle());
+        // pushToRecipients(event, "Issue assigned"); /* momentan ist getTitle immer falsch (statisch): "Sonstiges von Max Mieter" */
         Uni<Void> result = Uni.createFrom().voidItem();
         if (isRecipient(event, event.getAssignee())) {
             result = result.chain(v -> mailingController.sendIssueAssignedEmail(event, event.getAssignee()));
@@ -111,5 +120,34 @@ public class IssueEventConsumer {
     private boolean isRecipient(final IssueEventJson event, final UserJson user) {
         return user != null && user.getEmail() != null
             && emailSettingsController.isEnabled(user.getId(), event.getIssueEventType());
+    }
+
+    /**
+     * Sends a status-update push to the tenants of the issue's selected rental agreement.
+     */
+    private void pushToRecipients(final IssueEventJson event, final String body) {
+        final var issue = event.getIssue();
+        if (issue == null) {
+            return;
+        }
+        if (issue.isVisibleToTenants() == null || !issue.isVisibleToTenants()) {
+            return;
+        }
+        final var rentalAgreement = event.getRentalAgreement();
+        if (rentalAgreement == null || rentalAgreement.getTenants() == null) {
+            logger.warnv("Skipping tenant push for issue {0}: no rental agreement", event.getIssueId());
+            return;
+        }
+        for (final var tenant : rentalAgreement.getTenants()) {
+            if (tenant.getUserId() == null) {
+                continue;
+            }
+            try {
+                pushController.sendToUser(tenant.getUserId(), issue.getTitle(), body);
+            } catch (RuntimeException e) {
+                logger.warnv(e, "Push for issue {0} to tenant {1} failed",
+                    event.getIssueId(), tenant.getUserId());
+            }
+        }
     }
 }
