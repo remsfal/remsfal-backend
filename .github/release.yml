@@ -1,0 +1,12 @@
+# Categories of the generated release notes, used by the RELEASE Build and the online release.
+# A pull request is listed in the first category whose labels match.
+changelog:
+  categories:
+    - title: Changes
+      labels: ["*"]
+      exclude:
+        labels: ["dependencies", "openapi"]
+    - title: OpenAPI Specification
+      labels: ["openapi"]
+    - title: Dependencies
+      labels: ["dependencies"]
