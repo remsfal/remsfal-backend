@@ -12,6 +12,11 @@ permissions:
 env:
   BRANCH_PREFIX: 'remsfal-bot/openapi-sync/'
 
+# A release pushes two commits at once; the second run must see the PR branch of the first one
+concurrency:
+  group: openapi-sync
+  cancel-in-progress: false
+
 jobs:
   build-and-sync-openapi:
     name: "Generate OpenAPI and Synchronize with the Frontend"
@@ -21,6 +26,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          # The commit built by the CD Build, not the current head of main
+          ref: ${{ github.event.workflow_run.head_sha }}
       - name: Build REMSFAL
         uses: ./.github/actions/build-remsfal
         with:
@@ -40,6 +48,25 @@ jobs:
         uses: remsfal/.github/.github/actions/find-merged-pr@main
         with:
           token: ${{ steps.generate-token.outputs.token }}
+          sha: ${{ github.event.workflow_run.head_sha }}
+      - name: Describe origin of the changes
+        id: origin
+        env:
+          MERGED_PR_NUMBER: ${{ steps.backend-merge.outputs.pr-number }}
+          MERGED_PR_TITLE: ${{ steps.backend-merge.outputs.pr-title }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          # Commits pushed directly to main (e.g. by the maven-release-plugin) have no merged PR
+          if [ -n "$MERGED_PR_NUMBER" ]; then
+            echo "branch-suffix=${MERGED_PR_NUMBER}" >> "$GITHUB_OUTPUT"
+            echo "title=Sync of OpenAPI Spec created by #${MERGED_PR_NUMBER}: ${MERGED_PR_TITLE}" >> "$GITHUB_OUTPUT"
+            echo "reference=remsfal/remsfal-backend#${MERGED_PR_NUMBER}: ${MERGED_PR_TITLE}" >> "$GITHUB_OUTPUT"
+          else
+            SUBJECT=$(git log -1 --format=%s "$SHA")
+            echo "branch-suffix=${SHA:0:7}" >> "$GITHUB_OUTPUT"
+            echo "title=Sync of OpenAPI Spec for ${SUBJECT}" >> "$GITHUB_OUTPUT"
+            echo "reference=remsfal/remsfal-backend@${SHA}: ${SUBJECT}" >> "$GITHUB_OUTPUT"
+          fi
       - name: Select existing PR on target
         id: frontend-selection
         uses: remsfal/.github/.github/actions/select-branch@main
@@ -68,7 +95,7 @@ jobs:
       - name: Create new PR branch
         if: steps.frontend-selection.outputs.pr-branch == ''
         env:
-          NEW_BRANCH: ${{ env.BRANCH_PREFIX }}${{ steps.backend-merge.outputs.pr-number }}
+          NEW_BRANCH: ${{ env.BRANCH_PREFIX }}${{ steps.origin.outputs.branch-suffix }}
         run: |
           cd remsfal-frontend
           git checkout -b "$NEW_BRANCH"
@@ -99,13 +126,10 @@ jobs:
         if: ${{ env.SPEC_CHANGED == 'true' }}
         working-directory: ${{ github.workspace }}/remsfal-frontend
         env:
-          MERGED_PR_NUMBER: ${{ steps.backend-merge.outputs.pr-number }}
-          MERGED_PR_TITLE: ${{ steps.backend-merge.outputs.pr-title }}
+          REFERENCE: ${{ steps.origin.outputs.reference }}
         run: |
-          COMMIT_MESSAGE="Updated generated files from merged backend  \
-          PR #${MERGED_PR_NUMBER}: ${MERGED_PR_TITLE}"
           git add --all
-          git commit -m "$COMMIT_MESSAGE"
+          git commit -m "Updated generated files from ${REFERENCE}"
 
       - name: Push Commits to existing PR branch
         if: ${{ env.SPEC_CHANGED == 'true' && steps.frontend-selection.outputs.pr-branch != '' }}
@@ -120,20 +144,20 @@ jobs:
         working-directory: ${{ github.workspace }}/remsfal-frontend
         env:
           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
-          BRANCH_NAME: ${{ env.BRANCH_PREFIX }}${{ steps.backend-merge.outputs.pr-number }}
-          MERGED_PR_NUMBER: ${{ steps.backend-merge.outputs.pr-number }}
-          MERGED_PR_TITLE: ${{ steps.backend-merge.outputs.pr-title }}
+          BRANCH_NAME: ${{ env.BRANCH_PREFIX }}${{ steps.origin.outputs.branch-suffix }}
+          PR_TITLE: ${{ steps.origin.outputs.title }}
+          REFERENCE: ${{ steps.origin.outputs.reference }}
         run: |
-          PR_TITLE="Sync of OpenAPI Spec created by #${MERGED_PR_TITLE}"
-          PR_BODY="This PR carries the new OpenAPISpec from remsfal-backend, \
-          which were created by the PR remsfal/remsfal-backend#${MERGED_PR_NUMBER}: \
-          ${MERGED_PR_TITLE}"
+          PR_BODY="This PR carries the new OpenAPI Spec from remsfal-backend, which was created by ${REFERENCE}"
 
           git push origin "$BRANCH_NAME"
           echo "Branch $BRANCH_NAME is pushed"
-          gh api repos/remsfal/remsfal-frontend/pulls \
-            -f base="main" \
-            -f head="$BRANCH_NAME" \
-            -f title="$PR_TITLE" \
-            -f body="$PR_BODY" \
-            -f labels="openapi,javascript"
+          # The pulls API ignores labels, gh pr create sets them
+          gh pr create \
+            --repo remsfal/remsfal-frontend \
+            --base main \
+            --head "$BRANCH_NAME" \
+            --title "$PR_TITLE" \
+            --body "$PR_BODY" \
+            --label openapi \
+            --label javascript
