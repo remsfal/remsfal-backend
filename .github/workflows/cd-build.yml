@@ -87,6 +87,31 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             SERVICE_NAME=${{ matrix.microservice }}
+      - name: Install cosign
+        # Only repositories whose environment provides a cosign key pair (see online-terraform) sign their images
+        if: ${{ vars.COSIGN_PUBLIC_KEY != '' }}
+        uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+        with:
+          # cosign v2 writes the classic .sig signature, which Harbor shows as signed
+          cosign-release: 'v2.6.5'
+      - name: Sign image with cosign
+        if: ${{ vars.COSIGN_PUBLIC_KEY != '' }}
+        env:
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+          COSIGN_PUBLIC_KEY: ${{ vars.COSIGN_PUBLIC_KEY }}
+          IMAGE: ${{ vars.REGISTRY_HOST || 'ghcr.io' }}/${{ github.repository_owner }}/${{ steps.image.outputs.name }}@${{ steps.push.outputs.digest }}
+        run: |
+          KEY_DIR=$(mktemp -d)
+          trap 'rm -rf "$KEY_DIR"' EXIT
+          # cosign only signs with its own encrypted key format, so import the PEM key with a throwaway password
+          export COSIGN_PASSWORD=$(openssl rand -hex 32)
+          printf '%s\n' "$COSIGN_PRIVATE_KEY" > "$KEY_DIR/cosign.pem"
+          printf '%s\n' "$COSIGN_PUBLIC_KEY" > "$KEY_DIR/cosign.pub.pem"
+          cosign import-key-pair --key "$KEY_DIR/cosign.pem" --output-key-prefix "$KEY_DIR/cosign" -y
+          # --tlog-upload=false keeps the signature out of the public Rekor transparency log
+          cosign sign --key "$KEY_DIR/cosign.key" --tlog-upload=false -y "$IMAGE"
+          cosign verify --key "$KEY_DIR/cosign.pub.pem" --insecure-ignore-tlog=true "$IMAGE" > /dev/null
+          echo "Signed $IMAGE"
       - name: Generate artifact attestation
         # Artifact attestations for private repositories require GitHub Enterprise Cloud
         if: ${{ !github.event.repository.private }}
