@@ -699,6 +699,21 @@ class RentalAgreementResourceTest extends AbstractResourceTest {
     }
 
     @Test
+    void updateRentalAgreement_FAILURE_negativAmountOfKeys() {
+    	String json = "{" + "\"keys\": [{\"amountOfKeys\":-1,\"keyDescription\":\"Haustürschlüssel\"}]" +
+                "}";
+    	
+    	given()
+    		.when()
+    		.cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .patch(AGREEMENT_PATH, TestData.PROJECT_ID.toString(), TestData.AGREEMENT_ID.toString())
+            .then()
+            .statusCode(Status.BAD_REQUEST.getStatusCode());
+    }
+    
+    @Test
     void addRent_SUCCESS_apartmentRentAdded() {
         String json = "{" +
                 "\"firstPaymentDate\":\"2021-01-01\"," +
