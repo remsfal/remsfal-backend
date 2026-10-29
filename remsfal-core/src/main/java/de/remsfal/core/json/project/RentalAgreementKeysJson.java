@@ -2,6 +2,7 @@ package de.remsfal.core.json.project;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 
 import java.time.LocalDate;
 
@@ -24,6 +25,7 @@ import de.remsfal.core.validation.PostValidation;
 public abstract class RentalAgreementKeysJson implements RentalAgreementKeysModel {
 
     @NotNull(groups = PostValidation.class, message = "Amount of keys is required")
+    @PositiveOrZero(message = "Amount of keys must not be negative")
     @Schema(required = true, description = "Number of keys of this type")
     @Override
     public abstract Integer getAmountOfKeys();
