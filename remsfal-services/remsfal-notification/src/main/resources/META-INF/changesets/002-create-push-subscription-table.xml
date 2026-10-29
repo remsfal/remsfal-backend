@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="remsfal-notification-002-push-subscription" author="AnnasHossain">
+        <comment>Create push subscription table with one row per registered device (Firebase Installation ID)</comment>
+
+        <createTable tableName="push_subscription">
+            <column name="id" type="uuid">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_push_subscription" />
+            </column>
+            <column name="user_id" type="uuid">
+                <constraints nullable="false" />
+            </column>
+            <column name="fid" type="varchar(512)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uq_push_subscription_fid" />
+            </column>
+            <column name="platform" type="varchar(16)">
+                <constraints nullable="false" />
+            </column>
+            <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="modified_at" type="timestamp" defaultValueComputed="current_timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createIndex indexName="idx_push_subscription_user_id" tableName="push_subscription">
+            <column name="user_id" />
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

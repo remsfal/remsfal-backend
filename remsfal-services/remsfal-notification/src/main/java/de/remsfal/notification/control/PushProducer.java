@@ -7,7 +7,7 @@ public interface PushProducer {
     Result send(String fid, String title, String body);
 
     class DeliveryException extends RuntimeException {
-        public DeliveryException(String message, Throwable cause) {
+        public DeliveryException(final String message, final Throwable cause) {
             super(message, cause);
         }
     }

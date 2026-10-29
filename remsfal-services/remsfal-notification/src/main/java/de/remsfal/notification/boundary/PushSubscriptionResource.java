@@ -1,14 +1,12 @@
 package de.remsfal.notification.boundary;
 
 import de.remsfal.common.authentication.RemsfalPrincipal;
-import de.remsfal.core.api.PushSubscriptionEndpoint;
-import de.remsfal.core.json.PushSubscriptionJson;
+import de.remsfal.core.api.notification.PushSubscriptionEndpoint;
+import de.remsfal.core.json.notification.PushSubscriptionJson;
 import de.remsfal.notification.control.PushController;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
-
-import java.util.UUID;
 
 @Authenticated
 public class PushSubscriptionResource implements PushSubscriptionEndpoint {
@@ -19,25 +17,22 @@ public class PushSubscriptionResource implements PushSubscriptionEndpoint {
     @Inject
     PushController pushController;
 
-    @Inject
-    PushSubscriptionRepository repository;
-
-    public void registerFid(UUID userId, String token, String platform) {
-        PushSubscriptionEntity entity = repository.findByToken(token)
-                .orElseGet(PushSubscriptionEntity::new);
-        entity.setUserId(userId);   // gleiche FID, neuer Nutzer: Zuordnung wechselt
-        entity.setToken(token);
-        entity.setPlatform(platform);
-        repository.save(entity);
+    @Override
+    public Response registerFid(final PushSubscriptionJson subscription) {
+        pushController.registerFid(principal.getId(), subscription.getFid(), subscription.getPlatform());
+        return Response.status(Response.Status.CREATED).build();
     }
 
-    public void sendToUser(UUID userId, String title, String body) {
-        for (PushSubscriptionEntity sub : repository.findByUserId(userId)) {
-            if (producer.send(sub.getToken(), title, body) == PushProducer.Result.UNREGISTERED) {
-                repository.deleteByToken(sub.getToken());
-            }
-        }
+    @Override
+    public Response sendTestPush() {
+        pushController.sendToUser(principal.getId(), "REMSFAL", "Hallo von REMSFAL");
+        return Response.noContent().build();
     }
 
+    @Override
+    public Response unregisterFid(final String fid){
+        pushController.unregisterFid(principal.getId(), fid);
+        return Response.noContent().build();
+    }
 
 }
