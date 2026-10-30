@@ -31,7 +31,7 @@
         <deploy-plugin.version>3.2.0</deploy-plugin.version>
         <help-plugin.version>3.5.2</help-plugin.version>
         <jandex-plugin.version>3.6.0</jandex-plugin.version>
-        <jacoco-plugin.version>0.8.15</jacoco-plugin.version>
+        <jacoco-plugin.version>0.8.16</jacoco-plugin.version>
         <sonar-plugin.version>5.8.0.7211</sonar-plugin.version>
         <sonar.organization>remsfal</sonar.organization>
         <sonar.projectKey>remsfal_remsfal-backend</sonar.projectKey>
