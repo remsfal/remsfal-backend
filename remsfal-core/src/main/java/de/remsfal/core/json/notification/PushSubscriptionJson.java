@@ -2,7 +2,6 @@ package de.remsfal.core.json.notification;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.remsfal.core.ImmutableStyle;
-import de.remsfal.core.json.notification.ImmutablePushSubscriptionJson;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
