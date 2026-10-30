@@ -2,7 +2,11 @@ package de.remsfal.core.api.notification;
 
 import de.remsfal.core.json.notification.PushSubscriptionJson;
 import jakarta.validation.Valid;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -31,5 +35,5 @@ public interface PushSubscriptionEndpoint {
     @APIResponse(responseCode = "204", description = "Subscription removed")
     @APIResponse(responseCode = "401", description = "Not authenticated")
     Response unregisterFid(@PathParam("fid") String fid);
-    
+
 }
