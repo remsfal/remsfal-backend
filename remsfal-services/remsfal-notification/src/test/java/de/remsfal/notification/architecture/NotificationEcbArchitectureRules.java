@@ -43,7 +43,9 @@ public final class NotificationEcbArchitectureRules {
             "org.jboss.logging..",
             "io.quarkus..",
             "org.eclipse.microprofile..",
-            "io.smallrye.."
+            "io.smallrye..",
+            "com.google.firebase..",
+            "com.google.auth.."
     };
 
     /**
