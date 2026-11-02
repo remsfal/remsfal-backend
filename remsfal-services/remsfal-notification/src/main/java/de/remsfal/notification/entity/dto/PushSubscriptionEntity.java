@@ -21,8 +21,8 @@ public class PushSubscriptionEntity {
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
-    @Column(name = "fid", nullable = false, unique = true, length = 512)
-    private String fid;
+    @Column(name = "fid_token", nullable = false, unique = true, length = 512)
+    private String fidToken;
 
     @Column(name = "platform", nullable = false, length = 16)
     private String platform;
@@ -59,12 +59,12 @@ public class PushSubscriptionEntity {
         this.userId = userId;
     }
 
-    public String getFid() {
-        return fid;
+    public String getFidToken() {
+        return fidToken;
     }
 
-    public void setFid(final String fid) {
-        this.fid = fid;
+    public void setFidToken(final String fidToken) {
+        this.fidToken = fidToken;
     }
 
     public String getPlatform() {

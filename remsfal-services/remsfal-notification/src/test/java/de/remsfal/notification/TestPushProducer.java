@@ -11,7 +11,12 @@ Der Firebase-Konstruktor läuft dann nie, und kein Test braucht Credentials.*/
 public class TestPushProducer implements PushProducer {
 
     @Override
-    public Result send(final String token, final String title, final String body) {
+    public Result sendFid(final String fid, final String title, final String body) {
+        return Result.DELIVERED;
+    }
+
+    @Override
+    public Result sendToken(final String token, final String title, final String body) {
         return Result.DELIVERED;
     }
 }

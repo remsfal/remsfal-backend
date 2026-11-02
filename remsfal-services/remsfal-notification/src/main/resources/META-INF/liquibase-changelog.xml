@@ -12,4 +12,5 @@
     <include file="META-INF/changesets/000-optimize-liquibase-tables.xml"/>
     <include file="META-INF/changesets/001-create-user-email-settings-table.xml"/>
     <include file="META-INF/changesets/002-create-push-subscription-table.xml"/>
+    <include file="META-INF/changesets/003-rename-push-subscription-column.xml"/>
 </databaseChangeLog>

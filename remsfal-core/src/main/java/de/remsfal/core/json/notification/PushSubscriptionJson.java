@@ -9,13 +9,13 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 @ImmutableStyle
-@Schema(description = "Firebase Installation ID eines Geräts für Push-Benachrichtigungen")
+@Schema(description = "Firebase Installation ID oder FCM-Token eines Geräts für Push-Benachrichtigungen")
 @JsonDeserialize(as = ImmutablePushSubscriptionJson.class)
 public abstract class PushSubscriptionJson {
 
     @NotBlank
-    @Schema(description = "Firebase Installation ID", required = true)
-    public abstract String getFid();
+    @Schema(description = "Firebase Installation ID oder FCM-Registrierungstoken", required = true)
+    public abstract String getFidToken();
 
 
     @NotBlank

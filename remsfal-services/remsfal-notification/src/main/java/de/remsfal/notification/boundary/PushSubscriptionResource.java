@@ -18,8 +18,8 @@ public class PushSubscriptionResource implements PushSubscriptionEndpoint {
     PushController pushController;
 
     @Override
-    public Response registerFid(final PushSubscriptionJson subscription) {
-        pushController.registerFid(principal.getId(), subscription.getFid(), subscription.getPlatform());
+    public Response registerPushSubscription(final PushSubscriptionJson subscription) {
+        pushController.registerPushSubscription(principal.getId(), subscription.getFidToken(), subscription.getPlatform());
         return Response.status(Response.Status.CREATED).build();
     }
 
@@ -30,8 +30,8 @@ public class PushSubscriptionResource implements PushSubscriptionEndpoint {
     }
 
     @Override
-    public Response unregisterFid(final String fid){
-        pushController.unregisterFid(principal.getId(), fid);
+    public Response unregisterPushSubscription(final String fidToken) {
+        pushController.unregisterPushSubscription(principal.getId(), fidToken);
         return Response.noContent().build();
     }
 

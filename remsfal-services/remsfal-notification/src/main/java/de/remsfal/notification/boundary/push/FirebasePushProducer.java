@@ -33,13 +33,26 @@ public class FirebasePushProducer implements PushProducer {
     }
 
     @Override
-    public Result send(final String fid, final String title, final String body) {
+    public Result sendFid(final String fid, final String title, final String body) {
         Message msg = Message.builder()
                 .setFid(fid)
                 .setNotification(Notification.builder().setTitle(title).setBody(body).build())
                 .build();
+        return send(msg);
+    }
+
+    @Override
+    public Result sendToken(final String token, final String title, final String body) {
+        Message msg = Message.builder()
+                .setToken(token)
+                .setNotification(Notification.builder().setTitle(title).setBody(body).build())
+                .build();
+        return send(msg);
+    }
+
+    private Result send(final Message message) {
         try {
-            FirebaseMessaging.getInstance().send(msg);
+            FirebaseMessaging.getInstance().send(message);
             return Result.DELIVERED;
         } catch (FirebaseMessagingException e) {
             if (e.getMessagingErrorCode() == MessagingErrorCode.UNREGISTERED) {

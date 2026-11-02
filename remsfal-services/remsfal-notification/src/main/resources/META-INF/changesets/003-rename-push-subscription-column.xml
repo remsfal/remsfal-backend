@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="remsfal-notification-003-rename-push-subscription-column" author="AnnasHossain">
+        <dropUniqueConstraint
+                tableName="push_subscription"
+                constraintName="uq_push_subscription_fid" />
+
+        <renameColumn
+                tableName="push_subscription"
+                oldColumnName="fid"
+                newColumnName="fid_token"
+                columnDataType="varchar(512)" />
+
+        <addUniqueConstraint
+                tableName="push_subscription"
+                columnNames="fid_token"
+                constraintName="uq_push_subscription_fid_token" />
+    </changeSet>
+
+</databaseChangeLog>

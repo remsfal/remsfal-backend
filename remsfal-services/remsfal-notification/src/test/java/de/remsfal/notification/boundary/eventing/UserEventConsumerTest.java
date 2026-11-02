@@ -101,8 +101,8 @@ class UserEventConsumerTest extends AbstractKafkaTest {
     @Test
     void testConsumeUserDeleted_deletesPushSubscriptions() {
         final UUID userId = UUID.randomUUID();
-        pushController.registerFid(userId, "fid-" + UUID.randomUUID(), "WEB");
-        pushController.registerFid(userId, "fid-" + UUID.randomUUID(), "ANDROID");
+        pushController.registerPushSubscription(userId, "fid-" + UUID.randomUUID(), "WEB");
+        pushController.registerPushSubscription(userId, "token-" + UUID.randomUUID(), "ANDROID");
         assertEquals(2, QuarkusTransaction.requiringNew()
                 .call(() -> pushRepository.findByUserId(userId)).size());
 
