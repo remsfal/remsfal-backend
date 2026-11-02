@@ -28,7 +28,7 @@ public class PushSubscriptionEntity {
     private String platform;
 
     @Column(name = "created_at", nullable = false)
-    private Instant created_at;
+    private Instant createdAt;
 
     @Column(name = "modified_at", nullable = false)
     private Instant modifiedAt;
@@ -38,8 +38,8 @@ public class PushSubscriptionEntity {
         if (id == null) {
             id = UUID.randomUUID();
         }
-        created_at = Instant.now();
-        modifiedAt = created_at;
+        createdAt = Instant.now();
+        modifiedAt = createdAt;
     }
 
     @PreUpdate

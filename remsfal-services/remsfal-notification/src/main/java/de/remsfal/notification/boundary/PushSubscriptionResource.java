@@ -19,7 +19,8 @@ public class PushSubscriptionResource implements PushSubscriptionEndpoint {
 
     @Override
     public Response registerPushSubscription(final PushSubscriptionJson subscription) {
-        pushController.registerPushSubscription(principal.getId(), subscription.getFidToken(), subscription.getPlatform());
+        pushController.registerPushSubscription(principal.getId(), subscription.getFidToken(),
+                subscription.getPlatform());
         return Response.status(Response.Status.CREATED).build();
     }
 

@@ -12,8 +12,12 @@ import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
-@Path("/notification/v1/push-subscriptions")
+@Path(PushSubscriptionEndpoint.CONTEXT + "/" + PushSubscriptionEndpoint.VERSION + "/" +
+        PushSubscriptionEndpoint.SERVICE)
 public interface PushSubscriptionEndpoint {
+    String CONTEXT = "notification";
+    String VERSION = "v1";
+    String SERVICE = "push-subscriptions";
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)

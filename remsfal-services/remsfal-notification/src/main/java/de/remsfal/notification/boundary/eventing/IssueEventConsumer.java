@@ -71,7 +71,9 @@ public class IssueEventConsumer {
 
     private Uni<Void> handleIssueCreated(IssueEventJson event) {
         logger.infov("Handling ISSUE_CREATED for issue: {0}", event.getIssue().getTitle());
-        // pushToRecipients(event, "New issue created"); /* Title der Message ist falsch und statisch UND Nachricht geht an Mieter selbst, wenn Issue von Mieter erstellt wird */
+        /*  Nachricht geht an Mieter selbst, wenn Issue von Mieter erstellt wird.
+        *  Nachricht geht an Verwalter selbst, wenn Issue von Verwalter erstellt wird */
+        // pushToRecipients(event, "New issue created");
         Uni<Void> result = Uni.createFrom().voidItem();
         if (isRecipient(event, event.getAssignee())) {
             result = result.chain(v -> mailingController.sendIssueCreatedEmail(event, event.getAssignee()));
@@ -101,7 +103,7 @@ public class IssueEventConsumer {
 
     private Uni<Void> handleIssueAssigned(IssueEventJson event) {
         logger.infov("Handling ISSUE_ASSIGNED for issue: {0}", event.getIssue().getTitle());
-        // pushToRecipients(event, "Issue assigned"); /* momentan ist getTitle immer falsch (statisch): "Sonstiges von Max Mieter" */
+        // pushToRecipients(event, "Issue assigned");
         Uni<Void> result = Uni.createFrom().voidItem();
         if (isRecipient(event, event.getAssignee())) {
             result = result.chain(v -> mailingController.sendIssueAssignedEmail(event, event.getAssignee()));
