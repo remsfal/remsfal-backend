@@ -35,13 +35,6 @@ public interface AuthenticationEndpoint {
     String SERVICE = "authentication";
 
     @GET
-    @Path("/login")
-    @Operation(summary = "Login user via oauth flow of the default identity provider (Google).",
-        description = "Kept for backward compatibility, use the provider specific login endpoints instead.")
-    @APIResponse(responseCode = "302", description = "Redirect user to the identity provider")
-    Response login(@DefaultValue("/") @QueryParam("route") String route);
-
-    @GET
     @Path("/login/google")
     @Operation(summary = "Login user via Google oauth flow.")
     @APIResponse(responseCode = "302", description = "Redirect user to Google")
@@ -64,21 +57,6 @@ public interface AuthenticationEndpoint {
     @APIResponse(responseCode = "400", description = "The email address is invalid")
     @APIResponse(responseCode = "429", description = "Too many login requests for this email address or client")
     Response loginWithEmail(@Valid @NotNull EmailLoginRequestJson request);
-
-    /**
-     * @deprecated use {@link #googleSession(String, String, String)} instead; kept until all Google OAuth
-     * clients use the redirect URI /session/google
-     */
-    @Deprecated(since = "1.0.15", forRemoval = true)
-    @GET
-    @Path("/session")
-    @Operation(summary = "Start user session via Google oauth flow (Google callback).",
-        description = "Kept for backward compatibility, use /session/google instead.")
-    @APIResponse(responseCode = "302", description = "Redirect user to the frontend spa")
-    @APIResponse(responseCode = "401", description = "Authentication failed or state does not match")
-    Response session(@QueryParam("code") String code,
-        @QueryParam("state") String state,
-        @QueryParam("error") String error);
 
     @GET
     @Path("/session/google")

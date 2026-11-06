@@ -119,22 +119,6 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
     }
 
     @Test
-    void session_SUCCESS_deprecatedCallbackUsesItsOwnRedirectUri() {
-        mockGoogleIdentity(true);
-
-        givenValidState("/")
-            .when()
-            .queryParam("code", CODE)
-            .redirects().follow(false)
-            .get(BASE_PATH + "/session")
-            .then()
-            .statusCode(Status.FOUND.getStatusCode())
-            .cookie("remsfal_access_token", Matchers.notNullValue());
-
-        verify(authenticator).authenticate(CODE, URI.create("http://localhost:8081" + BASE_PATH + "/session"));
-    }
-
-    @Test
     void googleSession_SUCCESS_usesGoogleRedirectUri() {
         mockGoogleIdentity(true);
 

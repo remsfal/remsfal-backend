@@ -66,12 +66,6 @@ public class AuthenticationResource extends AbstractAuthenticationResource imple
 
     @Override
     @Timed("checks_timer_login")
-    public Response login(final String route) {
-        return loginWithGoogle(route);
-    }
-
-    @Override
-    @Timed("checks_timer_login")
     public Response loginWithGoogle(final String route) {
         if (devLoginEnabled) {
             return redirectToDevLogin(route);
@@ -110,17 +104,6 @@ public class AuthenticationResource extends AbstractAuthenticationResource imple
             .queryParam("route", route)
             .build();
         return redirect(devLoginUrl).build();
-    }
-
-    /**
-     * @deprecated use {@link #googleSession(String, String, String)} instead
-     */
-    @Override
-    @Deprecated(since = "1.0.15", forRemoval = true)
-    @Timed("checks_timer_session")
-    public Response session(final String code, final String state, final String error) {
-        // the code exchange requires the redirect URI the code was obtained with
-        return googleSession(code, state, error, getCallbackUri("session"));
     }
 
     @Override

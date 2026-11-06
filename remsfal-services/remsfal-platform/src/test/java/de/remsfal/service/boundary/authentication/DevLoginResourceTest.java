@@ -40,7 +40,7 @@ class DevLoginResourceTest extends AbstractResourceTest {
         given()
             .queryParam("route", "/projects")
             .redirects().follow(false)
-            .when().get(BASE_PATH + "/login")
+            .when().get(BASE_PATH + "/login/google")
             .then()
             .statusCode(Status.FOUND.getStatusCode())
             .header("location", Matchers.containsString(DEV_LOGIN_PATH + "?route="))

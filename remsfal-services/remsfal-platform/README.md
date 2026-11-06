@@ -148,8 +148,6 @@ GOOGLE_CLIENT_SECRET=<YOUR-SECRET>
    authorized redirect URI of your deployment:
    `https://<your-host>/api/v1/authentication/session/google`
    (for a local test of the real Google login: `http://localhost:5173/api/v1/authentication/session/google`).
-   The former redirect URI `/api/v1/authentication/session` is still accepted for backward compatibility;
-   keep it registered until no deployment uses it anymore.
 4. Copy the client ID and the client secret. Download the JSON or store the secret in your password
    manager right away &ndash; it is only shown once.
 5. Configure the platform service with `DE_REMSFAL_AUTH_OIDC_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`
