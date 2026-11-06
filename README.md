@@ -137,9 +137,9 @@ Next build the project and start the services you need (each in its own terminal
 
 ```sh
 ./mvnw clean install
-./mvnw compile quarkus:dev -pl remsfal-services/remsfal-platform      # port 8080
-./mvnw compile quarkus:dev -pl remsfal-services/remsfal-ticketing     # port 8081
-./mvnw compile quarkus:dev -pl remsfal-services/remsfal-notification  # port 8082
+./mvnw compile quarkus:dev -pl remsfal-services/remsfal-platform      # port 8080, debug port 5005
+./mvnw compile quarkus:dev -pl remsfal-services/remsfal-ticketing     # port 8081, debug port 5006
+./mvnw compile quarkus:dev -pl remsfal-services/remsfal-notification  # port 8082, debug port 5007
 ```
 
 Then start the [frontend](https://github.com/remsfal/remsfal-frontend) and click *Login* &ndash; you will see

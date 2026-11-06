@@ -13,6 +13,8 @@
 
     <properties>
         <quarkus-cassandra.version>3.8.0</quarkus-cassandra.version>
+        <!-- quarkus:dev debug port, distinct per service to avoid port conflicts -->
+        <debugPort>5006</debugPort>
     </properties>
 
     <dependencies>

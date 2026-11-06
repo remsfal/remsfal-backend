@@ -11,6 +11,11 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
+    <properties>
+        <!-- quarkus:dev debug port, distinct per service to avoid port conflicts -->
+        <debugPort>5007</debugPort>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>de.remsfal</groupId>
