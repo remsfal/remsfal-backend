@@ -13,6 +13,8 @@
 
     <properties>
         <google.version>2.9.2</google.version>
+        <!-- quarkus:dev debug port, distinct per service to avoid port conflicts -->
+        <debugPort>5005</debugPort>
     </properties>
 
     <dependencies>
