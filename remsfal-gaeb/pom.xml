@@ -17,7 +17,7 @@
         <version.xml-bind>4.0.5</version.xml-bind>
         <version.xml-bind-runtime>4.0.9</version.xml-bind-runtime>
         <version.jax-rs>4.0.0</version.jax-rs>
-        <version.open-api>4.1.1</version.open-api>
+        <version.open-api>4.2</version.open-api>
         <jaxb2-plugin.version>4.2.0</jaxb2-plugin.version>
     </properties>
 
