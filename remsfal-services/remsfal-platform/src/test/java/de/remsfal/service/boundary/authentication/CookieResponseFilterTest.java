@@ -65,14 +65,14 @@ class CookieResponseFilterTest {
         // Mocking UriInfo
         when(uriInfo.getPath()).thenReturn(
             "/" + AuthenticationEndpoint.CONTEXT + "/"
-                + AuthenticationEndpoint.VERSION + "/" + AuthenticationEndpoint.SERVICE + "/login"
+                + AuthenticationEndpoint.VERSION + "/" + AuthenticationEndpoint.SERVICE + "/login/google"
         );
 
         // Test Filter
         filter.filter(requestContext, responseContext);
 
         // Verify Logging and Behavior
-        verify(logger).infov(anyString(), eq("/api/v1/authentication/login"));
+        verify(logger).infov(anyString(), eq("/api/v1/authentication/login/google"));
         verifyNoInteractions(sessionManager);
         verifyNoInteractions(headers);
     }
