@@ -26,7 +26,7 @@ public class SessionManager {
 
     public static final String ACCESS_COOKIE_NAME = "remsfal_access_token";
     public static final String REFRESH_COOKIE_NAME = "remsfal_refresh_token";
-    
+
     // Token renewal threshold: renew access token if it expires in less than 5 minutes
     private static final long TOKEN_RENEWAL_THRESHOLD_SECONDS = 300;
 
@@ -35,6 +35,9 @@ public class SessionManager {
 
     @ConfigProperty(name = "de.remsfal.auth.access-token.cookie-path", defaultValue = "/")
     String accessTokenCookiePath;
+
+    @ConfigProperty(name = "de.remsfal.auth.session.cookie-secure", defaultValue = "true")
+    boolean sessionCookieSecure;
 
     // TODO: Change to authentication endpoint path
     @ConfigProperty(name = "de.remsfal.auth.refresh-token.cookie-path", defaultValue = "/api")
@@ -152,7 +155,7 @@ public class SessionManager {
     private NewCookie buildCookie(final String name, final String value, int maxAge, boolean httpOnly,
         String cookiePath) {
         return new NewCookie.Builder(name).value(value).path(cookiePath + getSameSiteWorkaround())
-            .httpOnly(httpOnly).secure(true).maxAge(maxAge).build();
+            .httpOnly(httpOnly).secure(sessionCookieSecure).maxAge(maxAge).build();
     }
 
     @Transactional
@@ -222,7 +225,7 @@ public class SessionManager {
             long expirationTime = jwt.getExpirationTime();
             long currentTime = System.currentTimeMillis() / 1000;
             long timeUntilExpiration = expirationTime - currentTime;
-            
+
             // Renew if token expires in less than the threshold (5 minutes)
             return timeUntilExpiration < TOKEN_RENEWAL_THRESHOLD_SECONDS;
         } catch (ParseException e) {
