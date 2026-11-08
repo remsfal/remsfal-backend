@@ -5,6 +5,7 @@ import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.BadRequestException;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -12,6 +13,7 @@ import de.remsfal.core.api.ticketing.contractor.OrderPlacementEndpoint;
 import de.remsfal.core.json.ticketing.OrderPlacementJson;
 import de.remsfal.core.json.ticketing.OrderPlacementListJson;
 import de.remsfal.core.model.UserContext;
+import de.remsfal.core.model.ticketing.OrderPlacementModel.OrderPlacementStatus;
 import de.remsfal.ticketing.boundary.AbstractTicketingResource;
 import de.remsfal.ticketing.control.OrderManagementController;
 import de.remsfal.ticketing.entity.dto.OrderPlacementEntity;
@@ -27,10 +29,10 @@ public class OrderPlacementResource extends AbstractTicketingResource implements
     OrderManagementController orderManagementController;
 
     @Override
-    public OrderPlacementListJson getOrderPlacements() {
+    public OrderPlacementListJson getOrderPlacements(final List<OrderPlacementStatus> status) {
         final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
         return OrderPlacementListJson.valueOf(
-            orderManagementController.getOrderPlacementsByOrganizationIds(eligibleOrgIds));
+            orderManagementController.getOrderPlacementsByOrganizationIds(eligibleOrgIds, status));
     }
 
     @Override

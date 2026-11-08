@@ -7,8 +7,10 @@ import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.eclipse.microprofile.openapi.annotations.Operation;
@@ -17,6 +19,7 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 
 import de.remsfal.core.json.ticketing.OrderPlacementJson;
 import de.remsfal.core.json.ticketing.OrderPlacementListJson;
+import de.remsfal.core.model.ticketing.OrderPlacementModel.OrderPlacementStatus;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -28,12 +31,16 @@ public interface OrderPlacementEndpoint {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Retrieve order placements for the authenticated contractor.",
-        description = "Returns all order placements sent to the contractor's organization."
-            + " Requires at least MANAGER role in the contractor organization.")
+        description = "Returns the order placements sent to the contractor's organization, optionally filtered"
+            + " by status. Requires at least MANAGER role in the contractor organization.")
     @APIResponse(responseCode = "200", description = "Order placements returned successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "403", description = "User does not have sufficient organization role")
-    OrderPlacementListJson getOrderPlacements();
+    OrderPlacementListJson getOrderPlacements(
+        @Parameter(description = "Filter to return only order placements matching one of the given statuses "
+            + "(repeat the parameter for multiple values, e.g. status=PLACED&status=CONFIRMED); "
+            + "omit to return order placements of all statuses")
+        @QueryParam("status") List<OrderPlacementStatus> status);
 
     @GET
     @Path("/{placementId}")
