@@ -345,9 +345,21 @@ public class OrderManagementController {
             () -> new NotFoundException("Quotation not found"));
     }
 
-    public List<OrderPlacementEntity> getOrderPlacementsByOrganizationIds(final Set<UUID> organizationIds) {
-        logger.infov("Retrieving order placements for organizations (count={0})", organizationIds.size());
-        return findAllByOrganizationIds(organizationIds, orderPlacementRepository::findByOrganizationId);
+    /**
+     * @param statuses only placements with one of these statuses are returned; {@code null} or empty returns all
+     */
+    public List<OrderPlacementEntity> getOrderPlacementsByOrganizationIds(final Set<UUID> organizationIds,
+        final List<OrderPlacementStatus> statuses) {
+        logger.infov("Retrieving order placements for organizations (count={0}, statuses={1})",
+            organizationIds.size(), statuses);
+        final List<OrderPlacementEntity> placements =
+            findAllByOrganizationIds(organizationIds, orderPlacementRepository::findByOrganizationId);
+        if (statuses == null || statuses.isEmpty()) {
+            return placements;
+        }
+        return placements.stream()
+            .filter(p -> statuses.contains(p.getStatus()))
+            .toList();
     }
 
     public OrderPlacementEntity getOrderPlacementForOrganization(final Set<UUID> organizationIds,

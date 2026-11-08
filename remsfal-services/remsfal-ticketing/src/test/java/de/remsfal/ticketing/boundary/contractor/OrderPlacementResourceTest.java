@@ -155,6 +155,89 @@ class OrderPlacementResourceTest extends AbstractTicketingTest {
             .body("items[0].organizationId", equalTo(organizationId.toString()));
     }
 
+    @Test
+    void getOrderPlacements_SUCCESS_filteredByStatus() {
+        final UUID organizationId = TicketingTestData.ORGANIZATION_ID;
+        final UUID contractorUserId = UUID.randomUUID();
+        final Map<String, String> orgRoles = Map.of(organizationId.toString(), "MANAGER");
+
+        final String placementId = createIssueAndPlaceOrder(UUID.randomUUID(), organizationId, contractorUserId);
+
+        given()
+            .when()
+            .cookie(buildCookie(contractorUserId, "contractor@test.com", "Contractor", Map.of(), orgRoles, Map.of()))
+            .queryParam("status", "PLACED")
+            .get(ORDER_PLACEMENT_PATH)
+            .then()
+            .statusCode(200)
+            .body("items", hasSize(1))
+            .body("items[0].id", equalTo(placementId));
+
+        given()
+            .when()
+            .cookie(buildCookie(contractorUserId, "contractor@test.com", "Contractor", Map.of(), orgRoles, Map.of()))
+            .queryParam("status", "CONFIRMED")
+            .get(ORDER_PLACEMENT_PATH)
+            .then()
+            .statusCode(200)
+            .body("items", hasSize(0));
+
+        given()
+            .when()
+            .cookie(buildCookie(contractorUserId, "contractor@test.com", "Contractor", Map.of(), orgRoles, Map.of()))
+            .contentType(ContentType.JSON)
+            .body("{ \"status\":\"CONFIRMED\" }")
+            .patch(ORDER_PLACEMENT_PATH + "/" + placementId)
+            .then()
+            .statusCode(200);
+
+        given()
+            .when()
+            .cookie(buildCookie(contractorUserId, "contractor@test.com", "Contractor", Map.of(), orgRoles, Map.of()))
+            .queryParam("status", "CONFIRMED")
+            .get(ORDER_PLACEMENT_PATH)
+            .then()
+            .statusCode(200)
+            .body("items", hasSize(1))
+            .body("items[0].status", equalTo("CONFIRMED"));
+
+        given()
+            .when()
+            .cookie(buildCookie(contractorUserId, "contractor@test.com", "Contractor", Map.of(), orgRoles, Map.of()))
+            .queryParam("status", "PLACED")
+            .get(ORDER_PLACEMENT_PATH)
+            .then()
+            .statusCode(200)
+            .body("items", hasSize(0));
+    }
+
+    @Test
+    void getOrderPlacements_SUCCESS_multipleStatusesAreCombined() {
+        final UUID organizationId = TicketingTestData.ORGANIZATION_ID;
+        final UUID contractorUserId = UUID.randomUUID();
+        final Map<String, String> orgRoles = Map.of(organizationId.toString(), "MANAGER");
+
+        createIssueAndPlaceOrder(UUID.randomUUID(), organizationId, contractorUserId);
+
+        given()
+            .when()
+            .cookie(buildCookie(contractorUserId, "contractor@test.com", "Contractor", Map.of(), orgRoles, Map.of()))
+            .queryParam("status", "CONFIRMED", "PLACED")
+            .get(ORDER_PLACEMENT_PATH)
+            .then()
+            .statusCode(200)
+            .body("items", hasSize(1));
+
+        given()
+            .when()
+            .cookie(buildCookie(contractorUserId, "contractor@test.com", "Contractor", Map.of(), orgRoles, Map.of()))
+            .queryParam("status", "CONFIRMED", "REJECTED")
+            .get(ORDER_PLACEMENT_PATH)
+            .then()
+            .statusCode(200)
+            .body("items", hasSize(0));
+    }
+
     // --- GET single order placement ---
 
     @Test
