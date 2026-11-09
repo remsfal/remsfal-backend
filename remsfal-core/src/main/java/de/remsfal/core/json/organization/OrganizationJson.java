@@ -41,8 +41,9 @@ public abstract class OrganizationJson implements OrganizationModel {
     @Override
     public abstract String getName();
 
-    @Pattern(regexp = "^\\+[1-9]\\d{4,14}$", message = "Phone number must be in E.164 format")
+    @Pattern(regexp = "^$|^\\+[1-9]\\d{4,14}$", message = "Phone number must be empty or in E.164 format")
     @Size(max = 15)
+    @Schema(description = "An empty string removes the number")
     @Override
     public abstract String getPhone();
 

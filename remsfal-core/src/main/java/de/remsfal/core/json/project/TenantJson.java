@@ -66,20 +66,23 @@ public abstract class TenantJson implements TenantModel {
     public abstract String getEmail();
 
     @Nullable
-    @Pattern(regexp = "^\\+[1-9]\\d{4,14}$", message = "The number must match the E.164 formatted phone numbers")
-    @Schema(examples = {"+491234567890"})
+    @Pattern(regexp = "^$|^\\+[1-9]\\d{4,14}$",
+        message = "The number must be empty or match the E.164 formatted phone numbers")
+    @Schema(examples = {"+491234567890"}, description = "An empty string removes the number")
     @Override
     public abstract String getMobilePhoneNumber();
 
     @Nullable
-    @Pattern(regexp = "^\\+[1-9]\\d{4,14}$", message = "The number must match the E.164 formatted phone numbers")
-    @Schema(examples = {"+491234567890"})
+    @Pattern(regexp = "^$|^\\+[1-9]\\d{4,14}$",
+        message = "The number must be empty or match the E.164 formatted phone numbers")
+    @Schema(examples = {"+491234567890"}, description = "An empty string removes the number")
     @Override
     public abstract String getBusinessPhoneNumber();
 
     @Nullable
-    @Pattern(regexp = "^\\+[1-9]\\d{4,14}$", message = "The number must match the E.164 formatted phone numbers")
-    @Schema(examples = {"+491234567890"})
+    @Pattern(regexp = "^$|^\\+[1-9]\\d{4,14}$",
+        message = "The number must be empty or match the E.164 formatted phone numbers")
+    @Schema(examples = {"+491234567890"}, description = "An empty string removes the number")
     @Override
     public abstract String getPrivatePhoneNumber();
 

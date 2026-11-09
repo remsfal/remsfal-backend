@@ -266,6 +266,29 @@ public class OrganizationResourceTest extends AbstractResourceTest {
     }
 
     @Test
+    void updateOrganization_SUCCESS_emptyPhoneRemovesIt() {
+        given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"phone\": \"" + TestData.ORGANIZATION_PHONE + "\" }")
+                .patch(BASE_PATH + "/" + TestData.ORGANIZATION_ID)
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode())
+                .and().body("phone", Matchers.equalTo(TestData.ORGANIZATION_PHONE));
+
+        given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"phone\": \"\" }")
+                .patch(BASE_PATH + "/" + TestData.ORGANIZATION_ID)
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode())
+                .and().body("phone", Matchers.nullValue());
+    }
+
+    @Test
     void deleteOrganization_SUCCESS_singleOrganization() {
         given()
             .when()

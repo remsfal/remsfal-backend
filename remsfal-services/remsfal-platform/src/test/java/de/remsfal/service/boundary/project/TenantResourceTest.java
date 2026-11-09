@@ -105,6 +105,44 @@ class TenantResourceTest extends AbstractResourceTest {
     }
 
     @Test
+    void updateTenant_SUCCESS_emptyPhoneNumberRemovesIt() {
+        final String TENANT_ID = TestData.TENANT_ID_1.toString();
+
+        given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"mobilePhoneNumber\": \"+491701112233\", \"businessPhoneNumber\": \"+493012345678\" }")
+                .patch(BASE_PATH + "/{tenantId}", TestData.PROJECT_ID_1.toString(), TENANT_ID)
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode())
+                .and().body("mobilePhoneNumber", Matchers.equalTo("+491701112233"));
+
+        given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"mobilePhoneNumber\": \"\" }")
+                .patch(BASE_PATH + "/{tenantId}", TestData.PROJECT_ID_1.toString(), TENANT_ID)
+                .then()
+                .statusCode(Response.Status.OK.getStatusCode())
+                .and().body("mobilePhoneNumber", Matchers.nullValue())
+                .and().body("businessPhoneNumber", Matchers.equalTo("+493012345678"));
+    }
+
+    @Test
+    void updateTenant_FAILED_invalidPhoneNumber() {
+        given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"mobilePhoneNumber\": \"0170 1112233\" }")
+                .patch(BASE_PATH + "/{tenantId}", TestData.PROJECT_ID_1.toString(), TestData.TENANT_ID_1.toString())
+                .then()
+                .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
     void getTenants_SUCCESS_containsAllFields() {
         // Add a rent for the tenant's agreement
         insertApartmentRent(TestData.APARTMENT_ID, TestData.AGREEMENT_ID_1,

@@ -277,6 +277,35 @@ class ContractorResourceTest extends AbstractResourceTest {
     }
 
     @Test
+    void updateContractor_SUCCESS_emptyPhoneRemovesIt() {
+        String json = "{ \"name\":\"" + COMPANY_NAME_1 + "\", \"phone\":\"" + PHONE_1 + "\", \"email\":\"" + EMAIL_1
+            + "\", \"trade\":\"" + TRADE_1 + "\"}";
+
+        String contractorId = given()
+            .when()
+            .cookie(buildManagerCookie())
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(json)
+            .post(BASE_PATH, TestData.PROJECT_ID_1.toString())
+            .then()
+            .statusCode(Status.CREATED.getStatusCode())
+            .extract().path("id");
+
+        given()
+            .when()
+            .cookie(buildManagerCookie())
+            .cookie(buildRefreshTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(100)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{ \"phone\":\"\" }")
+            .patch(CONTRACTOR_PATH, TestData.PROJECT_ID_1.toString(), contractorId)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .and().body("phone", Matchers.nullValue())
+            .and().body("trade", Matchers.equalTo(TRADE_1));
+    }
+
+    @Test
     void updateContractor_FAILED_contractorNotFound() {
         String updateJson = "{ \"name\":\"" + COMPANY_NAME_2 + "\"}";
 
