@@ -131,6 +131,11 @@ class ContractorJsonTest {
         assertEquals("Test Org", json.getOrganization().getName());
     }
 
+    @Test
+    void testValueOfWithNullOrganization() {
+        assertNull(ContractorJson.valueOf((OrganizationModel) null, UUID.randomUUID()));
+    }
+
     private AddressModel createTestAddress() {
         return new AddressModel() {
             @Override

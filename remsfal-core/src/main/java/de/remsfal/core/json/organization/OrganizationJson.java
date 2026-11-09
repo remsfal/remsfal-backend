@@ -8,12 +8,12 @@ import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.model.OrganizationModel;
 import de.remsfal.core.validation.PostValidation;
+import de.remsfal.core.validation.PhoneNumber;
 
 import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Null;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 
@@ -41,8 +41,9 @@ public abstract class OrganizationJson implements OrganizationModel {
     @Override
     public abstract String getName();
 
-    @Pattern(regexp = "^\\+[1-9]\\d{4,14}$", message = "Phone number must be in E.164 format")
+    @PhoneNumber
     @Size(max = 15)
+    @Schema(description = "An empty string removes the number")
     @Override
     public abstract String getPhone();
 

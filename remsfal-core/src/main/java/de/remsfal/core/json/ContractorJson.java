@@ -14,13 +14,13 @@ import de.remsfal.core.json.organization.OrganizationJson;
 import de.remsfal.core.model.ContractorModel;
 import de.remsfal.core.model.OrganizationModel;
 import de.remsfal.core.validation.PostValidation;
+import de.remsfal.core.validation.PhoneNumber;
 import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /**
@@ -55,8 +55,9 @@ public abstract class ContractorJson implements ContractorModel {
     @Override
     public abstract  String getName();
 
-    @Pattern(regexp = "^\\+?[0-9]{10,14}$", message = "Phone number must be in E.164 format")
+    @PhoneNumber
     @Size(max = 15)
+    @Schema(description = "An empty string removes the number")
     @Override
     public abstract  String getPhone();
 

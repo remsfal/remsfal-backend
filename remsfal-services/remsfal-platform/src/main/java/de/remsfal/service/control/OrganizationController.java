@@ -229,7 +229,8 @@ public class OrganizationController {
             entity.setName(model.getName());
         }
         if (model.getPhone() != null) {
-            entity.setPhone(model.getPhone());
+            // an empty phone number removes it
+            entity.setPhone(model.getPhone().isEmpty() ? null : model.getPhone());
         }
         if (model.getTrade() != null) {
             entity.setTrade(model.getTrade());

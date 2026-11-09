@@ -217,6 +217,32 @@ class UserResourceTest extends AbstractResourceTest {
     }
 
     @Test
+    void updateUser_SUCCESS_emptyPhoneNumberRemovesIt() {
+        setupTestUsers();
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .contentType(ContentType.JSON)
+            .body("{\"mobilePhoneNumber\":\"+491773289245\",\"privatePhoneNumber\":\"+493012345678\"}")
+            .patch(BASE_PATH)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .and().body("mobilePhoneNumber", Matchers.equalTo("+491773289245"));
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+            .contentType(ContentType.JSON)
+            .body("{\"mobilePhoneNumber\":\"\"}")
+            .patch(BASE_PATH)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .and().body("mobilePhoneNumber", Matchers.nullValue())
+            .and().body("privatePhoneNumber", Matchers.equalTo("+493012345678"));
+    }
+
+    @Test
     void updateUser_FAILED_invalidLocale() {
         setupTestUsers();
 

@@ -14,6 +14,8 @@ import jakarta.ws.rs.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -49,6 +51,182 @@ public class TenantControllerTest extends AbstractServiceTest {
         assertThrows(NotFoundException.class,
                 () -> tenantController.updateTenant(PROJECT_ID, NON_PROJECT_TENANT_ID, dummyJson),
                 "Should fail because the tenant is not part of the project's tenancy.");
+    }
+
+    @Test
+    void getTenants_SUCCESS_returnsTenantsInProject() {
+        insertTenant(TestData.TENANT_ID_1, TestData.AGREEMENT_ID_1, TestData.PROJECT_ID_1,
+            TestData.TENANT_FIRST_NAME_1, TestData.TENANT_LAST_NAME_1, "tenant@example.org");
+
+        final List<TenantModel> tenants = tenantController.getTenants(TestData.PROJECT_ID_1);
+
+        assertEquals(1, tenants.size());
+        assertEquals(TestData.TENANT_ID_1, tenants.get(0).getId());
+    }
+
+    @Test
+    void getTenant_FAILED_tenantNotFound() {
+        assertThrows(NotFoundException.class,
+            () -> tenantController.getTenant(TestData.PROJECT_ID_1, TestData.TENANT_ID_1));
+    }
+
+    @Test
+    void resolveOrCreateTenant_SUCCESS_withoutEmailCreatesNewTenant() {
+        final TenantModel input = ImmutableTenantJson.builder()
+            .firstName(TestData.TENANT_FIRST_NAME_1)
+            .lastName(TestData.TENANT_LAST_NAME_1)
+            .mobilePhoneNumber("+491701234567")
+            .build();
+
+        final TenantEntity tenant = tenantController.resolveOrCreateTenant(TestData.PROJECT_ID_1, input);
+
+        assertEquals(TestData.PROJECT_ID_1, tenant.getProjectId());
+        assertNotNull(tenant.getId());
+        assertEquals(TestData.TENANT_FIRST_NAME_1, tenant.getFirstName());
+        assertEquals("+491701234567", tenant.getMobilePhoneNumber());
+
+        final TenantModel blankEmailInput = ImmutableTenantJson.builder()
+            .firstName(TestData.TENANT_FIRST_NAME_2)
+            .lastName(TestData.TENANT_LAST_NAME_2)
+            .email("  ")
+            .build();
+        final TenantEntity tenantWithoutEmail = tenantController.resolveOrCreateTenant(
+            TestData.PROJECT_ID_1, blankEmailInput);
+        assertNotNull(tenantWithoutEmail.getId());
+        assertNull(tenantWithoutEmail.getEmail());
+    }
+
+    @Test
+    void resolveOrCreateTenant_SUCCESS_newEmailCreatesAndLinksTenant() {
+        final TenantModel input = ImmutableTenantJson.builder()
+            .firstName(TestData.TENANT_FIRST_NAME_2)
+            .lastName(TestData.TENANT_LAST_NAME_2)
+            .email("  " + TestData.USER_EMAIL_2.toUpperCase() + "  ")
+            .build();
+
+        final TenantEntity tenant = tenantController.resolveOrCreateTenant(TestData.PROJECT_ID_1, input);
+
+        assertEquals(TestData.PROJECT_ID_1, tenant.getProjectId());
+        assertEquals(TestData.USER_EMAIL_2, tenant.getEmail());
+        assertEquals(TestData.USER_ID_2, tenant.getUser().getId());
+    }
+
+    @Test
+    void resolveOrCreateTenant_SUCCESS_reusesSameNamedTenant() {
+        insertTenant(TestData.TENANT_ID_1, TestData.AGREEMENT_ID_1, TestData.PROJECT_ID_1,
+            TestData.TENANT_FIRST_NAME_1, TestData.TENANT_LAST_NAME_1, "tenant@example.org");
+        final TenantModel input = ImmutableTenantJson.builder()
+            .firstName(TestData.TENANT_FIRST_NAME_1.toLowerCase())
+            .lastName(TestData.TENANT_LAST_NAME_1.toLowerCase())
+            .email(" TENANT@EXAMPLE.ORG ")
+            .build();
+
+        final TenantEntity tenant = tenantController.resolveOrCreateTenant(TestData.PROJECT_ID_1, input);
+
+        assertEquals(TestData.TENANT_ID_1, tenant.getId());
+    }
+
+    @Test
+    void resolveOrCreateTenant_FAILED_emailBelongsToDifferentName() {
+        insertTenant(TestData.TENANT_ID_1, TestData.AGREEMENT_ID_1, TestData.PROJECT_ID_1,
+            TestData.TENANT_FIRST_NAME_1, TestData.TENANT_LAST_NAME_1, "tenant@example.org");
+        final TenantModel input = ImmutableTenantJson.builder()
+            .firstName(TestData.TENANT_FIRST_NAME_2)
+            .lastName(TestData.TENANT_LAST_NAME_2)
+            .email("tenant@example.org")
+            .build();
+
+        assertThrows(AlreadyExistsException.class,
+            () -> tenantController.resolveOrCreateTenant(TestData.PROJECT_ID_1, input));
+    }
+
+    @Test
+    void resolveOrCreateTenants_SUCCESS_resolvesEachTenant() {
+        final TenantModel first = ImmutableTenantJson.builder()
+            .firstName(TestData.TENANT_FIRST_NAME_1)
+            .lastName(TestData.TENANT_LAST_NAME_1)
+            .build();
+        final TenantModel second = ImmutableTenantJson.builder()
+            .firstName(TestData.TENANT_FIRST_NAME_2)
+            .lastName(TestData.TENANT_LAST_NAME_2)
+            .build();
+
+        final List<TenantEntity> tenants = tenantController.resolveOrCreateTenants(
+            TestData.PROJECT_ID_1, List.of(first, second));
+
+        assertEquals(2, tenants.size());
+        assertTrue(tenants.stream().allMatch(tenant -> TestData.PROJECT_ID_1.equals(tenant.getProjectId())));
+    }
+
+    @Test
+    void updateTenant_SUCCESS_phoneNumbersAreUpdatedAndEmptyNumbersArePersistedAsNull() {
+        insertTenant(TestData.TENANT_ID_1, TestData.AGREEMENT_ID_1, TestData.PROJECT_ID_1,
+            TestData.TENANT_FIRST_NAME_1, TestData.TENANT_LAST_NAME_1, "tenant@example.org");
+
+        final TenantModel updated = tenantController.updateTenant(TestData.PROJECT_ID_1, TestData.TENANT_ID_1,
+            ImmutableTenantJson.builder()
+                .mobilePhoneNumber("+491701234567")
+                .businessPhoneNumber("+493012345678")
+                .privatePhoneNumber("+491709876543")
+                .build());
+
+        assertEquals("+491701234567", updated.getMobilePhoneNumber());
+        assertEquals("+493012345678", updated.getBusinessPhoneNumber());
+        assertEquals("+491709876543", updated.getPrivatePhoneNumber());
+
+        final TenantModel cleared = tenantController.updateTenant(TestData.PROJECT_ID_1, TestData.TENANT_ID_1,
+            ImmutableTenantJson.builder()
+                .mobilePhoneNumber("")
+                .businessPhoneNumber("")
+                .privatePhoneNumber("")
+                .build());
+
+        assertNull(cleared.getMobilePhoneNumber());
+        assertNull(cleared.getBusinessPhoneNumber());
+        assertNull(cleared.getPrivatePhoneNumber());
+
+        final Object[] persistedPhones = (Object[]) entityManager
+            .createNativeQuery("SELECT mobile_phone_number, business_phone_number, private_phone_number "
+                + "FROM tenants WHERE id = ?")
+            .setParameter(1, TestData.TENANT_ID_1)
+            .getSingleResult();
+        assertArrayEquals(new Object[] { null, null, null }, persistedPhones);
+    }
+
+    @Test
+    void updateTenant_SUCCESS_omittedPhoneNumbersRemainUnchanged() {
+        insertTenant(TestData.TENANT_ID_1, TestData.AGREEMENT_ID_1, TestData.PROJECT_ID_1,
+            TestData.TENANT_FIRST_NAME_1, TestData.TENANT_LAST_NAME_1, "tenant@example.org");
+        tenantController.updateTenant(TestData.PROJECT_ID_1, TestData.TENANT_ID_1,
+            ImmutableTenantJson.builder()
+                .mobilePhoneNumber("+491701234567")
+                .businessPhoneNumber("+493012345678")
+                .privatePhoneNumber("+491709876543")
+                .build());
+
+        final TenantModel updated = tenantController.updateTenant(TestData.PROJECT_ID_1, TestData.TENANT_ID_1,
+            ImmutableTenantJson.builder().firstName("Updated").build());
+
+        assertEquals("+491701234567", updated.getMobilePhoneNumber());
+        assertEquals("+493012345678", updated.getBusinessPhoneNumber());
+        assertEquals("+491709876543", updated.getPrivatePhoneNumber());
+    }
+
+    @Test
+    void updateTenant_SUCCESS_birthAndAddressAreUpdated() {
+        insertTenant(TestData.TENANT_ID_1, TestData.AGREEMENT_ID_1, TestData.PROJECT_ID_1,
+            TestData.TENANT_FIRST_NAME_1, TestData.TENANT_LAST_NAME_1, "tenant@example.org");
+
+        final TenantModel updated = tenantController.updateTenant(TestData.PROJECT_ID_1, TestData.TENANT_ID_1,
+            ImmutableTenantJson.builder()
+                .placeOfBirth("Berlin")
+                .dateOfBirth(LocalDate.of(1990, 1, 1))
+                .address(TestData.addressBuilder().build())
+                .build());
+
+        assertEquals("Berlin", updated.getPlaceOfBirth());
+        assertEquals(LocalDate.of(1990, 1, 1), updated.getDateOfBirth());
+        assertEquals(TestData.ADDRESS_STREET, updated.getAddress().getStreet());
     }
 
     @Test

@@ -209,14 +209,17 @@ public class TenantController {
         if (model.getLastName() != null) {
             entity.setLastName(model.getLastName());
         }
+        // an empty phone number removes it
         if (model.getMobilePhoneNumber() != null) {
-            entity.setMobilePhoneNumber(model.getMobilePhoneNumber());
+            entity.setMobilePhoneNumber(model.getMobilePhoneNumber().isEmpty() ? null : model.getMobilePhoneNumber());
         }
         if (model.getBusinessPhoneNumber() != null) {
-            entity.setBusinessPhoneNumber(model.getBusinessPhoneNumber());
+            entity.setBusinessPhoneNumber(
+                model.getBusinessPhoneNumber().isEmpty() ? null : model.getBusinessPhoneNumber());
         }
         if (model.getPrivatePhoneNumber() != null) {
-            entity.setPrivatePhoneNumber(model.getPrivatePhoneNumber());
+            entity.setPrivatePhoneNumber(
+                model.getPrivatePhoneNumber().isEmpty() ? null : model.getPrivatePhoneNumber());
         }
         if (model.getPlaceOfBirth() != null) {
             entity.setPlaceOfBirth(model.getPlaceOfBirth());
