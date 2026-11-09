@@ -14,6 +14,7 @@ import jakarta.ws.rs.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -49,6 +50,77 @@ public class TenantControllerTest extends AbstractServiceTest {
         assertThrows(NotFoundException.class,
                 () -> tenantController.updateTenant(PROJECT_ID, NON_PROJECT_TENANT_ID, dummyJson),
                 "Should fail because the tenant is not part of the project's tenancy.");
+    }
+
+    @Test
+    void updateTenant_SUCCESS_phoneNumbersAreUpdatedAndEmptyNumbersArePersistedAsNull() {
+        insertTenant(TestData.TENANT_ID_1, TestData.AGREEMENT_ID_1, TestData.PROJECT_ID_1,
+            TestData.TENANT_FIRST_NAME_1, TestData.TENANT_LAST_NAME_1, "tenant@example.org");
+
+        final TenantModel updated = tenantController.updateTenant(TestData.PROJECT_ID_1, TestData.TENANT_ID_1,
+            ImmutableTenantJson.builder()
+                .mobilePhoneNumber("+491701234567")
+                .businessPhoneNumber("+493012345678")
+                .privatePhoneNumber("+491709876543")
+                .build());
+
+        assertEquals("+491701234567", updated.getMobilePhoneNumber());
+        assertEquals("+493012345678", updated.getBusinessPhoneNumber());
+        assertEquals("+491709876543", updated.getPrivatePhoneNumber());
+
+        final TenantModel cleared = tenantController.updateTenant(TestData.PROJECT_ID_1, TestData.TENANT_ID_1,
+            ImmutableTenantJson.builder()
+                .mobilePhoneNumber("")
+                .businessPhoneNumber("")
+                .privatePhoneNumber("")
+                .build());
+
+        assertNull(cleared.getMobilePhoneNumber());
+        assertNull(cleared.getBusinessPhoneNumber());
+        assertNull(cleared.getPrivatePhoneNumber());
+
+        final Object[] persistedPhones = (Object[]) entityManager
+            .createNativeQuery("SELECT mobile_phone_number, business_phone_number, private_phone_number "
+                + "FROM tenants WHERE id = ?")
+            .setParameter(1, TestData.TENANT_ID_1)
+            .getSingleResult();
+        assertArrayEquals(new Object[] { null, null, null }, persistedPhones);
+    }
+
+    @Test
+    void updateTenant_SUCCESS_omittedPhoneNumbersRemainUnchanged() {
+        insertTenant(TestData.TENANT_ID_1, TestData.AGREEMENT_ID_1, TestData.PROJECT_ID_1,
+            TestData.TENANT_FIRST_NAME_1, TestData.TENANT_LAST_NAME_1, "tenant@example.org");
+        tenantController.updateTenant(TestData.PROJECT_ID_1, TestData.TENANT_ID_1,
+            ImmutableTenantJson.builder()
+                .mobilePhoneNumber("+491701234567")
+                .businessPhoneNumber("+493012345678")
+                .privatePhoneNumber("+491709876543")
+                .build());
+
+        final TenantModel updated = tenantController.updateTenant(TestData.PROJECT_ID_1, TestData.TENANT_ID_1,
+            ImmutableTenantJson.builder().firstName("Updated").build());
+
+        assertEquals("+491701234567", updated.getMobilePhoneNumber());
+        assertEquals("+493012345678", updated.getBusinessPhoneNumber());
+        assertEquals("+491709876543", updated.getPrivatePhoneNumber());
+    }
+
+    @Test
+    void updateTenant_SUCCESS_birthAndAddressAreUpdated() {
+        insertTenant(TestData.TENANT_ID_1, TestData.AGREEMENT_ID_1, TestData.PROJECT_ID_1,
+            TestData.TENANT_FIRST_NAME_1, TestData.TENANT_LAST_NAME_1, "tenant@example.org");
+
+        final TenantModel updated = tenantController.updateTenant(TestData.PROJECT_ID_1, TestData.TENANT_ID_1,
+            ImmutableTenantJson.builder()
+                .placeOfBirth("Berlin")
+                .dateOfBirth(LocalDate.of(1990, 1, 1))
+                .address(TestData.addressBuilder().build())
+                .build());
+
+        assertEquals("Berlin", updated.getPlaceOfBirth());
+        assertEquals(LocalDate.of(1990, 1, 1), updated.getDateOfBirth());
+        assertEquals(TestData.ADDRESS_STREET, updated.getAddress().getStreet());
     }
 
     @Test
