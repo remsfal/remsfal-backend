@@ -289,6 +289,18 @@ public class OrganizationResourceTest extends AbstractResourceTest {
     }
 
     @Test
+    void updateOrganization_FAILED_invalidPhoneNumber() {
+        given()
+                .when()
+                .cookie(buildAccessTokenCookie(TestData.USER_ID, TestData.USER_EMAIL, Duration.ofMinutes(10)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("{ \"phone\": \"+49 1234567890\" }")
+                .patch(BASE_PATH + "/" + TestData.ORGANIZATION_ID)
+                .then()
+                .statusCode(Response.Status.BAD_REQUEST.getStatusCode());
+    }
+
+    @Test
     void deleteOrganization_SUCCESS_singleOrganization() {
         given()
             .when()

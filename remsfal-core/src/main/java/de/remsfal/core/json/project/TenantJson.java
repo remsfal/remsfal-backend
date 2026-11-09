@@ -15,13 +15,13 @@ import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.model.CustomerModel;
 import de.remsfal.core.model.project.TenantModel;
 import de.remsfal.core.validation.PostValidation;
+import de.remsfal.core.validation.PhoneNumber;
 import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Null;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /**
@@ -66,22 +66,19 @@ public abstract class TenantJson implements TenantModel {
     public abstract String getEmail();
 
     @Nullable
-    @Pattern(regexp = "^$|^\\+[1-9]\\d{4,14}$",
-        message = "The number must be empty or match the E.164 formatted phone numbers")
+    @PhoneNumber
     @Schema(examples = {"+491234567890"}, description = "An empty string removes the number")
     @Override
     public abstract String getMobilePhoneNumber();
 
     @Nullable
-    @Pattern(regexp = "^$|^\\+[1-9]\\d{4,14}$",
-        message = "The number must be empty or match the E.164 formatted phone numbers")
+    @PhoneNumber
     @Schema(examples = {"+491234567890"}, description = "An empty string removes the number")
     @Override
     public abstract String getBusinessPhoneNumber();
 
     @Nullable
-    @Pattern(regexp = "^$|^\\+[1-9]\\d{4,14}$",
-        message = "The number must be empty or match the E.164 formatted phone numbers")
+    @PhoneNumber
     @Schema(examples = {"+491234567890"}, description = "An empty string removes the number")
     @Override
     public abstract String getPrivatePhoneNumber();

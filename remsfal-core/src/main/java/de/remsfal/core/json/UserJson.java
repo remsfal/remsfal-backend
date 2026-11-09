@@ -11,7 +11,6 @@ import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Null;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
@@ -25,6 +24,7 @@ import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.model.CustomerModel;
 import de.remsfal.core.model.UserContext;
 import de.remsfal.core.model.UserModel;
+import de.remsfal.core.validation.PhoneNumber;
 
 /**
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
@@ -71,26 +71,17 @@ public abstract class UserJson implements CustomerModel {
 
     @Nullable
     @Override
-    @Pattern(
-        regexp = "^$|^\\+[1-9]\\d{4,14}$",
-        message = "The number must be empty or match the E.164 formatted phone numbers"
-    )
+    @PhoneNumber
     public abstract String getMobilePhoneNumber();
 
     @Nullable
     @Override
-    @Pattern(
-        regexp = "^$|^\\+[1-9]\\d{4,14}$",
-        message = "The number must be empty or match the E.164 formatted phone numbers"
-    )
+    @PhoneNumber
     public abstract String getBusinessPhoneNumber();
 
     @Nullable
     @Override
-    @Pattern(
-        regexp = "^$|^\\+[1-9]\\d{4,14}$",
-        message = "The number must be empty or match the E.164 formatted phone numbers"
-    )
+    @PhoneNumber
     public abstract String getPrivatePhoneNumber();
 
     @Size(max = 2, message = "Locale must be 2 characters long")
