@@ -84,6 +84,16 @@ public class TenantControllerTest extends AbstractServiceTest {
         assertNotNull(tenant.getId());
         assertEquals(TestData.TENANT_FIRST_NAME_1, tenant.getFirstName());
         assertEquals("+491701234567", tenant.getMobilePhoneNumber());
+
+        final TenantModel blankEmailInput = ImmutableTenantJson.builder()
+            .firstName(TestData.TENANT_FIRST_NAME_2)
+            .lastName(TestData.TENANT_LAST_NAME_2)
+            .email("  ")
+            .build();
+        final TenantEntity tenantWithoutEmail = tenantController.resolveOrCreateTenant(
+            TestData.PROJECT_ID_1, blankEmailInput);
+        assertNotNull(tenantWithoutEmail.getId());
+        assertNull(tenantWithoutEmail.getEmail());
     }
 
     @Test
