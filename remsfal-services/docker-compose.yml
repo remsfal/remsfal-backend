@@ -59,10 +59,13 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_NUM_PARTITIONS: 3
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
     volumes:
       - kafka_data:/var/lib/kafka/data
-      - kafka_secrets:/etc/kafka/secrets
-      - kafka_config:/mnt/shared/config
+    # Unused paths declared as VOLUME by the image; tmpfs avoids anonymous volumes
+    tmpfs:
+      - /etc/kafka/secrets
+      - /mnt/shared/config
     healthcheck:
       test: ["CMD", "bash", "-c", "nc -z localhost 29092"]
       interval: 10s
@@ -101,8 +104,6 @@ services:
 volumes:
   postgres_data:
   kafka_data:
-  kafka_secrets:
-  kafka_config:
   otel_data:
   localstack_data:
 
