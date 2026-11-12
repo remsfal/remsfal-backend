@@ -12,6 +12,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
+      - postgres_data:/var/lib/postgresql/data
       - ./postgres-init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U remsfalAdmin"]
@@ -58,6 +59,10 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_NUM_PARTITIONS: 3
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+      - kafka_secrets:/etc/kafka/secrets
+      - kafka_config:/mnt/shared/config
     healthcheck:
       test: ["CMD", "bash", "-c", "nc -z localhost 29092"]
       interval: 10s
@@ -94,6 +99,10 @@ services:
       - remsfal
 
 volumes:
+  postgres_data:
+  kafka_data:
+  kafka_secrets:
+  kafka_config:
   otel_data:
   localstack_data:
 
