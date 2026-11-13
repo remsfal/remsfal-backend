@@ -3,7 +3,7 @@ include:
   - remsfal-notification/docker-compose.yml
 services:
   postgres:
-    image: postgres:16
+    image: postgres:18.7
     container_name: postgres
     restart: unless-stopped
     environment:
@@ -12,6 +12,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
+      - postgres_data:/var/lib/postgresql
       - ./postgres-init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U remsfalAdmin"]
@@ -23,7 +24,7 @@ services:
 
   # S3 compatible file storage shared by all services (platform, notification, ticketing, ocr)
   localstack:
-    image: localstack/localstack:4.9
+    image: localstack/localstack:4.9.2
     container_name: localstack
     restart: unless-stopped
     environment:
@@ -37,7 +38,7 @@ services:
       - remsfal
 
   kafka-broker:
-    image: apache/kafka:latest
+    image: apache/kafka:4.3.2
     hostname: kafka-broker
     container_name: kafka-broker
     restart: unless-stopped
@@ -58,6 +59,13 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_NUM_PARTITIONS: 3
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    # Unused paths declared as VOLUME by the image; tmpfs avoids anonymous volumes
+    tmpfs:
+      - /etc/kafka/secrets
+      - /mnt/shared/config
     healthcheck:
       test: ["CMD", "bash", "-c", "nc -z localhost 29092"]
       interval: 10s
@@ -67,13 +75,13 @@ services:
       - remsfal
 
   kafka-ui:
-    image: provectuslabs/kafka-ui:latest
+    image: ghcr.io/kafbat/kafka-ui:v1.5.0
     container_name: kafka-ui
     restart: unless-stopped
     depends_on:
       - kafka-broker
     ports:
-      - "8090:8080"
+      - "8020:8080"
     environment:
       KAFKA_CLUSTERS_0_NAME: kafka-cluster
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-broker:9092
@@ -81,7 +89,7 @@ services:
       - remsfal
 
   otel-lgtm:
-    image: grafana/otel-lgtm
+    image: grafana/otel-lgtm:0.40.0
     container_name: otel-lgtm
     restart: unless-stopped
     ports:
@@ -94,6 +102,8 @@ services:
       - remsfal
 
 volumes:
+  postgres_data:
+  kafka_data:
   otel_data:
   localstack_data:
 

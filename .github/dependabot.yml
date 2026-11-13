@@ -16,3 +16,30 @@ updates:
     labels:
       - "dependencies"
       - "github_actions"
+  # Enable version updates for the images of the local docker compose setup
+  - package-ecosystem: "docker-compose"
+    directories:
+      - "/remsfal-services"
+      - "/remsfal-services/remsfal-notification"
+      - "/remsfal-services/remsfal-ticketing"
+    schedule:
+      interval: "weekly"
+    ignore:
+      # Newer LocalStack releases require an account and auth token
+      - dependency-name: "localstack/localstack"
+        update-types: ["version-update:semver-major"]
+    groups:
+      docker-compose:
+        patterns:
+          - "*"
+    labels:
+      - "dependencies"
+      - "docker"
+  # Enable version updates for the base image of the service containers
+  - package-ecosystem: "docker"
+    directory: "/src/main/docker"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "docker"

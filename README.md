@@ -96,7 +96,7 @@ newer versions of Docker Compose. Please make sure your Docker Desktop or Docker
 |-------------|-----------------------------|---------------------------------------------|
 | postgres    | 5432                        | Databases of the platform and notification services |
 | cassandra   | 9042                        | Database of the ticketing service           |
-| kafka-broker / kafka-ui | 39092 / [8090](http://localhost:8090) | Event streaming           |
+| kafka-broker / kafka-ui | 39092 / [8020](http://localhost:8020) | Event streaming           |
 | localstack  | 9000                        | S3 compatible file storage of all services  |
 | ocr         | &ndash;                     | OCR service used by the ticketing service   |
 | otel-lgtm   | [3000](http://localhost:3000) | Grafana (logs, metrics, traces)           |

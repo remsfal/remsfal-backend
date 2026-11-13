@@ -17,8 +17,8 @@ import java.util.Map;
 
 public class OcrServiceResource implements QuarkusTestResourceLifecycleManager, DevServicesContext.ContextAware {
 
-    public static final String KAFKA_IMAGE = "apache/kafka:latest";
-    public static final String LOCALSTACK_IMAGE = "localstack/localstack:4.9";
+    public static final String KAFKA_IMAGE = "apache/kafka:4.3.2";
+    public static final String LOCALSTACK_IMAGE = "localstack/localstack:4.9.2";
     public static final String RFOCR_IMAGE = "ghcr.io/remsfal/remsfal-ocr:latest";
 
     private static final String LOCALSTACK_ACCESS_KEY = "test";
