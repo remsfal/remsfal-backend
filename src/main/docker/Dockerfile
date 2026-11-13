@@ -94,7 +94,7 @@
 #   accessed directly. (example: "foo.example.com,bar.example.com")
 #
 ###
-FROM registry.access.redhat.com/ubi9/openjdk-21:1.23
+FROM registry.access.redhat.com/ubi9/openjdk-21:1.24
 
 ARG SERVICE_NAME
 ENV LANGUAGE='de_DE:de'
