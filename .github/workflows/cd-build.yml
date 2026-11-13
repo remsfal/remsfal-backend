@@ -60,7 +60,7 @@ jobs:
           cp remsfal-services/${{ matrix.microservice }}/target/${{ matrix.microservice }}-runner.jar \
             docker-context/remsfal-services/${{ matrix.microservice }}/target/
       - name: Login to Container Registry
-        uses: docker/login-action@v4.7.0
+        uses: docker/login-action@v4.8.0
         with:
           registry: ${{ vars.REGISTRY_HOST || 'ghcr.io' }}
           username: ${{ vars.REGISTRY_USERNAME || github.actor }}
