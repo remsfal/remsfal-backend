@@ -6,9 +6,12 @@ import de.remsfal.common.entity.MetaDataEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 
 /**
+ * Base class of the Panache repositories of the platform service. It is public, so that repositories in other
+ * packages (e.g. extensions of downstream projects) can reuse it.
+ *
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-abstract class AbstractRepository<Entity extends MetaDataEntity>
+public abstract class AbstractRepository<Entity extends MetaDataEntity>
     implements PanacheRepositoryBase<Entity, UUID> {
 
     protected static final String PARAM_ID = "id";
