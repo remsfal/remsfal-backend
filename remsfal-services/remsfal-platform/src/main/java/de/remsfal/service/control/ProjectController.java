@@ -46,6 +46,8 @@ import java.util.stream.Collectors;
 @RequestScoped
 public class ProjectController {
 
+    private static final String NO_MEMBERSHIP_MESSAGE = "Project does not exist or user has no membership";
+
     @Inject
     Logger logger;
 
@@ -155,7 +157,7 @@ public class ProjectController {
 
     private ProjectEntity findAccessibleProject(final UserModel user, final UUID projectId) {
         return projectRepository.findAccessibleProject(user.getId(), projectId)
-            .orElseThrow(() -> new NotFoundException("Project does not exist or user has no membership"));
+            .orElseThrow(() -> new NotFoundException(NO_MEMBERSHIP_MESSAGE));
     }
 
     @Transactional
@@ -250,7 +252,7 @@ public class ProjectController {
         logger.infov("Retrieving project member role (user={0}, project={1})", userId, projectId);
         return projectRepository.findMembershipByUserIdAndProjectId(userId, projectId)
             .map(ProjectMembershipEntity::getRole)
-            .orElseThrow(() -> new ForbiddenException("Project not exist or user has no membership"));
+            .orElseThrow(() -> new ForbiddenException(NO_MEMBERSHIP_MESSAGE));
     }
 
     public Set<? extends ProjectMemberModel> getProjectMembers(final UserModel user, final UUID projectId) {
@@ -274,7 +276,7 @@ public class ProjectController {
         notificationController.informUserAboutProjectMembership(userEntity, projectEntity);
         projectRepository.mergeAndFlush(projectEntity);
         return projectRepository.findMembershipByUserIdAndProjectId(userEntity.getId(), projectId)
-            .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
+            .orElseThrow(() -> new NotFoundException(NO_MEMBERSHIP_MESSAGE));
     }
 
     @Transactional
@@ -283,7 +285,7 @@ public class ProjectController {
         logger.infov("Updating a project membership (projectId={0}, memberId={1}, memberRole={2})",
             projectId, memberId, memberRole);
         final ProjectMembershipEntity entity = projectRepository.findMembershipByUserIdAndProjectId(memberId, projectId)
-            .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
+            .orElseThrow(() -> new NotFoundException(NO_MEMBERSHIP_MESSAGE));
         if (entity.getRole() == MemberRole.PROPRIETOR && memberRole != MemberRole.PROPRIETOR) {
             ensureProprietorRemains(projectId, memberId, null);
         }
@@ -309,7 +311,7 @@ public class ProjectController {
             organizationId, projectId);
         return projectOrganizationRepository.findByProjectIdAndOrganizationId(projectId, organizationId)
             .map(ProjectOrganizationEntity::getRole)
-            .orElseThrow(() -> new ForbiddenException("Project not exist or user has no membership"));
+            .orElseThrow(() -> new ForbiddenException(NO_MEMBERSHIP_MESSAGE));
     }
 
     public Set<? extends OrganizationMemberModel> getProjectOrganizations(final UserModel user, final UUID projectId) {
