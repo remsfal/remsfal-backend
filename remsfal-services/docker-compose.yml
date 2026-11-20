@@ -89,7 +89,7 @@ services:
       - remsfal
 
   otel-lgtm:
-    image: grafana/otel-lgtm:0.40.0
+    image: grafana/otel-lgtm:0.41.0
     container_name: otel-lgtm
     restart: unless-stopped
     ports:
