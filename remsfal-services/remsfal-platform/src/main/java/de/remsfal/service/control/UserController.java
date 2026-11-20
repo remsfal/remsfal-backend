@@ -27,9 +27,12 @@ import de.remsfal.core.json.eventing.AffectedTenantJson;
 import de.remsfal.core.json.eventing.ImmutableAffectedTenantJson;
 import de.remsfal.core.model.CustomerModel;
 import de.remsfal.core.model.UserModel;
+import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 import de.remsfal.service.boundary.eventing.UserEventProducer;
 import de.remsfal.service.control.event.IdentityRevocationEvent;
 import de.remsfal.service.control.exception.AlreadyExistsException;
+import de.remsfal.service.control.exception.ProprietorRequiredException;
+import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dao.TenantRepository;
 import de.remsfal.service.entity.dao.UserIdentityRepository;
 import de.remsfal.service.entity.dao.UserRepository;
@@ -51,6 +54,9 @@ public class UserController {
 
     @Inject
     TenantRepository tenantRepository;
+
+    @Inject
+    ProjectRepository projectRepository;
 
     @Inject
     TenantUserLinkController tenantUserLinker;
@@ -259,6 +265,13 @@ public class UserController {
     @Transactional
     public boolean deleteUser(final UUID userId) {
         logger.infov("Deleting a user (id = {0})", userId);
+        final boolean soleProprietor = projectRepository
+            .findProjectsByUserIdAndRole(userId, MemberRole.PROPRIETOR).stream()
+            .anyMatch(project -> project.countProprietors(userId, null) == 0);
+        if (soleProprietor) {
+            throw new ProprietorRequiredException("The user is the only proprietor of at least one project. "
+                + "Transfer the ownership or delete these projects before deleting the account.");
+        }
         final List<UserIdentityEntity> appleIdentities = identityRepository
             .findByUserIdAndProvider(userId, IdentityProvider.APPLE).stream()
             .filter(identity -> identity.getRefreshToken() != null)

@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
-import de.remsfal.core.model.UserModel;
-import de.remsfal.core.model.project.ProjectMemberModel;
 import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 import de.remsfal.core.model.project.ProjectModel;
 import jakarta.validation.constraints.NotNull;
@@ -36,16 +34,19 @@ public abstract class ProjectItemJson {
     @NotNull
     public abstract MemberRole getMemberRole();
 
-    public static ProjectItemJson valueOf(final ProjectModel model, final UserModel user) {
-        final ImmutableProjectItemJson.Builder builder = ImmutableProjectItemJson.builder()
+    /**
+     * Create a project item with the effective role of the user in the project.
+     *
+     * @param model      the project
+     * @param memberRole the effective role of the user (direct or derived from an organization)
+     * @return the JSON representation
+     */
+    public static ProjectItemJson valueOf(final ProjectModel model, final MemberRole memberRole) {
+        return ImmutableProjectItemJson.builder()
             .id(model.getId())
-            .name(model.getTitle());
-        for (ProjectMemberModel member : model.getMembers()) {
-            if (member.getId().equals(user.getId())) {
-                builder.memberRole(member.getRole());
-            }
-        }
-        return builder.build();
+            .name(model.getTitle())
+            .memberRole(memberRole)
+            .build();
     }
 
 }

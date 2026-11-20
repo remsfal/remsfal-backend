@@ -93,7 +93,7 @@ public class ContractorController {
         final ContractorModel contractor) {
         logger.infov("Creating contractor for project (id = {0})", projectId);
 
-        ProjectEntity projectEntity = projectRepository.findProjectByUserId(user.getId(), projectId)
+        ProjectEntity projectEntity = projectRepository.findAccessibleProject(user.getId(), projectId)
             .orElseThrow(() -> new NotFoundException("Project not found"));
 
         ContractorEntity entity = mergeContractorFields(contractor, new ContractorEntity());

@@ -8,11 +8,14 @@ import de.remsfal.core.model.OrganizationEmployeeModel;
 import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
 import de.remsfal.core.model.OrganizationModel;
 import de.remsfal.core.model.UserModel;
+import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 
 import de.remsfal.service.boundary.eventing.OrganizationEventProducer;
 import de.remsfal.service.control.exception.AlreadyExistsException;
+import de.remsfal.service.control.exception.ProprietorRequiredException;
 import de.remsfal.service.entity.dao.ContractorRepository;
 import de.remsfal.service.entity.dao.OrganizationRepository;
+import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dto.OrganizationEmployeeEntity;
 import de.remsfal.service.entity.dto.OrganizationEntity;
 import de.remsfal.service.entity.dto.UserEntity;
@@ -41,6 +44,9 @@ public class OrganizationController {
 
     @Inject
     ContractorRepository contractorRepository;
+
+    @Inject
+    ProjectRepository projectRepository;
 
     @Inject
     ContractorOrganizationLinkController contractorOrganizationLinker;
@@ -271,6 +277,13 @@ public class OrganizationController {
 
         OrganizationEntity organization = organizationRepository.findByIdOptional(id)
             .orElseThrow(() -> new NotFoundException("Organization not found"));
+        final boolean soleProprietor = projectRepository
+            .findProjectsByOrganizationIdAndRole(id, MemberRole.PROPRIETOR).stream()
+            .anyMatch(project -> project.countProprietors(null, id) == 0);
+        if (soleProprietor) {
+            throw new ProprietorRequiredException("The organization is the only proprietor of at least one project. "
+                + "Transfer the ownership or delete these projects before deleting the organization.");
+        }
         return organizationRepository.deleteById(organization.getId());
     }
 

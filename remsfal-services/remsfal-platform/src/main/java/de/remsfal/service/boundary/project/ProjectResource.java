@@ -63,7 +63,8 @@ public class ProjectResource extends AbstractProjectResource implements ProjectE
     @Timed("get_projects_list_timer")
     public ProjectListJson getProjects(final Integer offset, final Integer limit) {
         List<ProjectModel> projects = controller.getProjects(principal, offset, limit);
-        return ProjectListJson.valueOf(projects, offset, controller.countProjects(principal), principal);
+        return ProjectListJson.valueOf(projects, offset, controller.countProjects(principal),
+            controller.getProjectRoles(principal));
     }
 
     @Override

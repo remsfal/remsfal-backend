@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.json.RentalUnitJson;
+import de.remsfal.core.model.project.ProjectModel;
 import de.remsfal.core.model.project.RentalAgreementModel;
 
 /**
@@ -36,9 +37,18 @@ public abstract class TenancyListJson {
             final Map<UUID, RentalUnitJson> rentalUnitsMap,
             final Map<UUID, String> projectTitleMap,
             final Map<UUID, AddressJson> unitAddressMap) {
+        return valueOf(agreements, rentalUnitsMap, projectTitleMap, unitAddressMap, null);
+    }
+
+    public static TenancyListJson valueOf(
+            final List<? extends RentalAgreementModel> agreements,
+            final Map<UUID, RentalUnitJson> rentalUnitsMap,
+            final Map<UUID, String> projectTitleMap,
+            final Map<UUID, AddressJson> unitAddressMap,
+            final Map<UUID, ? extends ProjectModel> projectMap) {
         return ImmutableTenancyListJson.builder()
             .rentalAgreements(agreements.stream()
-                .map(a -> TenancyJson.valueOf(a, rentalUnitsMap, projectTitleMap, unitAddressMap))
+                .map(a -> TenancyJson.valueOf(a, rentalUnitsMap, projectTitleMap, unitAddressMap, projectMap))
                 .toList())
             .build();
     }

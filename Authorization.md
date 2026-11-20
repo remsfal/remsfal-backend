@@ -166,6 +166,37 @@ STAFF               →    OWNER=STAFF, MANAGER=STAFF, STAFF=STAFF
 COLLABORATOR        →    OWNER=COLLABORATOR, MANAGER=COLLABORATOR, STAFF=COLLABORATOR
 ```
 
+Users who are only connected to a project through an organization see the project in their project list and can access it according to their derived role.
+
+### Managing Organization
+
+A project has at most one **managing organization** (`projects.managing_organization_id`). It is the organization that is responsible for the project (the controller in terms of the GDPR), e.g. the property management company. A project without a managing organization is managed by individuals, e.g. a private landlord.
+
+**Creating a project:**
+- Without `managingOrganizationId` the creating user becomes a direct member with role PROPRIETOR.
+- With `managingOrganizationId` the project is created for this organization: the organization becomes a project member with role PROPRIETOR and the managing organization. The creating user gets **no** direct membership; all employees access the project through the role mapping above. Owner and billing address of the project are initialized with the name and address of the organization.
+- Only employees with the role OWNER or MANAGER of the organization can create a project for it.
+
+**Changing the managing organization:**
+- Only a PROPRIETOR of the project can change it (`PATCH /api/v1/projects/{projectId}`).
+- The new managing organization must already be a project member with role PROPRIETOR.
+- If the managing organization is removed from the project or loses its role PROPRIETOR, the project has no managing organization anymore.
+
+**Visibility:** The managing organization (id and name) is exposed in the project, in the tenancies of tenants and in the client projects of contractors.
+
+Note: an employee with role MANAGER gets the project role MANAGER in a project of their organization and therefore cannot delete it. Deleting requires PROPRIETOR, i.e. an OWNER of the organization.
+
+### Proprietor Invariant
+
+Every project must always have at least one PROPRIETOR, either a user (direct membership) or an organization. Operations that would remove the last proprietor are rejected with `409 Conflict`:
+
+- removing or downgrading the last proprietor user of a project
+- removing or downgrading the last proprietor organization of a project (including the managing organization)
+- deleting an organization that is the only proprietor of a project
+- deleting a user account that is the only proprietor of a project
+
+The ownership has to be transferred or the project has to be deleted first.
+
 ### Contractor Organization Roles
 
 Contractors are always organizations with one or more employees that have the same three-tier role model as any other organization:

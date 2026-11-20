@@ -70,15 +70,34 @@ public abstract class ProjectJson implements ProjectModel {
     @Override
     public abstract Set<ProjectMemberJson> getMembers();
 
+    @Nullable
+    @Schema(description = "Unique identifier of the organization that manages this project. "
+        + "On creation, the project is created for this organization instead of for the authenticated user "
+        + "(requires the employee role OWNER or MANAGER). "
+        + "On update, the organization must already be a project member with role PROPRIETOR.")
+    @Override
+    public abstract UUID getManagingOrganizationId();
+
+    @Null
+    @Nullable
+    @Schema(readOnly = true, description = "Name of the organization that manages this project")
+    @Override
+    public abstract String getManagingOrganizationName();
+
     public static ProjectJson valueOf(final ProjectModel model) {
         final ImmutableProjectJson.Builder builder = ImmutableProjectJson.builder()
             .id(model.getId())
             .title(model.getTitle())
             .owner(model.getOwner())
             .careOf(model.getCareOf())
-            .billingAddress(AddressJson.valueOf(model.getBillingAddress()));
-        for (ProjectMemberModel member : model.getMembers()) {
-            builder.addMembers(ProjectMemberJson.valueOf(member));
+            .billingAddress(AddressJson.valueOf(model.getBillingAddress()))
+            .managingOrganizationId(model.getManagingOrganizationId())
+            .managingOrganizationName(model.getManagingOrganizationName());
+        if (model.getMembers() != null) {
+            // a project created for an organization has no direct members
+            for (ProjectMemberModel member : model.getMembers()) {
+                builder.addMembers(ProjectMemberJson.valueOf(member));
+            }
         }
         return builder.build();
     }
