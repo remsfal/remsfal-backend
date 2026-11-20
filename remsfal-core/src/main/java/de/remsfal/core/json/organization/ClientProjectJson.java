@@ -41,6 +41,14 @@ public abstract class ClientProjectJson {
     @Nullable
     public abstract AddressJson getBillingAddress();
 
+    @Nullable
+    @Schema(description = "Unique identifier of the organization that manages the project")
+    public abstract UUID getManagingOrganizationId();
+
+    @Nullable
+    @Schema(description = "Name of the organization that manages the project")
+    public abstract String getManagingOrganizationName();
+
     /**
      * Create a client representation from a project.
      *
@@ -52,7 +60,9 @@ public abstract class ClientProjectJson {
             .id(model.getId())
             .title(model.getTitle())
             .owner(model.getOwner())
-            .careOf(model.getCareOf());
+            .careOf(model.getCareOf())
+            .managingOrganizationId(model.getManagingOrganizationId())
+            .managingOrganizationName(model.getManagingOrganizationName());
         if (model.getBillingAddress() != null) {
             builder.billingAddress(AddressJson.valueOf(model.getBillingAddress()));
         }

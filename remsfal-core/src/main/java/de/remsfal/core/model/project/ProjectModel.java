@@ -26,4 +26,18 @@ public interface ProjectModel {
 
     Set<? extends ProjectMemberModel> getMembers();
 
+    /**
+     * The organization that manages this project (the controller in terms of GDPR),
+     * or {@code null} if the project is managed by an individual.
+     */
+    @Nullable
+    default UUID getManagingOrganizationId() {
+        return null;
+    }
+
+    @Nullable
+    default String getManagingOrganizationName() {
+        return null;
+    }
+
 }

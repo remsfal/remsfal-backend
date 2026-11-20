@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import de.remsfal.core.ImmutableStyle;
 import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.json.RentalUnitJson;
+import de.remsfal.core.model.project.ProjectModel;
 import de.remsfal.core.model.project.RentalAgreementModel;
 import de.remsfal.core.model.project.RentModel;
 import de.remsfal.core.model.tenancy.TenancyModel;
@@ -41,6 +42,14 @@ public abstract class TenancyJson implements TenancyModel {
     @Nullable
     @Schema(description = "Title of the project this rental agreement belongs to", readOnly = true)
     public abstract String getProjectTitle();
+
+    @Nullable
+    @Schema(description = "Unique identifier of the organization that manages the project", readOnly = true)
+    public abstract UUID getManagingOrganizationId();
+
+    @Nullable
+    @Schema(description = "Name of the organization that manages the project", readOnly = true)
+    public abstract String getManagingOrganizationName();
 
     @Nullable
     @Schema(description = "Address of the building this rental agreement belongs to", readOnly = true)
@@ -87,9 +96,18 @@ public abstract class TenancyJson implements TenancyModel {
         final Map<UUID, RentalUnitJson> rentalUnitsMap,
         final Map<UUID, String> projectTitleMap,
         final Map<UUID, AddressJson> unitAddressMap) {
+        return valueOf(model, rentalUnitsMap, projectTitleMap, unitAddressMap, null);
+    }
+
+    public static TenancyJson valueOf(final RentalAgreementModel model,
+        final Map<UUID, RentalUnitJson> rentalUnitsMap,
+        final Map<UUID, String> projectTitleMap,
+        final Map<UUID, AddressJson> unitAddressMap,
+        final Map<UUID, ? extends ProjectModel> projectMap) {
         if (model == null) {
             return null;
         }
+        final ProjectModel project = projectMap != null ? projectMap.get(model.getProjectId()) : null;
 
         List<RentalUnitJson> rentalUnits = model.getAllRents().stream()
             .map(RentModel::getRentalUnitId)
@@ -101,6 +119,8 @@ public abstract class TenancyJson implements TenancyModel {
         return ImmutableTenancyJson.builder()
             .agreementId(model.getId())
             .projectTitle(projectTitleMap != null ? projectTitleMap.get(model.getProjectId()) : null)
+            .managingOrganizationId(project != null ? project.getManagingOrganizationId() : null)
+            .managingOrganizationName(project != null ? project.getManagingOrganizationName() : null)
             .address(resolveAddress(model, unitAddressMap))
             .tenants(model.getTenants() != null
                 ? model.getTenants().stream()

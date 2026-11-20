@@ -2,6 +2,9 @@ package de.remsfal.core.json.tenancy;
 
 import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.json.ImmutableAddressJson;
+import de.remsfal.core.model.AddressModel;
+import de.remsfal.core.model.project.ProjectMemberModel;
+import de.remsfal.core.model.project.ProjectModel;
 import de.remsfal.core.model.project.RentalAgreementKeysModel;
 import de.remsfal.core.model.project.RentalAgreementModel;
 import de.remsfal.core.model.project.RentModel;
@@ -13,6 +16,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -101,6 +105,36 @@ class TenancyJsonTest {
         RentalAgreementModel m = model(List.of(), List.of(), List.of(), List.of());
         TenancyJson json = TenancyJson.valueOf(m, new HashMap<>(), new HashMap<>(), new HashMap<>());
         assertNull(json.getProjectTitle());
+    }
+
+    // --- managing organization ---
+
+    @Test
+    void valueOf_setsManagingOrganization_fromProjectMap() {
+        final UUID organizationId = UUID.randomUUID();
+        final ProjectModel project = new ProjectModel() {
+            @Override public UUID getId() { return PROJECT_ID; }
+            @Override public String getTitle() { return "My Project"; }
+            @Override public String getOwner() { return null; }
+            @Override public String getCareOf() { return null; }
+            @Override public AddressModel getBillingAddress() { return null; }
+            @Override public Set<? extends ProjectMemberModel> getMembers() { return Set.of(); }
+            @Override public UUID getManagingOrganizationId() { return organizationId; }
+            @Override public String getManagingOrganizationName() { return "Hausverwaltung GmbH"; }
+        };
+        RentalAgreementModel m = model(List.of(), List.of(), List.of(), List.of());
+        TenancyJson json = TenancyJson.valueOf(m, new HashMap<>(), new HashMap<>(), new HashMap<>(),
+            Map.of(PROJECT_ID, project));
+        assertEquals(organizationId, json.getManagingOrganizationId());
+        assertEquals("Hausverwaltung GmbH", json.getManagingOrganizationName());
+    }
+
+    @Test
+    void valueOf_managingOrganization_isNull_withoutProjectMap() {
+        RentalAgreementModel m = model(List.of(), List.of(), List.of(), List.of());
+        TenancyJson json = TenancyJson.valueOf(m, new HashMap<>(), new HashMap<>(), new HashMap<>());
+        assertNull(json.getManagingOrganizationId());
+        assertNull(json.getManagingOrganizationName());
     }
 
     // --- resolveAddress: null map ---

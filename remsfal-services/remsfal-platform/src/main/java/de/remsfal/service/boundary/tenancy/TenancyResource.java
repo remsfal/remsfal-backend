@@ -11,6 +11,7 @@ import de.remsfal.core.api.tenancy.TenancyEndpoint;
 import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.json.RentalUnitJson;
 import de.remsfal.core.json.tenancy.TenancyListJson;
+import de.remsfal.core.model.project.ProjectModel;
 import de.remsfal.core.model.project.RentalAgreementModel;
 import de.remsfal.service.control.ProjectController;
 import de.remsfal.service.control.PropertyController;
@@ -32,6 +33,7 @@ public class TenancyResource extends AbstractTenancyResource implements TenancyE
         final Map<UUID, RentalUnitJson> rentalUnitsMap = new HashMap<>();
         final Map<UUID, String> projectTitleMap = new HashMap<>();
         final Map<UUID, AddressJson> unitAddressMap = new HashMap<>();
+        final Map<UUID, ProjectModel> projectMap = new HashMap<>();
 
         agreements.stream()
             .map(RentalAgreementModel::getProjectId)
@@ -39,10 +41,14 @@ public class TenancyResource extends AbstractTenancyResource implements TenancyE
             .forEach(pid -> {
                 rentalUnitsMap.putAll(propertyController.getRentalUnitsMapForProject(pid));
                 unitAddressMap.putAll(propertyController.getUnitAddressMapForProject(pid));
-                projectTitleMap.put(pid, projectController.getProjectTitle(pid));
+                final ProjectModel project = projectController.findProject(pid);
+                if (project != null) {
+                    projectTitleMap.put(pid, project.getTitle());
+                    projectMap.put(pid, project);
+                }
             });
 
-        return TenancyListJson.valueOf(agreements, rentalUnitsMap, projectTitleMap, unitAddressMap);
+        return TenancyListJson.valueOf(agreements, rentalUnitsMap, projectTitleMap, unitAddressMap, projectMap);
     }
 
 }

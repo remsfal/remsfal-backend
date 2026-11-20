@@ -30,6 +30,7 @@ import de.remsfal.service.entity.dto.UserIdentityEntity.IdentityProvider;
 import de.remsfal.service.entity.dto.OrganizationEntity;
 import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 import de.remsfal.service.AbstractServiceTest;
+import de.remsfal.service.control.exception.ProprietorRequiredException;
 import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.test.TestData;
 
@@ -470,6 +471,21 @@ class ProjectControllerTest extends AbstractServiceTest {
     }
 
     @Test
+    void changeProjectMemberRole_FAILED_lastProprietor() {
+        final UserModel user = userController
+                .createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN_1, TestData.USER_EMAIL_1);
+        final ProjectModel project = projectController.createProject(user,
+                ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
+        final UUID projectId = project.getId();
+        final UUID userId = user.getId();
+
+        assertThrows(ProprietorRequiredException.class,
+            () -> projectController.changeProjectMemberRole(projectId, userId, MemberRole.MANAGER));
+        assertThrows(ProprietorRequiredException.class,
+            () -> projectController.removeProjectMember(projectId, userId));
+    }
+
+    @Test
     void changeProjectMemberRole_SUCCESS_roleChanged(){
         final UserModel user = userController
                 .createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN_1, TestData.USER_EMAIL_1);
@@ -477,6 +493,12 @@ class ProjectControllerTest extends AbstractServiceTest {
         final ProjectModel project = projectController.createProject(user,
                 ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
         assertNotNull(project);
+        // a second proprietor is required, otherwise the project would lose its only proprietor
+        projectController.addProjectMember(user, project.getId(), ImmutableProjectMemberJson.builder()
+            .email(TestData.USER_EMAIL_2)
+            .active(true)
+            .role(MemberRole.PROPRIETOR)
+            .build());
 
         final ProjectMemberModel memberResponse = projectController
             .changeProjectMemberRole(project.getId(), user.getId(), MemberRole.LESSOR);

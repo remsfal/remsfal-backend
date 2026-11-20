@@ -4,12 +4,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -44,6 +46,10 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Set<ProjectOrganizationEntity> organizations;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "managing_organization_id", columnDefinition = "uuid")
+    private OrganizationEntity managingOrganization;
 
     @Override
     public String getTitle() {
@@ -117,6 +123,48 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
 
     public void setOrganizations(final Set<ProjectOrganizationEntity> organizations) {
         this.organizations = organizations;
+    }
+
+    /**
+     * Counts the proprietors (users and organizations with role PROPRIETOR) of this project.
+     *
+     * @param excludedUserId         user to ignore (e.g. because it is about to be removed), may be null
+     * @param excludedOrganizationId organization to ignore, may be null
+     * @return number of remaining proprietors
+     */
+    public long countProprietors(final UUID excludedUserId, final UUID excludedOrganizationId) {
+        long count = 0;
+        if (memberships != null) {
+            count += memberships.stream()
+                .filter(m -> m.getRole() == MemberRole.PROPRIETOR)
+                .filter(m -> !m.getUser().getId().equals(excludedUserId))
+                .count();
+        }
+        if (organizations != null) {
+            count += organizations.stream()
+                .filter(o -> o.getRole() == MemberRole.PROPRIETOR)
+                .filter(o -> !o.getOrganization().getId().equals(excludedOrganizationId))
+                .count();
+        }
+        return count;
+    }
+
+    public OrganizationEntity getManagingOrganization() {
+        return managingOrganization;
+    }
+
+    public void setManagingOrganization(final OrganizationEntity managingOrganization) {
+        this.managingOrganization = managingOrganization;
+    }
+
+    @Override
+    public UUID getManagingOrganizationId() {
+        return managingOrganization != null ? managingOrganization.getId() : null;
+    }
+
+    @Override
+    public String getManagingOrganizationName() {
+        return managingOrganization != null ? managingOrganization.getName() : null;
     }
 
     public void addOrganization(final OrganizationEntity organizationEntity, final MemberRole role) {
