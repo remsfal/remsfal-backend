@@ -64,6 +64,8 @@ public class ProjectEventConsumer {
         }
 
         switch (event.getProjectEventType()) {
+            case PROJECT_CREATED -> logger.debugv("Ignoring project created event (projectId={0})",
+                event.getProjectId());
             case PROJECT_DELETED -> handleProjectDeleted(event.getProjectId());
             case RENTAL_AGREEMENT_DELETED -> handleRentalAgreementDeleted(event.getProjectId(),
                 event.getAgreementId());

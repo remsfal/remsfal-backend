@@ -20,6 +20,7 @@ public interface ProjectEventJson {
     String TOPIC = "project-events";
 
     enum ProjectEventType {
+        PROJECT_CREATED,
         PROJECT_DELETED,
         RENTAL_AGREEMENT_DELETED
     }
@@ -33,4 +34,11 @@ public interface ProjectEventJson {
      */
     @Nullable
     UUID getAgreementId();
+
+    /**
+     * The managing organization of the created project. Only present for {@link ProjectEventType#PROJECT_CREATED}
+     * and only if the project was created for an organization.
+     */
+    @Nullable
+    UUID getManagingOrganizationId();
 }

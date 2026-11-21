@@ -1,6 +1,7 @@
 package de.remsfal.service.control;
 
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.BadRequestException;
@@ -9,6 +10,8 @@ import jakarta.ws.rs.NotFoundException;
 
 import de.remsfal.service.control.exception.AlreadyExistsException;
 import de.remsfal.service.control.exception.ProprietorRequiredException;
+import de.remsfal.service.control.event.ManagingOrganizationChangedEvent;
+import de.remsfal.service.control.event.ProjectCreatedEvent;
 
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import org.jboss.logging.Logger;
@@ -75,6 +78,12 @@ public class ProjectController {
     @Inject
     ProjectEventProducer projectEventProducer;
 
+    @Inject
+    Event<ProjectCreatedEvent> projectCreatedEvent;
+
+    @Inject
+    Event<ManagingOrganizationChangedEvent> managingOrganizationChangedEvent;
+
     @WithSpan("ProjectController.getProjects")
     public List<ProjectModel> getProjects(final UserModel user, final Integer offset, final Integer limit) {
         return new ArrayList<>(projectRepository.findAccessibleProjects(user.getId(), offset, limit));
@@ -96,6 +105,7 @@ public class ProjectController {
      * Creates a project. Without a managing organization the user becomes the proprietor of the project.
      * With a managing organization the project is created for that organization: the organization becomes the
      * proprietor and the managing organization of the project, and the user gets no direct membership.
+     * Fires a {@link ProjectCreatedEvent} within the transaction after the project has been persisted.
      */
     @Transactional
     public ProjectModel createProject(final UserModel user, final ProjectModel project) {
@@ -125,6 +135,8 @@ public class ProjectController {
             entity.addMember(userEntity, MemberRole.PROPRIETOR);
         }
         projectRepository.persistAndFlush(entity);
+        projectCreatedEvent.fire(
+            new ProjectCreatedEvent(entity.getId(), user.getId(), entity.getManagingOrganizationId()));
         return entity;
     }
 
@@ -166,7 +178,10 @@ public class ProjectController {
         final ProjectEntity entity = findAccessibleProject(user, projectId);
         if (project.getManagingOrganizationId() != null
             && !project.getManagingOrganizationId().equals(entity.getManagingOrganizationId())) {
+            final UUID previousOrganizationId = entity.getManagingOrganizationId();
             entity.setManagingOrganization(getProprietorOrganization(entity, project.getManagingOrganizationId()));
+            managingOrganizationChangedEvent.fire(new ManagingOrganizationChangedEvent(projectId,
+                previousOrganizationId, entity.getManagingOrganizationId(), user.getId()));
         }
         entity.setTitle(project.getTitle());
         if (project.getOwner() != null) {
@@ -425,6 +440,20 @@ public class ProjectController {
         return projectOrganizationRepository.removeByProjectIdAndOrganizationId(projectId, organizationId);
     }
 
+    /**
+     * Removes the organization as managing organization from all projects it manages, e.g. before the organization
+     * is deleted. Fires a {@link ManagingOrganizationChangedEvent} for every affected project.
+     */
+    @Transactional
+    public void clearManagingOrganization(final UUID organizationId) {
+        for (final UUID projectId : projectRepository.clearManagingOrganization(organizationId)) {
+            logger.infov("Removing the managing organization of a project (projectId={0}, organizationId={1})",
+                projectId, organizationId);
+            managingOrganizationChangedEvent.fire(
+                new ManagingOrganizationChangedEvent(projectId, organizationId, null, null));
+        }
+    }
+
     private void clearManagingOrganization(final UUID projectId, final UUID organizationId) {
         final ProjectEntity project = projectRepository.findById(projectId);
         if (project != null && organizationId.equals(project.getManagingOrganizationId())) {
@@ -432,6 +461,8 @@ public class ProjectController {
                 projectId, organizationId);
             project.setManagingOrganization(null);
             projectRepository.merge(project);
+            managingOrganizationChangedEvent.fire(
+                new ManagingOrganizationChangedEvent(projectId, organizationId, null, null));
         }
     }
 

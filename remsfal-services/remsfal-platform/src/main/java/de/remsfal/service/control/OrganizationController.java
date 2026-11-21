@@ -18,6 +18,7 @@ import de.remsfal.service.entity.dao.OrganizationRepository;
 import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dto.OrganizationEmployeeEntity;
 import de.remsfal.service.entity.dto.OrganizationEntity;
+import de.remsfal.service.entity.dto.ProjectEntity;
 import de.remsfal.service.entity.dto.UserEntity;
 
 
@@ -47,6 +48,9 @@ public class OrganizationController {
 
     @Inject
     ProjectRepository projectRepository;
+
+    @Inject
+    ProjectController projectController;
 
     @Inject
     ContractorOrganizationLinkController contractorOrganizationLinker;
@@ -277,13 +281,20 @@ public class OrganizationController {
 
         OrganizationEntity organization = organizationRepository.findByIdOptional(id)
             .orElseThrow(() -> new NotFoundException("Organization not found"));
-        final boolean soleProprietor = projectRepository
-            .findProjectsByOrganizationIdAndRole(id, MemberRole.PROPRIETOR).stream()
+        final List<ProjectEntity> proprietorProjects = projectRepository
+            .findProjectsByOrganizationIdAndRole(id, MemberRole.PROPRIETOR);
+        final boolean soleProprietor = proprietorProjects.stream()
             .anyMatch(project -> project.countProprietors(null, id) == 0);
         if (soleProprietor) {
             throw new ProprietorRequiredException("The organization is the only proprietor of at least one project. "
                 + "Transfer the ownership or delete these projects before deleting the organization.");
         }
+        // clear it explicitly instead of relying on ON DELETE SET NULL, so that observers are notified
+        projectController.clearManagingOrganization(id);
+        // The loaded projects (and their project organizations) still reference the organization. Detach them,
+        // otherwise removing the organization fails on flush; the database cleans up the references
+        // (ON DELETE CASCADE / SET NULL).
+        proprietorProjects.forEach(projectRepository.getEntityManager()::detach);
         return organizationRepository.deleteById(organization.getId());
     }
 

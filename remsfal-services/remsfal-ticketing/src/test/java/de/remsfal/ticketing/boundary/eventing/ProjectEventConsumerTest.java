@@ -158,6 +158,20 @@ class ProjectEventConsumerTest {
     }
 
     @Test
+    void testConsumeProjectCreated_isIgnored() {
+        final ProjectEventJson event = ImmutableProjectEventJson.builder()
+            .projectEventType(ProjectEventType.PROJECT_CREATED)
+            .projectId(TestData.PROJECT_ID)
+            .build();
+
+        consumer.consume(Message.of(event)).toCompletableFuture().join();
+
+        verifyNoInteractions(issueRepository, attachmentController, orderPlacementRepository,
+            quotationRepository, quotationRequestRepository, chatMessageRepository, contractorTimelineRepository,
+            tenantTimelineRepository, activityFeedRepository);
+    }
+
+    @Test
     void testConsume_nullPayload_acksWithoutAction() {
         consumer.consume(Message.of((ProjectEventJson) null)).toCompletableFuture().join();
 
