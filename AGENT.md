@@ -21,7 +21,8 @@ REMSFAL Backend is a multi-module Maven project implementing a microservices arc
 
 ### Service Communication
 
-- Services communicate asynchronously via **Kafka** (topics: `user-notifications`, `ocr.documents.*`)
+- Services communicate asynchronously via **Kafka** (topics: `user-notifications`, `project-events`, `ocr.documents.*`)
+- **CDI events as extension points** (`de.remsfal.service.control.event`): `ProjectController` fires `ProjectCreatedEvent` and `ManagingOrganizationChangedEvent` synchronously within its transaction; `@Observes` observers can reject the operation by throwing (rollback). Observers with side effects outside the database (e.g. Kafka) use `@Observes(during = TransactionPhase.AFTER_SUCCESS)`, like `ProjectEventProducer` for `PROJECT_CREATED`
 - Each microservice has its own port, database, and configuration
 - JWT tokens are shared across services using SmallRye JWT with cookie-based authentication (`remsfal_access_token`)
 - Platform service must be running for other services to validate JWTs via JWKS endpoint at `GET /api/v1/authentication/jwks`

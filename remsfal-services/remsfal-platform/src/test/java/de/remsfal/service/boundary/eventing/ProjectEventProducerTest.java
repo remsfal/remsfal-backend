@@ -42,6 +42,29 @@ class ProjectEventProducerTest extends AbstractKafkaTest {
     }
 
     @Test
+    void testSendProjectCreated_publishesEventToTopic() {
+        producer.sendProjectCreated(TestData.PROJECT_ID, TestData.ORGANIZATION_ID);
+
+        given()
+            .topic(ProjectEventJson.TOPIC)
+        .assertThat()
+            .json("projectId", Matchers.equalTo(TestData.PROJECT_ID.toString()))
+            .json("managingOrganizationId", Matchers.equalTo(TestData.ORGANIZATION_ID.toString()))
+            .json("projectEventType", Matchers.equalTo("PROJECT_CREATED"));
+    }
+
+    @Test
+    void testSendProjectCreated_projectIdNull_skipsSendingEvent() {
+        producer.sendProjectCreated(null, null);
+
+        final List<?> records = companion.consumeStrings()
+            .fromTopics(ProjectEventJson.TOPIC)
+            .awaitNoRecords(Duration.ofSeconds(2))
+            .getRecords();
+        assertTrue(records.isEmpty());
+    }
+
+    @Test
     void testSendRentalAgreementDeleted_publishesEventToTopic() {
         producer.sendRentalAgreementDeleted(TestData.PROJECT_ID, TestData.AGREEMENT_ID);
 

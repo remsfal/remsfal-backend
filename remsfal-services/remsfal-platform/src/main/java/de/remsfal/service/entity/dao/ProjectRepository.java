@@ -131,4 +131,26 @@ public class ProjectRepository extends AbstractRepository<ProjectEntity> {
             .getResultList();
     }
 
+    /**
+     * Removes the organization as managing organization from all projects it manages with a bulk update, which does
+     * not touch the project entities in the persistence context.
+     *
+     * @return ids of the projects that were managed by the organization
+     */
+    public List<UUID> clearManagingOrganization(final UUID organizationId) {
+        final List<UUID> projectIds = getEntityManager()
+            .createQuery("SELECT p.id FROM ProjectEntity p WHERE p.managingOrganization.id = :organizationId",
+                UUID.class)
+            .setParameter(PARAM_ORGANIZATION_ID, organizationId)
+            .getResultList();
+        if (!projectIds.isEmpty()) {
+            getEntityManager()
+                .createQuery("UPDATE ProjectEntity p SET p.managingOrganization = null "
+                    + "WHERE p.managingOrganization.id = :organizationId")
+                .setParameter(PARAM_ORGANIZATION_ID, organizationId)
+                .executeUpdate();
+        }
+        return projectIds;
+    }
+
 }

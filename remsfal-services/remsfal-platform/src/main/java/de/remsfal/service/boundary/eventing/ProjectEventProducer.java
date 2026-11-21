@@ -10,7 +10,10 @@ import org.jboss.logging.Logger;
 import de.remsfal.core.json.eventing.ImmutableProjectEventJson;
 import de.remsfal.core.json.eventing.ProjectEventJson;
 import de.remsfal.core.json.eventing.ProjectEventJson.ProjectEventType;
+import de.remsfal.service.control.event.ProjectCreatedEvent;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
+import jakarta.enterprise.event.TransactionPhase;
 import jakarta.inject.Inject;
 
 @ApplicationScoped
@@ -22,6 +25,27 @@ public class ProjectEventProducer {
     @Inject
     @Channel(ProjectEventJson.TOPIC)
     Emitter<ProjectEventJson> emitter;
+
+    /**
+     * Publishes {@link ProjectEventType#PROJECT_CREATED} once the transaction that created the project has been
+     * committed, so that no event is published for a project whose creation was rolled back.
+     */
+    void onProjectCreated(@Observes(during = TransactionPhase.AFTER_SUCCESS) final ProjectCreatedEvent event) {
+        sendProjectCreated(event.projectId(), event.managingOrganizationId());
+    }
+
+    public void sendProjectCreated(final UUID projectId, final UUID managingOrganizationId) {
+        if (projectId == null) {
+            logger.warn("Skipping project event because projectId is null");
+            return;
+        }
+        final ProjectEventJson event = ImmutableProjectEventJson.builder()
+            .projectEventType(ProjectEventType.PROJECT_CREATED)
+            .projectId(projectId)
+            .managingOrganizationId(managingOrganizationId)
+            .build();
+        send(event, ProjectEventType.PROJECT_CREATED, projectId);
+    }
 
     public void sendProjectDeleted(final UUID projectId) {
         if (projectId == null) {
