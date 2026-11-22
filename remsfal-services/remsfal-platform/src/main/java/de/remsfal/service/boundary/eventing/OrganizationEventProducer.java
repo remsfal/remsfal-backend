@@ -1,6 +1,5 @@
 package de.remsfal.service.boundary.eventing;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletionStage;
@@ -82,8 +81,6 @@ public class OrganizationEventProducer {
         final OrganizationEventType type = OrganizationEventType.ORGANIZATION_UPDATED;
         final UUID organizationId = changed.organizationId();
         final OrganizationEventJson event = ImmutableOrganizationEventJson.builder()
-            .eventId(UUID.randomUUID())
-            .occurredAt(Instant.now())
             .actingUserId(changed.actingUserId())
             .organizationEventType(type)
             .organizationId(organizationId)

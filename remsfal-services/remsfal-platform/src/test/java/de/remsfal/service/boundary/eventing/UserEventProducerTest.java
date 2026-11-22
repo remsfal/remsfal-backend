@@ -55,8 +55,7 @@ class UserEventProducerTest extends AbstractKafkaTest {
         .assertThat()
             .json("userId", Matchers.equalTo(TestData.USER_ID.toString()))
             .json("userEventType", Matchers.equalTo("USER_DELETED"))
-            .json("user.email", Matchers.equalTo(TestData.USER_EMAIL))
-            .json("eventId", Matchers.notNullValue(String.class));
+            .json("user.email", Matchers.equalTo(TestData.USER_EMAIL));
     }
 
     @Test

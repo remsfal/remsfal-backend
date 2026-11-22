@@ -1,6 +1,5 @@
 package de.remsfal.service.boundary.eventing;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletionStage;
@@ -75,8 +74,6 @@ public class UserEventProducer {
 
     private void send(final ImmutableUserEventJson.Builder builder, final UserEvent userEvent) {
         final UserEventJson event = builder
-            .eventId(UUID.randomUUID())
-            .occurredAt(Instant.now())
             .actingUserId(userEvent.actingUserId())
             .userId(userEvent.userId())
             .user(userEvent.user())

@@ -61,9 +61,7 @@ class ProjectEventProducerTest extends AbstractKafkaTest {
             .json("projectId", Matchers.equalTo(TestData.PROJECT_ID.toString()))
             .json("projectEventType", Matchers.equalTo("PROJECT_DELETED"))
             .json("project.title", Matchers.equalTo(TestData.PROJECT_TITLE))
-            .json("actingUserId", Matchers.equalTo(TestData.USER_ID.toString()))
-            .json("eventId", Matchers.notNullValue(String.class))
-            .json("occurredAt", Matchers.notNullValue(String.class));
+            .json("actingUserId", Matchers.equalTo(TestData.USER_ID.toString()));
     }
 
     @Test

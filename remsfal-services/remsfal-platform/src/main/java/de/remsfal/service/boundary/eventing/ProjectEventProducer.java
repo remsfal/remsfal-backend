@@ -1,6 +1,5 @@
 package de.remsfal.service.boundary.eventing;
 
-import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.CompletionStage;
 
@@ -69,10 +68,7 @@ public class ProjectEventProducer {
     }
 
     private void sendEvent(final ImmutableProjectEventJson.Builder builder) {
-        final ProjectEventJson event = builder
-            .eventId(UUID.randomUUID())
-            .occurredAt(Instant.now())
-            .build();
+        final ProjectEventJson event = builder.build();
         final ProjectEventType type = event.getProjectEventType();
         final UUID projectId = event.getProjectId();
         try {

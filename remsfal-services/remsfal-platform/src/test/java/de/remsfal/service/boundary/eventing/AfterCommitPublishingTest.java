@@ -114,8 +114,6 @@ class AfterCommitPublishingTest extends AbstractServiceTest {
         assertEquals("Dr. " + TestData.USER_LAST_NAME_1, event.getString("user.lastName"));
         assertEquals(tenantId.toString(), event.getString("affectedTenants[0].tenantId"));
         assertEquals(TestData.PROJECT_ID.toString(), event.getString("affectedTenants[0].projectId"));
-        assertNotNull(event.getString("eventId"));
-        assertNotNull(event.getString("occurredAt"));
     }
 
     @Test
