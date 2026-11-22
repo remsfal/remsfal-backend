@@ -19,7 +19,7 @@
         <resources-plugin.version>3.5.0</resources-plugin.version>
         <dependency-plugin.version>3.11.0</dependency-plugin.version>
         <compiler-plugin.version>3.16.0</compiler-plugin.version>
-        <maven.compiler.release>17</maven.compiler.release>
+        <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.style.configDirectory>src/main/style</project.style.configDirectory>

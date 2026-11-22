@@ -3,11 +3,13 @@ package de.remsfal.service.control;
 import de.remsfal.core.json.project.TenantJson;
 import de.remsfal.core.model.project.TenantModel;
 import de.remsfal.service.control.exception.AlreadyExistsException;
+import de.remsfal.service.control.event.TenantEvent;
 import de.remsfal.service.entity.dao.RentalAgreementRepository;
 import de.remsfal.service.entity.dao.TenantRepository;
 import de.remsfal.service.entity.dto.RentalAgreementEntity;
 import de.remsfal.service.entity.dto.TenantEntity;
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import org.jboss.logging.Logger;
@@ -35,6 +37,12 @@ public class TenantController {
 
     @Inject
     AddressController addressController;
+
+    @Inject
+    ActingUserController actingUser;
+
+    @Inject
+    Event<TenantEvent> tenantEvent;
 
     public List<TenantModel> getTenants(final UUID projectId) {
         logger.infov("Retrieving tenants for project {0}", projectId);
@@ -64,7 +72,9 @@ public class TenantController {
                 tenantRepository.findByIdOptional(tenantId).ifPresent(tenant -> {
                     logger.infov("Deleting tenant without rental agreement (projectId={0}, tenantId={1})",
                         tenant.getProjectId(), tenantId);
+                    final TenantJson snapshot = TenantJson.valueOf(tenant);
                     tenantRepository.delete(tenant);
+                    tenantEvent.fire(new TenantEvent.Deleted(tenant.getProjectId(), snapshot, actingUser.getId()));
                 });
             }
         }
@@ -106,7 +116,7 @@ public class TenantController {
             tenantUserLinker.relinkByEmail(tenant, normalizedEmail);
             logger.infov("Creating new tenant {0} {1} in project {2}",
                 tenantInput.getFirstName(), tenantInput.getLastName(), projectId);
-            return tenant;
+            return fireCreated(tenant);
         }
 
         final TenantEntity tenant = mergeTenantFields(tenantInput, new TenantEntity());
@@ -114,6 +124,15 @@ public class TenantController {
         tenant.setProjectId(projectId);
         logger.infov("Creating new tenant {0} {1} in project {2}",
             tenantInput.getFirstName(), tenantInput.getLastName(), projectId);
+        return fireCreated(tenant);
+    }
+
+    /**
+     * Fires {@link TenantEvent.Created} for a new tenant, which is persisted together with its rental agreement.
+     */
+    private TenantEntity fireCreated(final TenantEntity tenant) {
+        tenantEvent.fire(new TenantEvent.Created(tenant.getProjectId(), TenantJson.valueOf(tenant),
+            actingUser.getId()));
         return tenant;
     }
 
@@ -169,7 +188,9 @@ public class TenantController {
         tenantRepository.persistAndFlush(entity);
         tenantRepository.getEntityManager().refresh(entity);
 
-        return getTenant(projectId, tenantId);
+        final TenantModel updated = getTenant(projectId, tenantId);
+        tenantEvent.fire(new TenantEvent.Updated(projectId, TenantJson.valueOf(updated), actingUser.getId()));
+        return updated;
     }
 
     /**
@@ -204,7 +225,9 @@ public class TenantController {
             agreement.addTenant(survivor);
             rentalAgreementRepository.merge(agreement);
         }
+        final TenantJson snapshot = TenantJson.valueOf(loser);
         tenantRepository.delete(loser);
+        tenantEvent.fire(new TenantEvent.Deleted(loser.getProjectId(), snapshot, actingUser.getId()));
         // Flush the deletion now: Hibernate's default flush ordering runs updates before deletes,
         // so without an explicit flush here, the survivor's email update (applied right after this
         // call returns) would race the loser's deletion and trip the per-project unique email index.

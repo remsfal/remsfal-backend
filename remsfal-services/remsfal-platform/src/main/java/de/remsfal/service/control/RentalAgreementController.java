@@ -7,7 +7,8 @@ import de.remsfal.core.model.project.RentalAgreementModel;
 import de.remsfal.core.model.project.RentModel;
 import de.remsfal.core.model.project.RentModel.BillingCycle;
 import de.remsfal.core.model.project.TenantModel;
-import de.remsfal.service.boundary.eventing.ProjectEventProducer;
+import de.remsfal.core.json.project.RentalAgreementJson;
+import de.remsfal.service.control.event.RentalAgreementEvent;
 import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dao.RentalAgreementRepository;
 import de.remsfal.service.entity.dto.ApartmentRentEntity;
@@ -20,6 +21,7 @@ import de.remsfal.service.entity.dto.StorageRentEntity;
 import de.remsfal.service.entity.dto.TenantEntity;
 import de.remsfal.service.entity.dto.embeddable.RentalAgreementKeysEntity;
 import de.remsfal.service.entity.dto.superclass.RentEntity;
+import jakarta.enterprise.event.Event;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -62,7 +64,10 @@ public class RentalAgreementController {
     TenantController tenantController;
 
     @Inject
-    ProjectEventProducer projectEventProducer;
+    ActingUserController actingUser;
+
+    @Inject
+    Event<RentalAgreementEvent> rentalAgreementEvent;
 
     public List<RentalAgreementEntity> getRentalAgreements(final UserModel tenant) {
         logger.infov("Retrieving all rental agreements (tenantId = {0})", tenant.getId());
@@ -99,10 +104,11 @@ public class RentalAgreementController {
         final List<UUID> tenantIds = entity.get().getTenants().stream()
             .map(TenantEntity::getId)
             .toList();
+        final RentalAgreementJson snapshot = RentalAgreementJson.valueOf(entity.get());
         rentalAgreementRepository.delete(entity.get());
         rentalAgreementRepository.flush();
         tenantController.deleteOrphanedTenants(tenantIds);
-        projectEventProducer.sendRentalAgreementDeleted(projectId, agreementId);
+        rentalAgreementEvent.fire(new RentalAgreementEvent.Deleted(projectId, snapshot, actingUser.getId()));
         return true;
     }
 
@@ -161,6 +167,8 @@ public class RentalAgreementController {
         processRents(entity, agreement);
 
         rentalAgreementRepository.persistAndFlush(entity);
+        rentalAgreementEvent.fire(new RentalAgreementEvent.Created(projectId, RentalAgreementJson.valueOf(entity),
+            actingUser.getId()));
         return entity;
     }
 
@@ -213,7 +221,7 @@ public class RentalAgreementController {
             entity.setKeys(processKeys(agreement.getKeys()));
         }
 
-        return rentalAgreementRepository.merge(entity);
+        return fireUpdated(projectId, rentalAgreementRepository.merge(entity));
     }
 
     /**
@@ -242,7 +250,7 @@ public class RentalAgreementController {
 
         final TenantEntity tenant = tenantController.resolveOrCreateTenant(projectId, tenantInput);
         entity.addTenant(tenant);
-        rentalAgreementRepository.merge(entity);
+        fireUpdated(projectId, rentalAgreementRepository.merge(entity));
         return tenant;
     }
 
@@ -262,6 +270,7 @@ public class RentalAgreementController {
         rentalAgreementRepository.merge(entity);
         rentalAgreementRepository.flush();
         tenantController.deleteOrphanedTenants(List.of(tenantId));
+        fireUpdated(projectId, entity);
     }
 
     /**
@@ -323,7 +332,7 @@ public class RentalAgreementController {
                 rentalUnitId, rentInput, CommercialRentEntity::new, CommercialRentEntity::setCommercialId);
         }
 
-        return rentalAgreementRepository.merge(entity);
+        return fireUpdated(projectId, rentalAgreementRepository.merge(entity));
     }
 
     /**
@@ -410,7 +419,17 @@ public class RentalAgreementController {
             case COMMERCIAL -> removeRentsForUnit(entity.getCommercialRents(), rentalUnitId);
         }
 
-        rentalAgreementRepository.merge(entity);
+        fireUpdated(projectId, rentalAgreementRepository.merge(entity));
+    }
+
+    /**
+     * Fires {@link RentalAgreementEvent.Updated} with a snapshot of the flushed rental agreement.
+     */
+    private RentalAgreementEntity fireUpdated(final UUID projectId, final RentalAgreementEntity entity) {
+        rentalAgreementRepository.flush();
+        rentalAgreementEvent.fire(new RentalAgreementEvent.Updated(projectId, RentalAgreementJson.valueOf(entity),
+            actingUser.getId()));
+        return entity;
     }
 
     private void removeRentsForUnit(final List<? extends RentEntity> rents, final UUID rentalUnitId) {

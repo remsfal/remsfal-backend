@@ -22,7 +22,7 @@ class AuthenticationEventObserver {
     private final LinkedBlockingQueue<AuthenticationEvent> updateQueue = new LinkedBlockingQueue<>();
 
     public void onEvent(@ObservesAsync AuthenticationEvent event) {
-        logger.info("Received AuthenticationEvent for user " + event.getEmail());
+        logger.info("Received AuthenticationEvent for user " + event.email());
         updateQueue.add(event);
     }
 

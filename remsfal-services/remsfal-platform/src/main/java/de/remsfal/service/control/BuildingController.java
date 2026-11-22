@@ -1,12 +1,16 @@
 package de.remsfal.service.control;
 
+import de.remsfal.core.json.project.BuildingJson;
 import de.remsfal.core.model.project.BuildingModel;
+import de.remsfal.service.control.event.RentalUnitEvent;
 import de.remsfal.service.entity.dao.BuildingRepository;
 import de.remsfal.service.entity.dto.BuildingEntity;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
@@ -19,6 +23,12 @@ public class BuildingController {
 
     @Inject
     Logger logger;
+
+    @Inject
+    ActingUserController actingUser;
+
+    @Inject
+    Event<RentalUnitEvent> rentalUnitEvent;
 
     @Inject
     BuildingRepository buildingRepository;
@@ -36,7 +46,9 @@ public class BuildingController {
         entity.setPropertyId(propertyId);
         buildingRepository.persistAndFlush(entity);
         buildingRepository.getEntityManager().refresh(entity);
-        return getBuilding(projectId, entity.getId());
+        final BuildingModel created = getBuilding(projectId, entity.getId());
+        rentalUnitEvent.fire(new RentalUnitEvent.Created(projectId, BuildingJson.valueOf(created), actingUser.getId()));
+        return created;
     }
 
     public BuildingModel getBuilding(final UUID projectId, final UUID buildingId) {
@@ -58,7 +70,9 @@ public class BuildingController {
             projectId, buildingId, building);
         final BuildingEntity entity = buildingRepository.findByIdOptional(buildingId)
             .orElseThrow(() -> new NotFoundException("Building not exist"));
-        return buildingRepository.merge(mergeBuildingFields(building, entity));
+        final BuildingModel updated = buildingRepository.merge(mergeBuildingFields(building, entity));
+        rentalUnitEvent.fire(new RentalUnitEvent.Updated(projectId, BuildingJson.valueOf(updated), actingUser.getId()));
+        return updated;
     }
 
     private BuildingEntity mergeBuildingFields(final BuildingModel model, final BuildingEntity entity) {
@@ -102,7 +116,11 @@ public class BuildingController {
     public void deleteBuilding(final UUID projectId, final UUID buildingId) {
         logger.infov("Delete a building (projectId={0}, buildingId={1})",
             projectId, buildingId);
-        buildingRepository.deleteById(buildingId);
+        final Optional<BuildingJson> snapshot = buildingRepository.findByIdOptional(buildingId)
+            .map(BuildingJson::valueOf);
+        if (snapshot.isPresent() && buildingRepository.deleteById(buildingId)) {
+            rentalUnitEvent.fire(new RentalUnitEvent.Deleted(projectId, snapshot.get(), actingUser.getId()));
+        }
     }
 
 }

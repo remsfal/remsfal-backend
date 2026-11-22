@@ -1,12 +1,16 @@
 package de.remsfal.service.control;
 
+import de.remsfal.core.json.project.StorageJson;
 import de.remsfal.core.model.project.StorageModel;
+import de.remsfal.service.control.event.RentalUnitEvent;
 import de.remsfal.service.entity.dao.StorageRepository;
 import de.remsfal.service.entity.dto.StorageEntity;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
@@ -17,6 +21,12 @@ public class StorageController {
 
     @Inject
     Logger logger;
+
+    @Inject
+    ActingUserController actingUser;
+
+    @Inject
+    Event<RentalUnitEvent> rentalUnitEvent;
 
     @Inject
     StorageRepository storageRepository;
@@ -31,7 +41,9 @@ public class StorageController {
         entity.setBuildingId(buildingId);
         storageRepository.persistAndFlush(entity);
         storageRepository.getEntityManager().refresh(entity);
-        return getStorage(projectId, entity.getId());
+        final StorageModel created = getStorage(projectId, entity.getId());
+        rentalUnitEvent.fire(new RentalUnitEvent.Created(projectId, StorageJson.valueOf(created), actingUser.getId()));
+        return created;
     }
 
     public StorageModel getStorage(final UUID projectId, final UUID storageId) {
@@ -47,7 +59,9 @@ public class StorageController {
             projectId, storageId, storage);
         final StorageEntity entity = storageRepository.findByIds(projectId, storageId)
             .orElseThrow(() -> new NotFoundException("Storage does not exist"));
-        return storageRepository.merge(mergeStorageFields(storage, entity));
+        final StorageModel updated = storageRepository.merge(mergeStorageFields(storage, entity));
+        rentalUnitEvent.fire(new RentalUnitEvent.Updated(projectId, StorageJson.valueOf(updated), actingUser.getId()));
+        return updated;
     }
 
     private StorageEntity mergeStorageFields(final StorageModel model, final StorageEntity entity) {
@@ -76,7 +90,13 @@ public class StorageController {
     public boolean deleteStorage(final UUID projectId, final UUID storageId) {
         logger.infov("Deleting a storage (projectId={0}, storageId={1})",
             projectId, storageId);
-        return storageRepository.removeStorageByIds(projectId, storageId) > 0;
+        final Optional<StorageJson> snapshot = storageRepository.findByIds(projectId, storageId)
+            .map(StorageJson::valueOf);
+        final boolean deleted = storageRepository.removeStorageByIds(projectId, storageId) > 0;
+        if (deleted && snapshot.isPresent()) {
+            rentalUnitEvent.fire(new RentalUnitEvent.Deleted(projectId, snapshot.get(), actingUser.getId()));
+        }
+        return deleted;
     }
 
 }

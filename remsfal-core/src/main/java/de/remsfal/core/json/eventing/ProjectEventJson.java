@@ -9,13 +9,15 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import de.remsfal.core.ImmutableStyle;
+import de.remsfal.core.json.project.ProjectJson;
+import de.remsfal.core.json.project.RentalAgreementJson;
 import jakarta.annotation.Nullable;
 
 @Immutable
 @ImmutableStyle
 @JsonDeserialize(as = ImmutableProjectEventJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public interface ProjectEventJson {
+public interface ProjectEventJson extends EventHeaderJson {
 
     String TOPIC = "project-events";
 
@@ -41,4 +43,17 @@ public interface ProjectEventJson {
      */
     @Nullable
     UUID getManagingOrganizationId();
+
+    /**
+     * The project, for {@link ProjectEventType#PROJECT_DELETED} its last state.
+     */
+    @Nullable
+    ProjectJson getProject();
+
+    /**
+     * The last state of the deleted rental agreement. Only present for
+     * {@link ProjectEventType#RENTAL_AGREEMENT_DELETED}.
+     */
+    @Nullable
+    RentalAgreementJson getAgreement();
 }

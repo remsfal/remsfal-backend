@@ -10,8 +10,9 @@ import jakarta.ws.rs.NotFoundException;
 
 import de.remsfal.service.control.exception.AlreadyExistsException;
 import de.remsfal.service.control.exception.ProprietorRequiredException;
-import de.remsfal.service.control.event.ManagingOrganizationChangedEvent;
-import de.remsfal.service.control.event.ProjectCreatedEvent;
+import de.remsfal.service.control.event.ProjectEvent;
+import de.remsfal.service.control.event.ProjectMemberEvent;
+import de.remsfal.service.control.event.ProjectOrganizationEvent;
 
 import io.opentelemetry.instrumentation.annotations.WithSpan;
 import org.jboss.logging.Logger;
@@ -23,7 +24,9 @@ import de.remsfal.core.model.project.ProjectMemberModel;
 import de.remsfal.core.model.project.ProjectModel;
 import de.remsfal.core.model.project.OrganizationMemberModel;
 import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
-import de.remsfal.service.boundary.eventing.ProjectEventProducer;
+import de.remsfal.core.json.project.OrganizationMemberJson;
+import de.remsfal.core.json.project.ProjectJson;
+import de.remsfal.core.json.project.ProjectMemberJson;
 import de.remsfal.service.entity.dao.OrganizationRepository;
 import de.remsfal.service.entity.dao.ProjectOrganizationRepository;
 import de.remsfal.service.entity.dao.ProjectRepository;
@@ -39,6 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -61,9 +65,6 @@ public class ProjectController {
     ProjectRepository projectRepository;
 
     @Inject
-    NotificationController notificationController;
-
-    @Inject
     ProjectOrganizationRepository projectOrganizationRepository;
 
     @Inject
@@ -76,13 +77,16 @@ public class ProjectController {
     AuthorizationController authorizationController;
 
     @Inject
-    ProjectEventProducer projectEventProducer;
+    ActingUserController actingUser;
 
     @Inject
-    Event<ProjectCreatedEvent> projectCreatedEvent;
+    Event<ProjectEvent> projectEvent;
 
     @Inject
-    Event<ManagingOrganizationChangedEvent> managingOrganizationChangedEvent;
+    Event<ProjectMemberEvent> projectMemberEvent;
+
+    @Inject
+    Event<ProjectOrganizationEvent> projectOrganizationEvent;
 
     @WithSpan("ProjectController.getProjects")
     public List<ProjectModel> getProjects(final UserModel user, final Integer offset, final Integer limit) {
@@ -135,8 +139,7 @@ public class ProjectController {
             entity.addMember(userEntity, MemberRole.PROPRIETOR);
         }
         projectRepository.persistAndFlush(entity);
-        projectCreatedEvent.fire(
-            new ProjectCreatedEvent(entity.getId(), user.getId(), entity.getManagingOrganizationId()));
+        projectEvent.fire(new ProjectEvent.Created(ProjectJson.valueOf(entity), user.getId()));
         return entity;
     }
 
@@ -176,12 +179,11 @@ public class ProjectController {
     public ProjectModel updateProject(final UserModel user, final UUID projectId, final ProjectModel project) {
         logger.infov("Updating a project (title={0}, email={1})", project.getTitle(), user.getEmail());
         final ProjectEntity entity = findAccessibleProject(user, projectId);
-        if (project.getManagingOrganizationId() != null
-            && !project.getManagingOrganizationId().equals(entity.getManagingOrganizationId())) {
-            final UUID previousOrganizationId = entity.getManagingOrganizationId();
+        final UUID previousOrganizationId = entity.getManagingOrganizationId();
+        final boolean managingOrganizationChanged = project.getManagingOrganizationId() != null
+            && !project.getManagingOrganizationId().equals(previousOrganizationId);
+        if (managingOrganizationChanged) {
             entity.setManagingOrganization(getProprietorOrganization(entity, project.getManagingOrganizationId()));
-            managingOrganizationChangedEvent.fire(new ManagingOrganizationChangedEvent(projectId,
-                previousOrganizationId, entity.getManagingOrganizationId(), user.getId()));
         }
         entity.setTitle(project.getTitle());
         if (project.getOwner() != null) {
@@ -194,10 +196,14 @@ public class ProjectController {
             final UserEntity userEntity = userController.getUser(user.getId());
             entity.setBillingAddress(resolveBillingAddress(userEntity, project));
         }
-        return projectRepository.merge(entity);
-        // fetch eager project members
-        // entity.getMembers().size();
-        // return entity;
+        final ProjectEntity merged = projectRepository.mergeAndFlush(entity);
+        final ProjectJson snapshot = ProjectJson.valueOf(merged);
+        if (managingOrganizationChanged) {
+            projectEvent.fire(new ProjectEvent.ManagingOrganizationChanged(snapshot, previousOrganizationId,
+                user.getId()));
+        }
+        projectEvent.fire(new ProjectEvent.Updated(snapshot, user.getId()));
+        return merged;
     }
 
     private AddressEntity resolveBillingAddress(final UserEntity userEntity, final ProjectModel project) {
@@ -225,9 +231,10 @@ public class ProjectController {
         if (entity == null) {
             return false;
         } else if (projectRepository.findAccessibleProject(user.getId(), projectId).isPresent()) {
+            final ProjectJson snapshot = ProjectJson.valueOf(entity);
             final boolean deleted = projectRepository.deleteById(projectId);
             if (deleted) {
-                projectEventProducer.sendProjectDeleted(projectId);
+                projectEvent.fire(new ProjectEvent.Deleted(snapshot, user.getId()));
             }
             return deleted;
         } else {
@@ -290,10 +297,13 @@ public class ProjectController {
             throw new AlreadyExistsException("User is already a member of this project");
         }
         projectEntity.addMember(userEntity, member.getRole());
-        notificationController.informUserAboutProjectMembership(userEntity, projectEntity);
         projectRepository.mergeAndFlush(projectEntity);
-        return projectRepository.findMembershipByUserIdAndProjectId(userEntity.getId(), projectId)
+        final ProjectMembershipEntity membership = projectRepository
+            .findMembershipByUserIdAndProjectId(userEntity.getId(), projectId)
             .orElseThrow(() -> new NotFoundException(NO_MEMBERSHIP_MESSAGE));
+        projectMemberEvent.fire(
+            new ProjectMemberEvent.Added(projectId, ProjectMemberJson.valueOf(membership), user.getId()));
+        return membership;
     }
 
     @Transactional
@@ -307,20 +317,30 @@ public class ProjectController {
             ensureProprietorRemains(projectId, memberId, null);
         }
         entity.setRole(memberRole);
-        return projectRepository.merge(entity);
+        final ProjectMembershipEntity merged = projectRepository.merge(entity);
+        projectMemberEvent.fire(
+            new ProjectMemberEvent.RoleChanged(projectId, ProjectMemberJson.valueOf(merged), actingUser.getId()));
+        return merged;
     }
 
     @Transactional
     public boolean removeProjectMember(final UUID projectId, final UUID memberId) {
         logger.infov("Removing a project membership (projectId={0}, memberId={1})",
             projectId, memberId);
-        final boolean isProprietor = projectRepository.findMembershipByUserIdAndProjectId(memberId, projectId)
-            .map(m -> m.getRole() == MemberRole.PROPRIETOR)
-            .orElse(false);
-        if (isProprietor) {
+        final Optional<ProjectMembershipEntity> membership = projectRepository
+            .findMembershipByUserIdAndProjectId(memberId, projectId);
+        if (membership.isEmpty()) {
+            return false;
+        }
+        if (membership.get().getRole() == MemberRole.PROPRIETOR) {
             ensureProprietorRemains(projectId, memberId, null);
         }
-        return projectRepository.removeMembershipByUserIdAndProjectId(memberId, projectId);
+        final ProjectMemberJson snapshot = ProjectMemberJson.valueOf(membership.get());
+        final boolean removed = projectRepository.removeMembershipByUserIdAndProjectId(memberId, projectId);
+        if (removed) {
+            projectMemberEvent.fire(new ProjectMemberEvent.Removed(projectId, snapshot, actingUser.getId()));
+        }
+        return removed;
     }
 
     public MemberRole getProjectOrganizationRole(final UUID organizationId, final UUID projectId) {
@@ -405,9 +425,12 @@ public class ProjectController {
 
         projectEntity.addOrganization(organizationEntity, organization.getRole());
         projectRepository.mergeAndFlush(projectEntity);
-        return projectOrganizationRepository
+        final ProjectOrganizationEntity added = projectOrganizationRepository
             .findByProjectIdAndOrganizationId(projectId, organization.getOrganizationId())
             .orElseThrow(() -> new NotFoundException("Failed to add organization to project"));
+        projectOrganizationEvent.fire(
+            new ProjectOrganizationEvent.Added(projectId, OrganizationMemberJson.valueOf(added), user.getId()));
+        return added;
     }
 
     @Transactional
@@ -424,22 +447,33 @@ public class ProjectController {
             clearManagingOrganization(projectId, organizationId);
         }
         entity.setRole(role);
-        return projectOrganizationRepository.merge(entity);
+        final ProjectOrganizationEntity merged = projectOrganizationRepository.merge(entity);
+        projectOrganizationEvent.fire(new ProjectOrganizationEvent.RoleChanged(projectId,
+            OrganizationMemberJson.valueOf(merged), actingUser.getId()));
+        return merged;
     }
 
     @Transactional
     public boolean removeProjectOrganization(final UUID projectId, final UUID organizationId) {
         logger.infov("Removing an organization from project (projectId={0}, organizationId={1})",
             projectId, organizationId);
-        final boolean isProprietor = projectOrganizationRepository
-            .findByProjectIdAndOrganizationId(projectId, organizationId)
-            .map(o -> o.getRole() == MemberRole.PROPRIETOR)
-            .orElse(false);
-        if (isProprietor) {
+        final Optional<ProjectOrganizationEntity> assignment = projectOrganizationRepository
+            .findByProjectIdAndOrganizationId(projectId, organizationId);
+        if (assignment.isEmpty()) {
+            return false;
+        }
+        if (assignment.get().getRole() == MemberRole.PROPRIETOR) {
             ensureProprietorRemains(projectId, null, organizationId);
         }
+        final OrganizationMemberJson snapshot = OrganizationMemberJson.valueOf(assignment.get());
         clearManagingOrganization(projectId, organizationId);
-        return projectOrganizationRepository.removeByProjectIdAndOrganizationId(projectId, organizationId);
+        final boolean removed = projectOrganizationRepository
+            .removeByProjectIdAndOrganizationId(projectId, organizationId);
+        if (removed) {
+            projectOrganizationEvent.fire(
+                new ProjectOrganizationEvent.Removed(projectId, snapshot, actingUser.getId()));
+        }
+        return removed;
     }
 
     private void clearManagingOrganization(final UUID projectId, final UUID organizationId) {
@@ -448,9 +482,9 @@ public class ProjectController {
             logger.infov("Removing the managing organization of a project (projectId={0}, organizationId={1})",
                 projectId, organizationId);
             project.setManagingOrganization(null);
-            projectRepository.merge(project);
-            managingOrganizationChangedEvent.fire(
-                new ManagingOrganizationChangedEvent(projectId, organizationId, null, null));
+            final ProjectEntity merged = projectRepository.merge(project);
+            projectEvent.fire(new ProjectEvent.ManagingOrganizationChanged(ProjectJson.valueOf(merged),
+                organizationId, actingUser.getId()));
         }
     }
 

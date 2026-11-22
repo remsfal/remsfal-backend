@@ -54,9 +54,10 @@ public final class PlatformEcbArchitectureRules {
 
     /**
      * Packages that may be accessed by control layer classes.
-     * Control components coordinate application logic and messaging.
-     * They may call Kafka producers in {@code boundary.eventing} to emit outgoing events,
-     * but must not depend on REST boundary components ({@code boundary.*Resource}).
+     * Control components coordinate application logic and messaging. Domain changes are published as CDI events
+     * ({@code control.event}), the Kafka producers in {@code boundary.eventing} observe them after the commit.
+     * Only the {@code NotificationController} calls the notification producer directly.
+     * Control components must not depend on REST boundary components ({@code boundary.*Resource}).
      */
     private static final String[] ALLOWED_FOR_CONTROL = {
             "de.remsfal.service.control..",
@@ -121,6 +122,23 @@ public final class PlatformEcbArchitectureRules {
                     .that().resideInAnyPackage("de.remsfal.service.control..")
                     .and().resideInAnyPackage(BASE)
                     .should().accessClassesThat().resideInAPackage("de.remsfal.service.boundary")
+                    .allowEmptyShould(true);
+
+    /**
+     * Control logic must not call the Kafka producers of the domain events directly. It fires the extension point
+     * events of {@code control.event} instead, which the producers observe after the commit, so that no Kafka event
+     * is published for a change that was rolled back.
+     */
+    @ArchTest
+    public static final ArchRule control_should_not_call_domain_event_producers =
+            noClasses()
+                    .that().resideInAnyPackage("de.remsfal.service.control..")
+                    .should().accessClassesThat().haveFullyQualifiedName(
+                            "de.remsfal.service.boundary.eventing.ProjectEventProducer")
+                    .orShould().accessClassesThat().haveFullyQualifiedName(
+                            "de.remsfal.service.boundary.eventing.UserEventProducer")
+                    .orShould().accessClassesThat().haveFullyQualifiedName(
+                            "de.remsfal.service.boundary.eventing.OrganizationEventProducer")
                     .allowEmptyShould(true);
 
     /**

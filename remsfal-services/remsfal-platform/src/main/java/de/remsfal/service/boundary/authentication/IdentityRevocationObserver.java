@@ -24,15 +24,15 @@ public class IdentityRevocationObserver {
     AppleAuthenticator appleAuthenticator;
 
     void onRevocation(@Observes(during = TransactionPhase.AFTER_SUCCESS) final IdentityRevocationEvent event) {
-        if (event.getProvider() != IdentityProvider.APPLE) {
-            logger.warnv("Revocation is not supported for provider {0}", event.getProvider());
+        if (event.provider() != IdentityProvider.APPLE) {
+            logger.warnv("Revocation is not supported for provider {0}", event.provider());
             return;
         }
         try {
-            appleAuthenticator.revoke(event.getRefreshToken(), event.getClientId());
-            logger.infov("Revoked Apple token (subject={0})", event.getSubject());
+            appleAuthenticator.revoke(event.refreshToken(), event.clientId());
+            logger.infov("Revoked Apple token (subject={0})", event.subject());
         } catch (RuntimeException e) {
-            logger.errorv(e, "Unable to revoke Apple token (subject={0})", event.getSubject());
+            logger.errorv(e, "Unable to revoke Apple token (subject={0})", event.subject());
         }
     }
 

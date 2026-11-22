@@ -1,12 +1,16 @@
 package de.remsfal.service.control;
 
+import de.remsfal.core.json.project.CommercialJson;
 import de.remsfal.core.model.project.CommercialModel;
+import de.remsfal.service.control.event.RentalUnitEvent;
 import de.remsfal.service.entity.dao.CommercialRepository;
 import de.remsfal.service.entity.dto.CommercialEntity;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
@@ -22,6 +26,12 @@ public class CommercialController {
     Logger logger;
 
     @Inject
+    ActingUserController actingUser;
+
+    @Inject
+    Event<RentalUnitEvent> rentalUnitEvent;
+
+    @Inject
     CommercialRepository commercialRepository;
 
     @Transactional
@@ -35,7 +45,10 @@ public class CommercialController {
         entity.setBuildingId(buildingId);
         commercialRepository.persistAndFlush(entity);
         commercialRepository.getEntityManager().refresh(entity);
-        return getCommercial(projectId, entity.getId());
+        final CommercialModel created = getCommercial(projectId, entity.getId());
+        rentalUnitEvent.fire(new RentalUnitEvent.Created(projectId, CommercialJson.valueOf(created),
+            actingUser.getId()));
+        return created;
     }
 
     public CommercialModel getCommercial(final UUID projectId, final UUID commercialId) {
@@ -51,7 +64,10 @@ public class CommercialController {
         logger.infov("Updating a commercial (projectId={0}, commercialId={1})", projectId, commercialId);
         CommercialEntity entity = commercialRepository.findCommercialById(projectId, commercialId)
             .orElseThrow(() -> new NotFoundException("Commercial not exist"));
-        return commercialRepository.merge(mergeCommercialFields(commercial, entity));
+        final CommercialModel updated = commercialRepository.merge(mergeCommercialFields(commercial, entity));
+        rentalUnitEvent.fire(new RentalUnitEvent.Updated(projectId, CommercialJson.valueOf(updated),
+            actingUser.getId()));
+        return updated;
     }
 
     private CommercialEntity mergeCommercialFields(final CommercialModel model, final CommercialEntity entity) {
@@ -94,7 +110,13 @@ public class CommercialController {
     public boolean deleteCommercial(final UUID projectId, final UUID commercialId) {
         logger.infov("Delete a commercial (projectId={0}, commercialId={1})",
             projectId, commercialId);
-        return commercialRepository.deleteCommercialById(projectId, commercialId) > 0;
+        final Optional<CommercialJson> snapshot = commercialRepository.findCommercialById(projectId, commercialId)
+            .map(CommercialJson::valueOf);
+        final boolean deleted = commercialRepository.deleteCommercialById(projectId, commercialId) > 0;
+        if (deleted && snapshot.isPresent()) {
+            rentalUnitEvent.fire(new RentalUnitEvent.Deleted(projectId, snapshot.get(), actingUser.getId()));
+        }
+        return deleted;
     }
 
 }

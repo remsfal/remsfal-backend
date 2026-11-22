@@ -13,6 +13,7 @@ import de.remsfal.core.json.project.SiteJson;
 import de.remsfal.core.json.project.StorageJson;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.project.PropertyModel;
+import de.remsfal.service.control.event.RentalUnitEvent;
 import de.remsfal.service.entity.dao.ApartmentRepository;
 import de.remsfal.service.entity.dao.CommercialRepository;
 import de.remsfal.service.entity.dao.BuildingRepository;
@@ -22,6 +23,7 @@ import de.remsfal.service.entity.dao.SiteRepository;
 import de.remsfal.service.entity.dto.BuildingEntity;
 import de.remsfal.service.entity.dto.PropertyEntity;
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
@@ -30,6 +32,7 @@ import org.jboss.logging.Logger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -40,6 +43,12 @@ public class PropertyController {
     
     @Inject
     Logger logger;
+
+    @Inject
+    ActingUserController actingUser;
+
+    @Inject
+    Event<RentalUnitEvent> rentalUnitEvent;
     
     @Inject
     PropertyRepository propertyRepository;
@@ -67,7 +76,9 @@ public class PropertyController {
         entity.setProjectId(projectId);
         propertyRepository.persistAndFlush(entity);
         propertyRepository.getEntityManager().refresh(entity);
-        return getProperty(projectId, entity.getId());
+        final PropertyModel created = getProperty(projectId, entity.getId());
+        rentalUnitEvent.fire(new RentalUnitEvent.Created(projectId, PropertyJson.valueOf(created), actingUser.getId()));
+        return created;
     }
 
     public PropertyModel getProperty(final UUID projectId, final UUID propertyId) {
@@ -114,7 +125,9 @@ public class PropertyController {
             projectId, propertyId, property);
         final PropertyEntity entity = propertyRepository.findPropertyById(projectId, propertyId)
             .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
-        return propertyRepository.merge(mergePropertyFields(property, entity));
+        final PropertyModel updated = propertyRepository.merge(mergePropertyFields(property, entity));
+        rentalUnitEvent.fire(new RentalUnitEvent.Updated(projectId, PropertyJson.valueOf(updated), actingUser.getId()));
+        return updated;
     }
 
     private PropertyEntity mergePropertyFields(final PropertyModel model, final PropertyEntity entity) {
@@ -157,7 +170,13 @@ public class PropertyController {
     @Transactional
     public boolean deleteProperty(final UUID projectId, final UUID propertyId) {
         logger.infov("Deleting a property (projectId={0}, propertyId={1})", projectId, propertyId);
-        return propertyRepository.deletePropertyById(projectId, propertyId) > 0;
+        final Optional<PropertyJson> snapshot = propertyRepository.findPropertyById(projectId, propertyId)
+            .map(PropertyJson::valueOf);
+        final boolean deleted = propertyRepository.deletePropertyById(projectId, propertyId) > 0;
+        if (deleted && snapshot.isPresent()) {
+            rentalUnitEvent.fire(new RentalUnitEvent.Deleted(projectId, snapshot.get(), actingUser.getId()));
+        }
+        return deleted;
     }
 
     public List<RentalUnitTreeNodeJson> getPropertyTree(final UUID projectId) {

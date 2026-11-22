@@ -1,6 +1,7 @@
 package de.remsfal.service.control;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -21,9 +22,8 @@ import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 import de.remsfal.core.model.project.ProjectModel;
 import de.remsfal.service.AbstractServiceTest;
-import de.remsfal.service.control.event.ManagingOrganizationChangedEvent;
-import de.remsfal.service.control.event.ProjectCreatedEvent;
-import de.remsfal.service.control.event.ProjectEventRecorder;
+import de.remsfal.service.control.event.EventRecorder;
+import de.remsfal.service.control.event.ProjectEvent;
 import de.remsfal.service.control.exception.ProprietorRequiredException;
 import de.remsfal.service.entity.dto.UserIdentityEntity.IdentityProvider;
 import de.remsfal.test.TestData;
@@ -33,7 +33,7 @@ import io.quarkus.test.junit.QuarkusTest;
 class ProjectEventTest extends AbstractServiceTest {
 
     @Inject
-    ProjectEventRecorder recorder;
+    EventRecorder recorder;
 
     @Inject
     UserController userController;
@@ -61,8 +61,11 @@ class ProjectEventTest extends AbstractServiceTest {
     void createProject_firesProjectCreatedEvent_forUser() {
         final ProjectModel project = createProject(null);
 
-        assertEquals(List.of(new ProjectCreatedEvent(project.getId(), user.getId(), null)),
-            recorder.getCreatedEvents());
+        final List<ProjectEvent.Created> events = recorder.getEvents(ProjectEvent.Created.class);
+        assertEquals(1, events.size());
+        assertEquals(project.getId(), events.get(0).projectId());
+        assertEquals(user.getId(), events.get(0).actingUserId());
+        assertNull(events.get(0).project().getManagingOrganizationId());
     }
 
     @Test
@@ -71,17 +74,19 @@ class ProjectEventTest extends AbstractServiceTest {
 
         final ProjectModel project = createProject(organizationId);
 
-        assertEquals(List.of(new ProjectCreatedEvent(project.getId(), user.getId(), organizationId)),
-            recorder.getCreatedEvents());
+        final List<ProjectEvent.Created> events = recorder.getEvents(ProjectEvent.Created.class);
+        assertEquals(1, events.size());
+        assertEquals(project.getId(), events.get(0).projectId());
+        assertEquals(organizationId, events.get(0).project().getManagingOrganizationId());
     }
 
     @Test
     void createProject_observerThrows_rollsBackProjectCreation() {
-        recorder.setRejectProjectCreation(true);
+        recorder.setRejectedType(ProjectEvent.Created.class);
 
         assertThrows(IllegalStateException.class, () -> createProject(null));
 
-        assertEquals(1, recorder.getCreatedEvents().size());
+        assertEquals(1, recorder.getEvents(ProjectEvent.Created.class).size());
         final long projects = entityManager
             .createQuery("SELECT count(p) FROM ProjectEntity p", Long.class)
             .getSingleResult();
@@ -100,8 +105,13 @@ class ProjectEventTest extends AbstractServiceTest {
             .managingOrganizationId(newId)
             .build());
 
-        assertEquals(List.of(new ManagingOrganizationChangedEvent(project.getId(), previousId, newId, user.getId())),
-            recorder.getManagingOrganizationEvents());
+        final List<ProjectEvent.ManagingOrganizationChanged> events = managingOrganizationEvents();
+        assertEquals(1, events.size());
+        assertEquals(project.getId(), events.get(0).projectId());
+        assertEquals(previousId, events.get(0).previousOrganizationId());
+        assertEquals(newId, events.get(0).project().getManagingOrganizationId());
+        assertEquals(user.getId(), events.get(0).actingUserId());
+        assertEquals(1, recorder.getEvents(ProjectEvent.Updated.class).size());
     }
 
     @Test
@@ -114,7 +124,7 @@ class ProjectEventTest extends AbstractServiceTest {
             .managingOrganizationId(organizationId)
             .build());
 
-        assertTrue(recorder.getManagingOrganizationEvents().isEmpty());
+        assertTrue(managingOrganizationEvents().isEmpty());
     }
 
     @Test
@@ -126,8 +136,11 @@ class ProjectEventTest extends AbstractServiceTest {
 
         projectController.changeProjectOrganizationRole(project.getId(), managingId, MemberRole.MANAGER);
 
-        assertEquals(List.of(new ManagingOrganizationChangedEvent(project.getId(), managingId, null, null)),
-            recorder.getManagingOrganizationEvents());
+        final List<ProjectEvent.ManagingOrganizationChanged> events = managingOrganizationEvents();
+        assertEquals(1, events.size());
+        assertEquals(project.getId(), events.get(0).projectId());
+        assertEquals(managingId, events.get(0).previousOrganizationId());
+        assertNull(events.get(0).project().getManagingOrganizationId());
     }
 
     @Test
@@ -139,8 +152,11 @@ class ProjectEventTest extends AbstractServiceTest {
 
         projectController.removeProjectOrganization(project.getId(), managingId);
 
-        assertEquals(List.of(new ManagingOrganizationChangedEvent(project.getId(), managingId, null, null)),
-            recorder.getManagingOrganizationEvents());
+        final List<ProjectEvent.ManagingOrganizationChanged> events = managingOrganizationEvents();
+        assertEquals(1, events.size());
+        assertEquals(project.getId(), events.get(0).projectId());
+        assertEquals(managingId, events.get(0).previousOrganizationId());
+        assertNull(events.get(0).project().getManagingOrganizationId());
     }
 
     @Test
@@ -152,8 +168,12 @@ class ProjectEventTest extends AbstractServiceTest {
 
         assertThrows(ProprietorRequiredException.class, () -> organizationController.deleteOrganization(managingId));
 
-        assertTrue(recorder.getManagingOrganizationEvents().isEmpty());
+        assertTrue(managingOrganizationEvents().isEmpty());
         assertEquals(managingId, projectController.findProject(project.getId()).getManagingOrganizationId());
+    }
+
+    private List<ProjectEvent.ManagingOrganizationChanged> managingOrganizationEvents() {
+        return recorder.getEvents(ProjectEvent.ManagingOrganizationChanged.class);
     }
 
     private ProjectModel createProject(final UUID managingOrganizationId) {

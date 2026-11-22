@@ -6,46 +6,19 @@ import java.util.UUID;
 import de.remsfal.service.entity.dto.UserIdentityEntity.IdentityProvider;
 
 /**
+ * Fired asynchronously when a user has authenticated with an external identity.
+ *
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */
-public class AuthenticationEvent {
+public record AuthenticationEvent(UUID userId, IdentityProvider provider, String subject, String email,
+    LocalDateTime authenticatedAt) {
 
-    private final LocalDateTime authenticatedAt = LocalDateTime.now();
-
-    private final UUID userId;
-
-    private final IdentityProvider provider;
-
-    private final String subject;
-
-    private final String email;
-
-    public AuthenticationEvent(final UUID userId, final IdentityProvider provider, final String subject,
+    /**
+     * Creates an event for an authentication that happens now.
+     */
+    public static AuthenticationEvent of(final UUID userId, final IdentityProvider provider, final String subject,
         final String email) {
-        this.userId = userId;
-        this.provider = provider;
-        this.subject = subject;
-        this.email = email;
-    }
-
-    public LocalDateTime getAuthenticatedAt() {
-        return authenticatedAt;
-    }
-
-    public UUID getUserId() {
-        return userId;
-    }
-
-    public IdentityProvider getProvider() {
-        return provider;
-    }
-
-    public String getSubject() {
-        return subject;
-    }
-
-    public String getEmail() {
-        return email;
+        return new AuthenticationEvent(userId, provider, subject, email, LocalDateTime.now());
     }
 
 }
