@@ -58,10 +58,13 @@ public interface MemberEndpoint {
     @Path("/{memberId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(summary = "Update role of a project member.")
+    @Operation(summary = "Update role of a project member.",
+        description = "A project must always have an active proprietor. Inactive members (who have never logged "
+            + "in) may hold the role PROPRIETOR, but they do not count as proprietor.")
     @APIResponse(responseCode = "200", description = "An existing member was successfully updated")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The project or the member does not exist")
+    @APIResponse(responseCode = "409", description = "The project would have no active proprietor anymore")
     ProjectMemberJson updateProjectMember(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull UUID projectId,
@@ -73,10 +76,13 @@ public interface MemberEndpoint {
 
     @DELETE
     @Path("/{memberId}")
-    @Operation(summary = "Delete an existing project member.")
+    @Operation(summary = "Delete an existing project member.",
+        description = "A project must always have an active proprietor. Inactive members (who have never logged "
+            + "in) may hold the role PROPRIETOR, but they do not count as proprietor.")
     @APIResponse(responseCode = "204", description = "The project member was deleted successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The project or the member does not exist")
+    @APIResponse(responseCode = "409", description = "The project would have no active proprietor anymore")
     void deleteProjectMember(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull UUID projectId,

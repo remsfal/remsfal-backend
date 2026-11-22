@@ -67,13 +67,6 @@ public class OrganizationRepository extends AbstractRepository<OrganizationEntit
         return getEntityManager().merge(entity);
     }
 
-    public int countEmployeesWithWriteAccess(final UUID organizationId) {
-        return getEntityManager()
-                .createNamedQuery("OrganizationEmployeeEntity.countEmployeesWithWriteAccess")
-                .setParameter(PARAM_ORGANIZATION_ID, organizationId)
-                .getResultList().size();
-    }
-
     /**
      * Search organizations by name (case-insensitive, partial match).
      *

@@ -126,11 +126,14 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
     }
 
     /**
-     * Counts the proprietors (users and organizations with role PROPRIETOR) of this project.
+     * Counts the active proprietors of this project: active users and active organizations (with at least one
+     * active OWNER or MANAGER) with role PROPRIETOR. Inactive users may hold the role PROPRIETOR, but they do not
+     * count, since a project must always have a proprietor who can actually manage it.
      *
-     * @param excludedUserId         user to ignore (e.g. because it is about to be removed), may be null
+     * @param excludedUserId         user to ignore (e.g. because it is about to be removed), may be null. It is
+     *                               also ignored as admin of the proprietor organizations.
      * @param excludedOrganizationId organization to ignore, may be null
-     * @return number of remaining proprietors
+     * @return number of remaining active proprietors
      */
     public long countProprietors(final UUID excludedUserId, final UUID excludedOrganizationId) {
         long count = 0;
@@ -138,12 +141,14 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
             count += memberships.stream()
                 .filter(m -> m.getRole() == MemberRole.PROPRIETOR)
                 .filter(m -> !m.getUser().getId().equals(excludedUserId))
+                .filter(m -> Boolean.TRUE.equals(m.getUser().isActive()))
                 .count();
         }
         if (organizations != null) {
             count += organizations.stream()
                 .filter(o -> o.getRole() == MemberRole.PROPRIETOR)
                 .filter(o -> !o.getOrganization().getId().equals(excludedOrganizationId))
+                .filter(o -> o.getOrganization().hasActiveAdmin(excludedUserId))
                 .count();
         }
         return count;

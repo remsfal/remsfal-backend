@@ -13,6 +13,7 @@ import de.remsfal.core.model.project.RentModel;
 import de.remsfal.service.control.exception.AlreadyExistsException;
 import de.remsfal.service.entity.dto.RentalAgreementEntity;
 import de.remsfal.service.entity.dto.TenantEntity;
+import de.remsfal.service.entity.dto.UserEntity;
 import io.quarkus.test.junit.QuarkusTest;
 
 import jakarta.inject.Inject;
@@ -1745,6 +1746,54 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
     }
 
     @Test
+    void deleteRentalAgreement_SUCCESS_tenantDeletedButUserKept() {
+        final UUID projectId = TestData.PROJECT_ID_1;
+        // the email belongs to USER_ID_1, so the tenant is linked to that user account
+        final TenantJson tenant = ImmutableTenantJson.builder()
+            .firstName(TestData.USER_FIRST_NAME_1)
+            .lastName(TestData.USER_LAST_NAME_1)
+            .email(TestData.USER_EMAIL_1)
+            .build();
+        final RentalAgreementEntity created = controller.createRentalAgreement(projectId,
+            ImmutableRentalAgreementJson.builder().startOfRental(LocalDate.now()).addTenants(tenant).build());
+        final TenantEntity createdTenant = created.getTenants().get(0);
+        assertEquals(TestData.USER_ID_1, createdTenant.getUserId());
+
+        assertTrue(controller.deleteRentalAgreement(projectId, created.getId()));
+
+        entityManager.clear();
+        assertNull(entityManager.find(RentalAgreementEntity.class, created.getId()));
+        assertNull(entityManager.find(TenantEntity.class, createdTenant.getId()));
+        assertNotNull(entityManager.find(UserEntity.class, TestData.USER_ID_1));
+    }
+
+    @Test
+    void deleteRentalAgreement_SUCCESS_tenantOfOtherAgreementIsKept() {
+        final UUID projectId = TestData.PROJECT_ID_1;
+        final TenantJson tenant = ImmutableTenantJson.builder()
+            .firstName(TestData.USER_FIRST_NAME_1)
+            .lastName(TestData.USER_LAST_NAME_1)
+            .email(TestData.USER_EMAIL_1)
+            .build();
+        final RentalAgreementEntity first = controller.createRentalAgreement(projectId,
+            ImmutableRentalAgreementJson.builder().startOfRental(LocalDate.now()).addTenants(tenant).build());
+        final RentalAgreementEntity second = controller.createRentalAgreement(projectId,
+            ImmutableRentalAgreementJson.builder().startOfRental(LocalDate.now()).addTenants(tenant).build());
+        final UUID tenantId = first.getTenants().get(0).getId();
+
+        assertTrue(controller.deleteRentalAgreement(projectId, first.getId()));
+
+        entityManager.clear();
+        assertNotNull(entityManager.find(TenantEntity.class, tenantId));
+        assertEquals(1, entityManager.find(RentalAgreementEntity.class, second.getId()).getTenants().size());
+    }
+
+    @Test
+    void deleteRentalAgreement_FAILED_notFound() {
+        assertFalse(controller.deleteRentalAgreement(TestData.PROJECT_ID_1, UUID.randomUUID()));
+    }
+
+    @Test
     void addTenant_SUCCESS_tenantAdded() {
         final UUID projectId = TestData.PROJECT_ID_1;
         final RentalAgreementJson agreement = ImmutableRentalAgreementJson.builder()
@@ -1864,10 +1913,28 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
         RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, created.getId());
         assertEquals(0, entity.getTenants().size());
 
-        // The tenant itself is not deleted, only detached from this agreement
-        TenantEntity tenantEntity =
-            entityManager.find(TenantEntity.class, tenantId);
-        assertNotNull(tenantEntity);
+        // The tenant is part of no other agreement and therefore deleted
+        assertNull(entityManager.find(TenantEntity.class, tenantId));
+    }
+
+    @Test
+    void removeTenant_SUCCESS_tenantOfOtherAgreementIsKept() {
+        final UUID projectId = TestData.PROJECT_ID_1;
+        final TenantJson tenant = ImmutableTenantJson.builder()
+            .firstName(TestData.USER_FIRST_NAME_1)
+            .lastName(TestData.USER_LAST_NAME_1)
+            .email(TestData.USER_EMAIL_1)
+            .build();
+        final RentalAgreementEntity first = controller.createRentalAgreement(projectId,
+            ImmutableRentalAgreementJson.builder().startOfRental(LocalDate.now()).addTenants(tenant).build());
+        final RentalAgreementEntity second = controller.createRentalAgreement(projectId,
+            ImmutableRentalAgreementJson.builder().startOfRental(LocalDate.now()).addTenants(tenant).build());
+        final UUID tenantId = first.getTenants().get(0).getId();
+        assertEquals(tenantId, second.getTenants().get(0).getId());
+
+        controller.removeTenant(projectId, first.getId(), tenantId);
+
+        assertNotNull(entityManager.find(TenantEntity.class, tenantId));
     }
 
     @Test

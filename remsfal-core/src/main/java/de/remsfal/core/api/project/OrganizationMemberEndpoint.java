@@ -65,6 +65,7 @@ public interface OrganizationMemberEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "403", description = "Insufficient permissions")
     @APIResponse(responseCode = "404", description = "The project or organization assignment does not exist")
+    @APIResponse(responseCode = "409", description = "The project would have no active proprietor anymore")
     OrganizationMemberJson updateProjectOrganization(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull UUID projectId,
@@ -81,6 +82,7 @@ public interface OrganizationMemberEndpoint {
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "403", description = "Insufficient permissions")
     @APIResponse(responseCode = "404", description = "The project or organization assignment does not exist")
+    @APIResponse(responseCode = "409", description = "The project would have no active proprietor anymore")
     void deleteProjectOrganization(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull UUID projectId,

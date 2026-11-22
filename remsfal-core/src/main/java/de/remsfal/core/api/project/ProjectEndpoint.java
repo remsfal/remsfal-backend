@@ -92,6 +92,8 @@ public interface ProjectEndpoint {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Update information of a project")
     @APIResponse(responseCode = "200", description = "The project was successfully updated")
+    @APIResponse(responseCode = "400", description = "Invalid request message, e.g. the managing organization is "
+        + "not a project member with role PROPRIETOR or has no active owner or manager")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The project does not exist")
     ProjectJson updateProject(

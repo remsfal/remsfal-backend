@@ -12,6 +12,7 @@ import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 
 import de.remsfal.service.boundary.eventing.OrganizationEventProducer;
 import de.remsfal.service.control.exception.AlreadyExistsException;
+import de.remsfal.service.control.exception.OrganizationAdminRequiredException;
 import de.remsfal.service.control.exception.ProprietorRequiredException;
 import de.remsfal.service.entity.dao.ContractorRepository;
 import de.remsfal.service.entity.dao.OrganizationRepository;
@@ -32,6 +33,7 @@ import jakarta.ws.rs.NotFoundException;
 import org.jboss.logging.Logger;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RequestScoped
@@ -48,9 +50,6 @@ public class OrganizationController {
 
     @Inject
     ProjectRepository projectRepository;
-
-    @Inject
-    ProjectController projectController;
 
     @Inject
     ContractorOrganizationLinkController contractorOrganizationLinker;
@@ -269,10 +268,12 @@ public class OrganizationController {
     }
 
     /**
-     * Delete the organization with the given id
+     * Delete the organization with the given id. Fails if the organization is the only active proprietor of a
+     * project or the managing organization of a project: these projects have to be deleted or transferred first.
      *
      * @param id id of the organization which should be deleted
      * @return true if the organization was deleted successfully
+     * @throws ProprietorRequiredException if the organization is still required by a project
      */
     @Transactional
     public boolean deleteOrganization(final UUID id) {
@@ -281,6 +282,11 @@ public class OrganizationController {
 
         OrganizationEntity organization = organizationRepository.findByIdOptional(id)
             .orElseThrow(() -> new NotFoundException("Organization not found"));
+        if (projectRepository.existsByManagingOrganizationId(id)) {
+            throw new ProprietorRequiredException("The organization is the managing organization of at least one "
+                + "project. Change the managing organization or delete these projects before deleting the "
+                + "organization.");
+        }
         final List<ProjectEntity> proprietorProjects = projectRepository
             .findProjectsByOrganizationIdAndRole(id, MemberRole.PROPRIETOR);
         final boolean soleProprietor = proprietorProjects.stream()
@@ -289,11 +295,9 @@ public class OrganizationController {
             throw new ProprietorRequiredException("The organization is the only proprietor of at least one project. "
                 + "Transfer the ownership or delete these projects before deleting the organization.");
         }
-        // clear it explicitly instead of relying on ON DELETE SET NULL, so that observers are notified
-        projectController.clearManagingOrganization(id);
         // The loaded projects (and their project organizations) still reference the organization. Detach them,
         // otherwise removing the organization fails on flush; the database cleans up the references
-        // (ON DELETE CASCADE / SET NULL).
+        // (ON DELETE CASCADE).
         proprietorProjects.forEach(projectRepository.getEntityManager()::detach);
         return organizationRepository.deleteById(organization.getId());
     }
@@ -350,24 +354,50 @@ public class OrganizationController {
             .orElseThrow(() -> new NotFoundException("Organization not exist or user is not an employee"));
     }
 
+    /**
+     * Changes the role of an employee. The last active OWNER or MANAGER of an organization can not be demoted.
+     *
+     * @throws OrganizationAdminRequiredException if no active OWNER or MANAGER would remain
+     */
     @Transactional
     public OrganizationEmployeeModel updateEmployeeRole(final UUID organizationId, final UUID employeeId,
         final EmployeeRole role) {
         OrganizationEmployeeEntity entity = organizationRepository
             .findOrganizationEmployeeByOrganizationIdAndUserId(organizationId, employeeId)
             .orElseThrow(() -> new NotFoundException("Organization not exist or user is not an employee"));
+        if (isAdmin(entity.getRole()) && !isAdmin(role)) {
+            ensureAdminRemains(entity.getOrganization(), employeeId);
+        }
 
         entity.setRole(role);
 
         return organizationRepository.merge(entity);
     }
 
+    /**
+     * Removes an employee from the organization. The last active OWNER or MANAGER of an organization can not be
+     * removed, the organization has to be deleted instead.
+     *
+     * @throws OrganizationAdminRequiredException if no active OWNER or MANAGER would remain
+     */
     @Transactional
     public void removeEmployee(final UUID organizationId, final UUID employeeId) {
+        final Optional<OrganizationEmployeeEntity> employee = organizationRepository
+            .findOrganizationEmployeeByOrganizationIdAndUserId(organizationId, employeeId);
+        if (employee.isPresent() && isAdmin(employee.get().getRole())) {
+            ensureAdminRemains(employee.get().getOrganization(), employeeId);
+        }
         organizationRepository.deleteOrganizationEmployeesByOrganizationIdAndUserId(organizationId, employeeId);
     }
 
-    public int countEmployeesWithWriteAccess(final UUID organizationId) {
-        return organizationRepository.countEmployeesWithWriteAccess(organizationId);
+    private static boolean isAdmin(final EmployeeRole role) {
+        return role == EmployeeRole.OWNER || role == EmployeeRole.MANAGER;
+    }
+
+    private static void ensureAdminRemains(final OrganizationEntity organization, final UUID excludedUserId) {
+        if (!organization.hasActiveAdmin(excludedUserId)) {
+            throw new OrganizationAdminRequiredException("An organization must always have an active employee "
+                + "with role OWNER or MANAGER. Delete the organization instead.");
+        }
     }
 }

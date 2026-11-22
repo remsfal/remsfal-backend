@@ -74,7 +74,8 @@ public abstract class ProjectJson implements ProjectModel {
     @Schema(description = "Unique identifier of the organization that manages this project. "
         + "On creation, the project is created for this organization instead of for the authenticated user "
         + "(requires the employee role OWNER or MANAGER). "
-        + "On update, the organization must already be a project member with role PROPRIETOR.")
+        + "On update, the organization must already be a project member with role PROPRIETOR and have at least "
+        + "one active employee with role OWNER or MANAGER.")
     @Override
     public abstract UUID getManagingOrganizationId();
 

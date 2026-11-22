@@ -246,12 +246,13 @@ public class ProjectController {
         final ProjectEntity project = projectRepository.findById(projectId);
         if (project != null && project.countProprietors(excludedUserId, excludedOrganizationId) == 0) {
             throw new ProprietorRequiredException(
-                "A project must always have a proprietor, either a user or an organization");
+                "A project must always have an active proprietor, either a user or an organization");
         }
     }
 
     /**
      * Returns the organization of the project with role PROPRIETOR, which can become the managing organization.
+     * The organization must be active, i.e. have at least one active OWNER or MANAGER.
      */
     private OrganizationEntity getProprietorOrganization(final ProjectEntity project, final UUID organizationId) {
         return project.getOrganizations() == null ? null : project.getOrganizations().stream()
@@ -259,8 +260,9 @@ public class ProjectController {
             .filter(o -> o.getRole() == MemberRole.PROPRIETOR)
             .map(ProjectOrganizationEntity::getOrganization)
             .findFirst()
-            .orElseThrow(() -> new BadRequestException(
-                "The managing organization must be a project member with role PROPRIETOR"));
+            .filter(organization -> organization.hasActiveAdmin(null))
+            .orElseThrow(() -> new BadRequestException("The managing organization must be a project member with "
+                + "role PROPRIETOR and have at least one active employee with role OWNER or MANAGER"));
     }
 
     public MemberRole getProjectMemberRole(final UUID userId, final UUID projectId) {
@@ -438,20 +440,6 @@ public class ProjectController {
         }
         clearManagingOrganization(projectId, organizationId);
         return projectOrganizationRepository.removeByProjectIdAndOrganizationId(projectId, organizationId);
-    }
-
-    /**
-     * Removes the organization as managing organization from all projects it manages, e.g. before the organization
-     * is deleted. Fires a {@link ManagingOrganizationChangedEvent} for every affected project.
-     */
-    @Transactional
-    public void clearManagingOrganization(final UUID organizationId) {
-        for (final UUID projectId : projectRepository.clearManagingOrganization(organizationId)) {
-            logger.infov("Removing the managing organization of a project (projectId={0}, organizationId={1})",
-                projectId, organizationId);
-            managingOrganizationChangedEvent.fire(
-                new ManagingOrganizationChangedEvent(projectId, organizationId, null, null));
-        }
     }
 
     private void clearManagingOrganization(final UUID projectId, final UUID organizationId) {

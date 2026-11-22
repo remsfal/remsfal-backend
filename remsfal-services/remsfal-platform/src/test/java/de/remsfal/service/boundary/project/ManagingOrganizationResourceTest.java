@@ -389,4 +389,188 @@ class ManagingOrganizationResourceTest extends AbstractResourceTest {
             .statusCode(Status.NO_CONTENT.getStatusCode());
     }
 
+    // --- active proprietors and deletion of accounts and organizations ---
+
+    private UUID insertInactiveUser(final String email) {
+        final UUID userId = UUID.randomUUID();
+        insertUser(userId, null, email, "Inactive", "User", null);
+        return userId;
+    }
+
+    private UUID insertInactiveOrganization() {
+        final UUID organizationId = UUID.randomUUID();
+        insertOrganization(organizationId, "Inactive Org", null, "inactive-org@example.org", null, null);
+        insertEmployee(organizationId, insertInactiveUser("inactive-owner@example.org"), "OWNER");
+        return organizationId;
+    }
+
+    private UUID insertProjectWithOrganization(final UUID organizationId) {
+        final UUID projectId = UUID.randomUUID();
+        insertProject(projectId, TestData.PROJECT_TITLE);
+        insertProjectOrganization(projectId, organizationId, "PROPRIETOR");
+        return projectId;
+    }
+
+    private void setManagingOrganization(final UUID projectId, final UUID organizationId) {
+        runInTransaction(() -> entityManager
+            .createNativeQuery("UPDATE projects SET managing_organization_id = ? WHERE id = ?")
+            .setParameter(1, organizationId)
+            .setParameter(2, projectId)
+            .executeUpdate());
+    }
+
+    private long countOrganizations(final UUID organizationId) {
+        return entityManager
+            .createQuery("SELECT count(o) FROM OrganizationEntity o WHERE o.id = :id", Long.class)
+            .setParameter("id", organizationId)
+            .getSingleResult();
+    }
+
+    private long countUsers(final UUID userId) {
+        return entityManager
+            .createQuery("SELECT count(u) FROM UserEntity u WHERE u.id = :id", Long.class)
+            .setParameter("id", userId)
+            .getSingleResult();
+    }
+
+    private ValidatableResponse deleteUser(final UUID userId, final String email) {
+        return given()
+            .when()
+            .cookie(buildAccessTokenCookie(userId, email, Duration.ofMinutes(10)))
+            .delete(USER_PATH)
+            .then();
+    }
+
+    @Test
+    void deleteUser_FAILED_onlyInactiveProprietorRemains() {
+        final String projectId = createProject(TestData.USER_ID_4, TestData.USER_EMAIL_4, null)
+            .statusCode(Status.CREATED.getStatusCode())
+            .extract().path("id");
+        insertProjectMember(UUID.fromString(projectId), insertInactiveUser("invited@example.org"), "PROPRIETOR");
+
+        deleteUser(TestData.USER_ID_4, TestData.USER_EMAIL_4)
+            .statusCode(Status.CONFLICT.getStatusCode());
+        assertEquals(1, countUsers(TestData.USER_ID_4));
+    }
+
+    @Test
+    void deleteProjectMember_FAILED_onlyInactiveProprietorRemains() {
+        final String projectId = createProject(TestData.USER_ID_4, TestData.USER_EMAIL_4, null)
+            .statusCode(Status.CREATED.getStatusCode())
+            .extract().path("id");
+        insertProjectMember(UUID.fromString(projectId), insertInactiveUser("invited@example.org"), "PROPRIETOR");
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
+            .delete(PROJECT_MEMBER_PATH, projectId, TestData.USER_ID_4.toString())
+            .then()
+            .statusCode(Status.CONFLICT.getStatusCode());
+    }
+
+    @Test
+    void deleteUser_SUCCESS_organizationsWithoutOtherActiveAdminAreDeleted() {
+        // USER_ID_1 is the only employee of ORGANIZATION_ID and ORGANIZATION_ID_2,
+        // ORGANIZATION_ID_3 has USER_ID_2 as another active MANAGER
+        deleteUser(TestData.USER_ID_1, TestData.USER_EMAIL_1)
+            .statusCode(Status.NO_CONTENT.getStatusCode());
+
+        assertEquals(0, countUsers(TestData.USER_ID_1));
+        assertEquals(0, countOrganizations(TestData.ORGANIZATION_ID));
+        assertEquals(0, countOrganizations(TestData.ORGANIZATION_ID_2));
+        assertEquals(1, countOrganizations(TestData.ORGANIZATION_ID_3));
+    }
+
+    @Test
+    void deleteUser_SUCCESS_organizationWithOnlyInactiveAdminIsDeleted() {
+        insertEmployee(TestData.ORGANIZATION_ID, insertInactiveUser("invited@example.org"), "MANAGER");
+
+        deleteUser(TestData.USER_ID_1, TestData.USER_EMAIL_1)
+            .statusCode(Status.NO_CONTENT.getStatusCode());
+
+        assertEquals(0, countOrganizations(TestData.ORGANIZATION_ID));
+    }
+
+    @Test
+    void deleteUser_FAILED_lastAdminOfOrganizationThatIsOnlyProprietor() {
+        insertProjectWithOrganization(TestData.ORGANIZATION_ID);
+
+        deleteUser(TestData.USER_ID_1, TestData.USER_EMAIL_1)
+            .statusCode(Status.CONFLICT.getStatusCode());
+
+        assertEquals(1, countUsers(TestData.USER_ID_1));
+        assertEquals(1, countOrganizations(TestData.ORGANIZATION_ID));
+    }
+
+    @Test
+    void deleteUser_FAILED_lastAdminOfManagingOrganization() {
+        final UUID projectId = insertProjectWithOrganization(TestData.ORGANIZATION_ID);
+        insertProjectMember(projectId, TestData.USER_ID_4, "PROPRIETOR");
+        setManagingOrganization(projectId, TestData.ORGANIZATION_ID);
+
+        deleteUser(TestData.USER_ID_1, TestData.USER_EMAIL_1)
+            .statusCode(Status.CONFLICT.getStatusCode());
+
+        assertEquals(1, countUsers(TestData.USER_ID_1));
+        assertEquals(1, countOrganizations(TestData.ORGANIZATION_ID));
+        assertEquals(TestData.ORGANIZATION_ID, getManagingOrganizationId(projectId.toString()));
+    }
+
+    @Test
+    void deleteUser_SUCCESS_organizationWithOtherActiveAdminRemainsManagingOrganization() {
+        final String projectId = createOrganizationProject(TestData.USER_ID_2, TestData.USER_EMAIL_2);
+
+        deleteUser(TestData.USER_ID_1, TestData.USER_EMAIL_1)
+            .statusCode(Status.NO_CONTENT.getStatusCode());
+
+        assertEquals(TestData.ORGANIZATION_ID_3, getManagingOrganizationId(projectId));
+    }
+
+    @Test
+    void deleteOrganization_FAILED_managingOrganization() {
+        final String projectId = createOrganizationProject(TestData.USER_ID_1, TestData.USER_EMAIL_1);
+        insertProjectMember(UUID.fromString(projectId), TestData.USER_ID_4, "PROPRIETOR");
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .delete(ORGANIZATION_PATH, TestData.ORGANIZATION_ID_3.toString())
+            .then()
+            .statusCode(Status.CONFLICT.getStatusCode());
+
+        assertEquals(1, countOrganizations(TestData.ORGANIZATION_ID_3));
+        assertEquals(TestData.ORGANIZATION_ID_3, getManagingOrganizationId(projectId));
+    }
+
+    @Test
+    void updateProject_FAILED_managingOrganizationIsInactive() {
+        final String projectId = createProject(TestData.USER_ID_4, TestData.USER_EMAIL_4, null)
+            .statusCode(Status.CREATED.getStatusCode())
+            .extract().path("id");
+        final UUID organizationId = insertInactiveOrganization();
+        insertProjectOrganization(UUID.fromString(projectId), organizationId, "PROPRIETOR");
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_4, TestData.USER_EMAIL_4, Duration.ofMinutes(10)))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{\"title\":\"" + TestData.PROJECT_TITLE + "\",\"managingOrganizationId\":\""
+                + organizationId + "\"}")
+            .patch(PROJECT_PATH, projectId)
+            .then()
+            .statusCode(Status.BAD_REQUEST.getStatusCode());
+        assertNull(getManagingOrganizationId(projectId));
+    }
+
+    @Test
+    void deleteUser_FAILED_inactiveOrganizationIsOnlyOtherProprietor() {
+        final String projectId = createProject(TestData.USER_ID_4, TestData.USER_EMAIL_4, null)
+            .statusCode(Status.CREATED.getStatusCode())
+            .extract().path("id");
+        insertProjectOrganization(UUID.fromString(projectId), insertInactiveOrganization(), "PROPRIETOR");
+
+        deleteUser(TestData.USER_ID_4, TestData.USER_EMAIL_4)
+            .statusCode(Status.CONFLICT.getStatusCode());
+    }
+
 }
