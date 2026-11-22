@@ -150,10 +150,14 @@ public interface OrganizationEndpoint {
 
     @DELETE
     @Path("/{organizationId}")
-    @Operation(summary = "Delete an existing organization.")
+    @Operation(summary = "Delete an existing organization.",
+        description = "Projects in which the organization is the only active proprietor or the managing "
+            + "organization have to be deleted or transferred first.")
     @APIResponse(responseCode = "204", description = "The organization was deleted successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The organization does not exist")
+    @APIResponse(responseCode = "409", description = "The organization is the only active proprietor or the "
+        + "managing organization of at least one project")
     void deleteOrganization(
         @Parameter(description = "ID of the organization", required = true)
         @PathParam("organizationId") @NotNull UUID organizationId

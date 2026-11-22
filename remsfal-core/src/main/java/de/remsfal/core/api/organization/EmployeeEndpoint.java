@@ -77,6 +77,8 @@ public interface EmployeeEndpoint {
     @APIResponse(responseCode = "200", description = "An existing employee was successfully updated")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The organization or the employee does not exist")
+    @APIResponse(responseCode = "409", description = "The employee is the last active owner or manager of the "
+        + "organization")
     OrganizationEmployeeJson updateEmployee(
         @Parameter(description = "Id of the organization", required = true)
         @PathParam("organizationId") @NotNull UUID organizationId,
@@ -88,10 +90,14 @@ public interface EmployeeEndpoint {
 
     @DELETE
     @Path("/{employeeId}")
-    @Operation(summary = "Delete an existing employee.")
+    @Operation(summary = "Delete an existing employee.",
+        description = "The last active employee with role OWNER or MANAGER can not be removed, "
+            + "the organization has to be deleted instead.")
     @APIResponse(responseCode = "204", description = "The employee was deleted successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The organization or the employee does not exist")
+    @APIResponse(responseCode = "409", description = "The employee is the last active owner or manager of the "
+        + "organization")
     void deleteEmployee(
         @Parameter(description = "Id of the organization")
         @PathParam("organizationId") @NotNull final UUID organizationId,

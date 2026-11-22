@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -71,7 +72,9 @@ public class RentalAgreementResource extends AbstractProjectResource implements 
     @Override
     public void deleteRentalAgreement(final UUID projectId, final UUID agreementId) {
         checkRentalAgreementWritePermissions(projectId);
-        rentalAgreementController.deleteRentalAgreement(projectId, agreementId);
+        if (!rentalAgreementController.deleteRentalAgreement(projectId, agreementId)) {
+            throw new NotFoundException("Rental agreement not exist");
+        }
     }
 
     @Override

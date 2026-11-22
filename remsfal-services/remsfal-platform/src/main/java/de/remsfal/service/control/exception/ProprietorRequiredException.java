@@ -4,8 +4,8 @@ import jakarta.ws.rs.ClientErrorException;
 import jakarta.ws.rs.core.Response;
 
 /**
- * Thrown if an operation would leave a project without a proprietor. Every project must always have at least one
- * proprietor, either a user or an organization.
+ * Thrown if an operation would leave a project without an active proprietor. Every project must always have at least
+ * one active proprietor, either an active user or an organization with an active OWNER or MANAGER.
  *
  * @author Alexander Stanik [alexander.stanik@htw-berlin.de]
  */

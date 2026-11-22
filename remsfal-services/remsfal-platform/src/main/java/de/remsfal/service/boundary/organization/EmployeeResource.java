@@ -3,7 +3,6 @@ package de.remsfal.service.boundary.organization;
 import de.remsfal.core.api.organization.EmployeeEndpoint;
 import de.remsfal.core.json.organization.OrganizationEmployeeJson;
 import de.remsfal.core.json.organization.OrganizationEmployeeListJson;
-import de.remsfal.core.model.OrganizationEmployeeModel;
 import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.RequestScoped;
@@ -62,13 +61,6 @@ public class EmployeeResource extends OrganizationSubResource implements Employe
         } else {
             checkWritePermissions(organizationId);
         }
-
-        boolean targetHasWrite = role.isPrivileged(OrganizationEmployeeModel.PermissionType.WRITE);
-
-        if (targetHasWrite && controller.countEmployeesWithWriteAccess(organizationId) <= 1) {
-            controller.deleteOrganization(organizationId);
-        } else {
-            controller.removeEmployee(organizationId, employeeId);
-        }
+        controller.removeEmployee(organizationId, employeeId);
     }
 }

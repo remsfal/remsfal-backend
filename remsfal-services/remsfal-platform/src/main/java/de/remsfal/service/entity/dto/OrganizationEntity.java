@@ -18,6 +18,7 @@ import jakarta.persistence.CascadeType;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.UUID;
 
 @Entity
 @Table(name = "organizations")
@@ -122,6 +123,22 @@ public class OrganizationEntity extends AbstractEntity implements OrganizationMo
             }
         }
         return false;
+    }
+
+    /**
+     * An organization is active as long as it has at least one active employee with role OWNER or MANAGER.
+     *
+     * @param excludedUserId employee to ignore (e.g. because the user is about to be deleted or demoted), may be null
+     * @return true if another active OWNER or MANAGER remains
+     */
+    public boolean hasActiveAdmin(final UUID excludedUserId) {
+        if (employees == null) {
+            return false;
+        }
+        return employees.stream()
+            .filter(e -> e.getRole() == EmployeeRole.OWNER || e.getRole() == EmployeeRole.MANAGER)
+            .filter(e -> !e.getUser().getId().equals(excludedUserId))
+            .anyMatch(e -> Boolean.TRUE.equals(e.getUser().isActive()));
     }
 
     @Override

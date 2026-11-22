@@ -96,9 +96,12 @@ public interface RentalAgreementEndpoint {
 
     @DELETE
     @Path("/{agreementId}")
-    @Operation(summary = "Delete an existing rental agreement")
+    @Operation(summary = "Delete an existing rental agreement",
+        description = "Tenants of the rental agreement are deleted as well, unless they are part of another rental "
+            + "agreement of the project. Linked user accounts are not deleted.")
     @APIResponse(responseCode = "204", description = "Rental agreement was deleted successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "404", description = "The rental agreement does not exist")
     void deleteRentalAgreement(
         @Parameter(description = "ID of the project", required = true)
         @PathParam("projectId") @NotNull UUID projectId,
@@ -126,7 +129,9 @@ public interface RentalAgreementEndpoint {
 
     @DELETE
     @Path("/{agreementId}/tenants/{tenantId}")
-    @Operation(summary = "Remove a tenant from a rental agreement")
+    @Operation(summary = "Remove a tenant from a rental agreement",
+        description = "The tenant is deleted, unless it is part of another rental agreement of the project. "
+            + "A linked user account is not deleted.")
     @APIResponse(responseCode = "204", description = "Tenant was removed from the rental agreement successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
     @APIResponse(responseCode = "404", description = "The rental agreement does not exist")

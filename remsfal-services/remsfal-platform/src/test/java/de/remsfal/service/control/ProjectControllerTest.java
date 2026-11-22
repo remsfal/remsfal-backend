@@ -486,6 +486,28 @@ class ProjectControllerTest extends AbstractServiceTest {
     }
 
     @Test
+    void changeProjectMemberRole_FAILED_inactiveProprietorDoesNotCount() {
+        final UserModel user = userController
+                .createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN_1, TestData.USER_EMAIL_1);
+        final ProjectModel project = projectController.createProject(user,
+                ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
+        // an invited user, who has never logged in, may hold the role PROPRIETOR
+        final ProjectMemberModel invited = projectController.addProjectMember(user, project.getId(),
+            ImmutableProjectMemberJson.builder()
+                .email(TestData.USER_EMAIL_2)
+                .role(MemberRole.PROPRIETOR)
+                .build());
+        assertEquals(MemberRole.PROPRIETOR, invited.getRole());
+        final UUID projectId = project.getId();
+        final UUID userId = user.getId();
+
+        assertThrows(ProprietorRequiredException.class,
+            () -> projectController.changeProjectMemberRole(projectId, userId, MemberRole.MANAGER));
+        assertThrows(ProprietorRequiredException.class,
+            () -> projectController.removeProjectMember(projectId, userId));
+    }
+
+    @Test
     void changeProjectMemberRole_SUCCESS_roleChanged(){
         final UserModel user = userController
                 .createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN_1, TestData.USER_EMAIL_1);
@@ -493,7 +515,8 @@ class ProjectControllerTest extends AbstractServiceTest {
         final ProjectModel project = projectController.createProject(user,
                 ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build());
         assertNotNull(project);
-        // a second proprietor is required, otherwise the project would lose its only proprietor
+        // a second active proprietor is required, otherwise the project would lose its only proprietor
+        userController.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN_2, TestData.USER_EMAIL_2);
         projectController.addProjectMember(user, project.getId(), ImmutableProjectMemberJson.builder()
             .email(TestData.USER_EMAIL_2)
             .active(true)

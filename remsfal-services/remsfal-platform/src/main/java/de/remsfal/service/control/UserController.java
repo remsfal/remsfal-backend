@@ -12,6 +12,8 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.List;
@@ -26,17 +28,22 @@ import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.eventing.AffectedTenantJson;
 import de.remsfal.core.json.eventing.ImmutableAffectedTenantJson;
 import de.remsfal.core.model.CustomerModel;
+import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 import de.remsfal.service.boundary.eventing.UserEventProducer;
 import de.remsfal.service.control.event.IdentityRevocationEvent;
 import de.remsfal.service.control.exception.AlreadyExistsException;
 import de.remsfal.service.control.exception.ProprietorRequiredException;
+import de.remsfal.service.entity.dao.OrganizationRepository;
 import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dao.TenantRepository;
 import de.remsfal.service.entity.dao.UserIdentityRepository;
 import de.remsfal.service.entity.dao.UserRepository;
 import de.remsfal.service.entity.dto.UserIdentityEntity.IdentityProvider;
+import de.remsfal.service.entity.dto.OrganizationEmployeeEntity;
+import de.remsfal.service.entity.dto.OrganizationEntity;
+import de.remsfal.service.entity.dto.ProjectEntity;
 import de.remsfal.service.entity.dto.UserEntity;
 import de.remsfal.service.entity.dto.UserIdentityEntity;
 
@@ -57,6 +64,12 @@ public class UserController {
 
     @Inject
     ProjectRepository projectRepository;
+
+    @Inject
+    OrganizationRepository organizationRepository;
+
+    @Inject
+    OrganizationController organizationController;
 
     @Inject
     TenantUserLinkController tenantUserLinker;
@@ -259,19 +272,50 @@ public class UserController {
     }
     
     /**
-     * Deletes a user. The authorizations of the user's Apple identities are revoked after the commit (App Review
+     * Deletes a user. The user must not be the last active proprietor of a project, neither directly nor as the
+     * last active OWNER or MANAGER of a proprietor organization: these projects have to be deleted or transferred
+     * first. Organizations in which the user is the last active OWNER or MANAGER are deleted together with the
+     * user, unless such an organization is the managing organization of a project.
+     * The authorizations of the user's Apple identities are revoked after the commit (App Review
      * Guideline 5.1.1(v)); a failed revocation is logged and does not prevent the deletion.
+     *
+     * @throws ProprietorRequiredException if the user or one of its organizations is still required by a project
      */
     @Transactional
     public boolean deleteUser(final UUID userId) {
         logger.infov("Deleting a user (id = {0})", userId);
-        final boolean soleProprietor = projectRepository
-            .findProjectsByUserIdAndRole(userId, MemberRole.PROPRIETOR).stream()
+        final List<OrganizationEntity> adminOrganizations = organizationRepository
+            .findOrganizationEmployeesByUserId(userId).stream()
+            .filter(employee -> employee.getRole() == EmployeeRole.OWNER
+                || employee.getRole() == EmployeeRole.MANAGER)
+            .map(OrganizationEmployeeEntity::getOrganization)
+            .toList();
+        final Map<UUID, ProjectEntity> proprietorProjects = new LinkedHashMap<>();
+        projectRepository.findProjectsByUserIdAndRole(userId, MemberRole.PROPRIETOR)
+            .forEach(project -> proprietorProjects.put(project.getId(), project));
+        adminOrganizations.forEach(organization -> projectRepository
+            .findProjectsByOrganizationIdAndRole(organization.getId(), MemberRole.PROPRIETOR)
+            .forEach(project -> proprietorProjects.put(project.getId(), project)));
+        final boolean soleProprietor = proprietorProjects.values().stream()
             .anyMatch(project -> project.countProprietors(userId, null) == 0);
         if (soleProprietor) {
-            throw new ProprietorRequiredException("The user is the only proprietor of at least one project. "
+            throw new ProprietorRequiredException("The user is the only active proprietor of at least one project, "
+                + "directly or via an organization. "
                 + "Transfer the ownership or delete these projects before deleting the account.");
         }
+        final List<UUID> orphanedOrganizationIds = adminOrganizations.stream()
+            .filter(organization -> !organization.hasActiveAdmin(userId))
+            .map(OrganizationEntity::getId)
+            .toList();
+        if (orphanedOrganizationIds.stream().anyMatch(projectRepository::existsByManagingOrganizationId)) {
+            throw new ProprietorRequiredException("The user is the last active owner or manager of an organization "
+                + "that manages at least one project. Change the managing organization or delete these projects "
+                + "before deleting the account.");
+        }
+        orphanedOrganizationIds.forEach(organizationController::deleteOrganization);
+        // Flush the organization deletions before the bulk delete of the user, which removes the employments
+        // of the organizations via ON DELETE CASCADE and would otherwise let the flush find no rows to delete
+        organizationRepository.flush();
         final List<UserIdentityEntity> appleIdentities = identityRepository
             .findByUserIdAndProvider(userId, IdentityProvider.APPLE).stream()
             .filter(identity -> identity.getRefreshToken() != null)

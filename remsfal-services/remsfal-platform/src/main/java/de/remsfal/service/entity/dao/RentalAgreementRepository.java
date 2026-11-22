@@ -87,9 +87,5 @@ public class RentalAgreementRepository extends AbstractRepository<RentalAgreemen
             Map.of(PARAM_ID, agreementId, PARAM_PROJECT_ID, projectId))
             .singleResultOptional();
     }
-    
-    public long removeRentalAgreementByIds(final UUID projectId, final UUID agreementId) {
-        return delete("id = :id and projectId = :projectId",
-            Map.of(PARAM_ID, agreementId, PARAM_PROJECT_ID, projectId));
-    }
+
 }

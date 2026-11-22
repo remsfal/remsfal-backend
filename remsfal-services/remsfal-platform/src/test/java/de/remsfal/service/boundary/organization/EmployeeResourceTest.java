@@ -291,7 +291,7 @@ public class EmployeeResourceTest extends AbstractResourceTest {
     }
 
     @Test
-    void deleteLastEmployeeWithWriteAccess_SUCCESS_organizationDeleted() {
+    void deleteLastEmployeeWithWriteAccess_FAILED_organizationAdminRequired() {
         given()
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
@@ -306,13 +306,33 @@ public class EmployeeResourceTest extends AbstractResourceTest {
             .cookie(buildRefreshTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(100)))
             .delete(EMPLOYEE_PATH, TestData.ORGANIZATION_ID_3.toString(), TestData.USER_ID_1.toString())
             .then()
-            .statusCode(Response.Status.NO_CONTENT.getStatusCode());
+            .statusCode(Response.Status.CONFLICT.getStatusCode());
 
+        // the organization is not deleted implicitly
         given()
             .when()
             .cookie(buildAccessTokenCookie(TestData.USER_ID_3, TestData.USER_EMAIL_3, Duration.ofMinutes(10)))
             .get("/api/v1/organizations/" + TestData.ORGANIZATION_ID_3)
             .then()
-            .statusCode(Response.Status.FORBIDDEN.getStatusCode());
+            .statusCode(Response.Status.OK.getStatusCode());
+    }
+
+    @Test
+    void updateLastEmployeeWithWriteAccess_FAILED_organizationAdminRequired() {
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .delete(EMPLOYEE_PATH, TestData.ORGANIZATION_ID_3.toString(), TestData.USER_ID_2.toString())
+            .then()
+            .statusCode(Response.Status.NO_CONTENT.getStatusCode());
+
+        given()
+            .when()
+            .cookie(buildAccessTokenCookie(TestData.USER_ID_1, TestData.USER_EMAIL_1, Duration.ofMinutes(10)))
+            .contentType(ContentType.JSON)
+            .body("{\"employeeRole\":\"STAFF\"}")
+            .patch(EMPLOYEE_PATH, TestData.ORGANIZATION_ID_3.toString(), TestData.USER_ID_1.toString())
+            .then()
+            .statusCode(Response.Status.CONFLICT.getStatusCode());
     }
 }

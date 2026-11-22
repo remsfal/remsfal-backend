@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -82,15 +83,27 @@ public class RentalAgreementController {
         return rentalAgreementRepository.findRentalAgreementByProject(projectId, rentalUnitType, rentalUnitId);
     }
     
+    /**
+     * Deletes a rental agreement. Its tenants are deleted as well unless they are still part of another rental
+     * agreement of the project. Linked user accounts are never deleted.
+     */
     @Transactional
     public boolean deleteRentalAgreement(final UUID projectId, final UUID agreementId) {
         logger.infov("Deleting a Rental Agreement (projectId={0}, agreementId={1})",
             projectId, agreementId);
-        final boolean deleted = rentalAgreementRepository.removeRentalAgreementByIds(projectId, agreementId) > 0;
-        if (deleted) {
-            projectEventProducer.sendRentalAgreementDeleted(projectId, agreementId);
+        final Optional<RentalAgreementEntity> entity = rentalAgreementRepository
+            .findRentalAgreementByProject(projectId, agreementId);
+        if (entity.isEmpty()) {
+            return false;
         }
-        return deleted;
+        final List<UUID> tenantIds = entity.get().getTenants().stream()
+            .map(TenantEntity::getId)
+            .toList();
+        rentalAgreementRepository.delete(entity.get());
+        rentalAgreementRepository.flush();
+        tenantController.deleteOrphanedTenants(tenantIds);
+        projectEventProducer.sendRentalAgreementDeleted(projectId, agreementId);
+        return true;
     }
 
     /**
@@ -233,6 +246,10 @@ public class RentalAgreementController {
         return tenant;
     }
 
+    /**
+     * Removes a tenant from a rental agreement. The tenant is deleted unless it is still part of another rental
+     * agreement of the project. A linked user account is never deleted.
+     */
     @Transactional
     public void removeTenant(final UUID projectId, final UUID agreementId, final UUID tenantId) {
         logger.infov("Removing a tenant from a rental agreement (projectId={0}, agreementId={1}, tenantId={2})",
@@ -243,6 +260,8 @@ public class RentalAgreementController {
 
         entity.removeTenant(tenantId);
         rentalAgreementRepository.merge(entity);
+        rentalAgreementRepository.flush();
+        tenantController.deleteOrphanedTenants(List.of(tenantId));
     }
 
     /**

@@ -46,9 +46,15 @@ public interface UserEndpoint {
     );
 
     @DELETE
-    @Operation(summary = "Delete this user identified by the cookie.")
+    @Operation(summary = "Delete this user identified by the cookie.",
+        description = "Organizations in which the user is the last active employee with role OWNER or MANAGER "
+            + "are deleted together with the user. Projects in which the user is the only active proprietor, "
+            + "directly or via such an organization, have to be deleted or transferred first. The same applies "
+            + "to projects managed by such an organization.")
     @APIResponse(responseCode = "204", description = "The former logged in user was deleted successfully")
     @APIResponse(responseCode = "401", description = "No user authentication provided via session cookie")
+    @APIResponse(responseCode = "409", description = "The user is the only active proprietor of a project or the "
+        + "last active owner or manager of an organization that is required by a project")
     void deleteUser();
 
 }

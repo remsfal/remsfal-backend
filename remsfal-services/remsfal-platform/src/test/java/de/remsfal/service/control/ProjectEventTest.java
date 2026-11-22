@@ -1,7 +1,6 @@
 package de.remsfal.service.control;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -25,6 +24,7 @@ import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.control.event.ManagingOrganizationChangedEvent;
 import de.remsfal.service.control.event.ProjectCreatedEvent;
 import de.remsfal.service.control.event.ProjectEventRecorder;
+import de.remsfal.service.control.exception.ProprietorRequiredException;
 import de.remsfal.service.entity.dto.UserIdentityEntity.IdentityProvider;
 import de.remsfal.test.TestData;
 import io.quarkus.test.junit.QuarkusTest;
@@ -144,17 +144,16 @@ class ProjectEventTest extends AbstractServiceTest {
     }
 
     @Test
-    void deleteOrganization_firesEventAndClearsManagingOrganization() {
+    void deleteOrganization_failsForManagingOrganization() {
         final UUID managingId = createOrganization();
         final UUID otherId = createOtherOrganization();
         final ProjectModel project = createProject(managingId);
         addProprietorOrganization(project.getId(), otherId);
 
-        assertTrue(organizationController.deleteOrganization(managingId));
+        assertThrows(ProprietorRequiredException.class, () -> organizationController.deleteOrganization(managingId));
 
-        assertEquals(List.of(new ManagingOrganizationChangedEvent(project.getId(), managingId, null, null)),
-            recorder.getManagingOrganizationEvents());
-        assertNull(projectController.findProject(project.getId()).getManagingOrganizationId());
+        assertTrue(recorder.getManagingOrganizationEvents().isEmpty());
+        assertEquals(managingId, projectController.findProject(project.getId()).getManagingOrganizationId());
     }
 
     private ProjectModel createProject(final UUID managingOrganizationId) {

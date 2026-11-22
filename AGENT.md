@@ -27,6 +27,15 @@ REMSFAL Backend is a multi-module Maven project implementing a microservices arc
 - JWT tokens are shared across services using SmallRye JWT with cookie-based authentication (`remsfal_access_token`)
 - Platform service must be running for other services to validate JWTs via JWKS endpoint at `GET /api/v1/authentication/jwks`
 
+### Ownership & Deletion Rules
+
+- **Every project always has an active proprietor** (role `PROPRIETOR`): an active user (at least one linked identity) or an active organization (at least one active employee with role `OWNER` or `MANAGER`). Inactive users may hold the role `PROPRIETOR`, but they do not count (`ProjectEntity.countProprietors`, `OrganizationEntity.hasActiveAdmin`). Violations answer `409` (`ProprietorRequiredException`)
+- **Projects first**: a user account or an organization can only be deleted once no project depends on it as its only active proprietor; a managing organization can not be deleted at all until it is replaced or its projects are deleted
+- **Deleting an account** also deletes the organizations in which the user is the last active `OWNER`/`MANAGER`; it fails if such an organization is the managing organization of a project
+- **Every organization keeps an active `OWNER`/`MANAGER`**: the last one can neither be demoted nor removed (`409`, `OrganizationAdminRequiredException`), the organization has to be deleted instead
+- **Managing organization** must be a `PROPRIETOR` of the project and active
+- **Deleting a rental agreement** (or removing a tenant) deletes tenants that are part of no other agreement; linked user accounts are never deleted
+
 ### Authentication & Security
 
 - **JWT Authentication**: Platform service signs tokens (`de.remsfal.auth.jwt.signing.enabled=true`), all services — including the platform itself — validate using the JWKS endpoint. The signing key is never in the repo or image: provided at runtime via `DE_REMSFAL_AUTH_JWT_PRIVATE_KEY_LOCATION=file:…`, auto-generated in dev mode (`.dev-keys/`), fixed test pair in `remsfal-platform/src/test/resources/test-keys/`

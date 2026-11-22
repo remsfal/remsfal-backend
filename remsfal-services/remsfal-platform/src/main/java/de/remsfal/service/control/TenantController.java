@@ -13,6 +13,7 @@ import jakarta.transaction.Transactional;
 import org.jboss.logging.Logger;
 import jakarta.ws.rs.NotFoundException;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -48,6 +49,25 @@ public class TenantController {
             projectId, tenantId);
         return tenantRepository.findTenantByProjectId(projectId, tenantId)
                 .orElseThrow(() -> new NotFoundException("Tenant not found"));
+    }
+
+    /**
+     * Deletes the given tenants unless they are still part of another rental agreement, e.g. after a rental
+     * agreement was deleted or a tenant was removed from it. A linked user account is never deleted.
+     *
+     * @param tenantIds ids of the tenants that were removed from a rental agreement
+     */
+    @Transactional
+    public void deleteOrphanedTenants(final Collection<UUID> tenantIds) {
+        for (final UUID tenantId : tenantIds) {
+            if (rentalAgreementRepository.findRentalAgreementsByTenantId(tenantId).isEmpty()) {
+                tenantRepository.findByIdOptional(tenantId).ifPresent(tenant -> {
+                    logger.infov("Deleting tenant without rental agreement (projectId={0}, tenantId={1})",
+                        tenant.getProjectId(), tenantId);
+                    tenantRepository.delete(tenant);
+                });
+            }
+        }
     }
 
     /**
