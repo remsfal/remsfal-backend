@@ -80,12 +80,12 @@ class AfterCommitPublishingTest extends AbstractServiceTest {
     }
 
     private JsonPath consumeFirst(final String topic) {
-        final ConsumerRecord<String, String> record = companion.consumeStrings()
+        final ConsumerRecord<String, String> consumed = companion.consumeStrings()
             .fromTopics(topic, 1)
             .awaitCompletion()
             .getFirstRecord();
-        assertNotNull(record);
-        return JsonPath.from(record.value());
+        assertNotNull(consumed);
+        return JsonPath.from(consumed.value());
     }
 
     private void assertNoRecords(final String topic) {

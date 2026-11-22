@@ -18,46 +18,46 @@ public class EventRecorder {
     private volatile Class<?> rejectedType;
 
     void onProjectEvent(@Observes final ProjectEvent event) {
-        record(event);
+        store(event);
     }
 
     void onProjectMemberEvent(@Observes final ProjectMemberEvent event) {
-        record(event);
+        store(event);
     }
 
     void onProjectOrganizationEvent(@Observes final ProjectOrganizationEvent event) {
-        record(event);
+        store(event);
     }
 
     void onRentalUnitEvent(@Observes final RentalUnitEvent event) {
-        record(event);
+        store(event);
     }
 
     void onRentalAgreementEvent(@Observes final RentalAgreementEvent event) {
-        record(event);
+        store(event);
     }
 
     void onTenantEvent(@Observes final TenantEvent event) {
-        record(event);
+        store(event);
     }
 
     void onContractorEvent(@Observes final ContractorEvent event) {
-        record(event);
+        store(event);
     }
 
     void onOrganizationEvent(@Observes final OrganizationEvent event) {
-        record(event);
+        store(event);
     }
 
     void onOrganizationEmployeeEvent(@Observes final OrganizationEmployeeEvent event) {
-        record(event);
+        store(event);
     }
 
     void onUserEvent(@Observes final UserEvent event) {
-        record(event);
+        store(event);
     }
 
-    private void record(final Object event) {
+    private void store(final Object event) {
         events.add(event);
         if (rejectedType != null && rejectedType.isInstance(event)) {
             throw new IllegalStateException("Change rejected by test observer: " + event);
