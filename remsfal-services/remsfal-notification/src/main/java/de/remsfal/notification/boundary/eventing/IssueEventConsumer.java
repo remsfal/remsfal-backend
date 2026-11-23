@@ -14,6 +14,7 @@ import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.jboss.logging.Logger;
 
+import java.util.Map;
 import java.util.concurrent.CompletionStage;
 
 /**
@@ -129,6 +130,7 @@ public class IssueEventConsumer {
      */
     private void pushToRecipients(final IssueEventJson event, final String body) {
         final var issue = event.getIssue();
+        final Map<String, String> data = Map.of("issueId", event.getIssueId().toString());
         if (issue == null) {
             return;
         }
@@ -145,7 +147,7 @@ public class IssueEventConsumer {
                 continue;
             }
             try {
-                pushController.sendToUser(tenant.getUserId(), issue.getTitle(), body);
+                pushController.sendToUser(tenant.getUserId(), issue.getTitle(), body, data);
             } catch (RuntimeException e) {
                 logger.warnv(e, "Push for issue {0} to tenant {1} failed",
                     event.getIssueId(), tenant.getUserId());

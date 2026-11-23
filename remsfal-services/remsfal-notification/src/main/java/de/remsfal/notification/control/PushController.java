@@ -1,5 +1,6 @@
 package de.remsfal.notification.control;
 
+import java.util.Map;
 import java.util.UUID;
 
 import de.remsfal.notification.entity.dao.PushSubscriptionRepository;
@@ -19,16 +20,15 @@ public class PushController {
     @Inject
     PushSubscriptionRepository repository;
 
-    public void registerPushSubscription(final UUID userId, final String fidToken, final String platform) {
-        PushSubscriptionEntity entity = repository.findByFidToken(fidToken)
+    public void registerPushSubscription(final UUID userId, final String token) {
+        PushSubscriptionEntity entity = repository.findByToken(token)
                 .orElseGet(PushSubscriptionEntity::new);
         entity.setUserId(userId);
-        entity.setFidToken(fidToken);
-        entity.setPlatform(platform);
+        entity.setToken(token);
         repository.save(entity);
     }
 
-    public void sendToUser(final UUID userId, final String title, final String body) {
+    public void sendToUser(final UUID userId, final String title, final String body, final Map<String, String> data) {
         // ist für logger, falls kein Eintrag in db zu finden ist
         var subscriptions = repository.findByUserId(userId);
         if (subscriptions.isEmpty()) {
@@ -36,16 +36,11 @@ public class PushController {
         }
         for (PushSubscriptionEntity subscription : subscriptions) {
             PushProducer.Result result;
-
-            if ("WEB".equals(subscription.getPlatform())) {
-                result = producer.sendFid(subscription.getFidToken(), title, body);
-            } else {
-                result = producer.sendToken(subscription.getFidToken(), title, body);
-            }
+            result = producer.sendToken(subscription.getToken(), title, body, data);
 
             if (result == PushProducer.Result.UNREGISTERED) {
-                LOG.infof("Removed unregistered push target %s", subscription.getFidToken());
-                repository.deleteByFidToken(subscription.getFidToken());
+                LOG.infof("Removed unregistered push target %s", subscription.getToken());
+                repository.deleteByToken(subscription.getToken());
             }
         }
     }
@@ -54,9 +49,9 @@ public class PushController {
         repository.deleteByUserId(userId);
     }
 
-    public void unregisterPushSubscription(final UUID userId, final String fidToken) {
-        repository.findByFidToken(fidToken)
+    public void unregisterPushSubscription(final UUID userId, final String token) {
+        repository.findByToken(token)
                 .filter(s -> userId.equals(s.getUserId()))
-                .ifPresent(s -> repository.deleteByFidToken(fidToken));
+                .ifPresent(s -> repository.deleteByToken(token));
     }
 }

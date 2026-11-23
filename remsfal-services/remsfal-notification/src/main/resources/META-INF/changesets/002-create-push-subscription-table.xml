@@ -14,11 +14,8 @@
             <column name="user_id" type="uuid">
                 <constraints nullable="false" />
             </column>
-            <column name="fid" type="varchar(512)">
-                <constraints nullable="false" unique="true" uniqueConstraintName="uq_push_subscription_fid" />
-            </column>
-            <column name="platform" type="varchar(16)">
-                <constraints nullable="false" />
+            <column name="token" type="varchar(512)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uq_push_subscription_token" />
             </column>
             <column name="created_at" type="timestamp" defaultValueComputed="current_timestamp">
                 <constraints nullable="false" />

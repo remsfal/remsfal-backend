@@ -16,11 +16,11 @@ public class PushSubscriptionRepository {
     @Inject
     EntityManager em;
 
-    public Optional<PushSubscriptionEntity> findByFidToken(final String fidToken) {
+    public Optional<PushSubscriptionEntity> findByToken(final String token) {
         return em.createQuery(
-                        "SELECT p FROM PushSubscriptionEntity p WHERE p.fidToken = :fidToken",
+                        "SELECT p FROM PushSubscriptionEntity p WHERE p.token = :token",
                         PushSubscriptionEntity.class)
-                .setParameter("fidToken", fidToken)
+                .setParameter("token", token)
                 .getResultStream()
                 .findFirst();
     }
@@ -39,9 +39,9 @@ public class PushSubscriptionRepository {
     }
 
     @Transactional
-    public void deleteByFidToken(final String fidToken) {
-        em.createQuery("DELETE FROM PushSubscriptionEntity p WHERE p.fidToken = :fidToken")
-                .setParameter("fidToken", fidToken)
+    public void deleteByToken(final String token) {
+        em.createQuery("DELETE FROM PushSubscriptionEntity p WHERE p.token = :token")
+                .setParameter("token", token)
                 .executeUpdate();
     }
 

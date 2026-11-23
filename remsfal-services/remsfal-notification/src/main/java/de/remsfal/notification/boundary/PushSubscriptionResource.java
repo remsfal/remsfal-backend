@@ -8,6 +8,8 @@ import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
 
+import java.util.Map;
+
 @Authenticated
 public class PushSubscriptionResource implements PushSubscriptionEndpoint {
 
@@ -19,20 +21,19 @@ public class PushSubscriptionResource implements PushSubscriptionEndpoint {
 
     @Override
     public Response registerPushSubscription(final PushSubscriptionJson subscription) {
-        pushController.registerPushSubscription(principal.getId(), subscription.getFidToken(),
-                subscription.getPlatform());
+        pushController.registerPushSubscription(principal.getId(), subscription.getToken());
         return Response.status(Response.Status.CREATED).build();
     }
 
     @Override
     public Response sendTestPush() {
-        pushController.sendToUser(principal.getId(), "REMSFAL", "Hallo von REMSFAL");
+        pushController.sendToUser(principal.getId(), "REMSFAL", "Hallo von REMSFAL", Map.of());
         return Response.noContent().build();
     }
 
     @Override
-    public Response unregisterPushSubscription(final String fidToken) {
-        pushController.unregisterPushSubscription(principal.getId(), fidToken);
+    public Response unregisterPushSubscription(final String token) {
+        pushController.unregisterPushSubscription(principal.getId(), token);
         return Response.noContent().build();
     }
 

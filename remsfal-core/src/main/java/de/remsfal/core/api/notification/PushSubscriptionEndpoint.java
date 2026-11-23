@@ -22,7 +22,7 @@ public interface PushSubscriptionEndpoint {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Operation(summary = "Registriert die Firebase-Zielkennung des aktuellen Geräts für Push-Benachrichtigungen.")
-    @APIResponse(responseCode = "201", description = "FID/FCM-Token registriert")
+    @APIResponse(responseCode = "201", description = "FCM-Token registriert")
     @APIResponse(responseCode = "400", description = "Ungültige Anfrage")
     Response registerPushSubscription(@Valid PushSubscriptionJson subscription);
 
@@ -34,10 +34,10 @@ public interface PushSubscriptionEndpoint {
     Response sendTestPush();
 
     @DELETE
-    @Path("/{fidToken}")
-    @Operation(summary = "Removes the push subscription of the current user for the given FID or Token")
+    @Path("/{token}")
+    @Operation(summary = "Removes the push subscription of the current user for the given Token")
     @APIResponse(responseCode = "204", description = "Subscription removed")
     @APIResponse(responseCode = "401", description = "Not authenticated")
-    Response unregisterPushSubscription(@PathParam("fidToken") String fidToken);
+    Response unregisterPushSubscription(@PathParam("token") String token);
 
 }

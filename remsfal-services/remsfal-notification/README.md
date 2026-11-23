@@ -95,6 +95,18 @@ Remove or rename the `.env` file to switch back to Mailpit.
 > **_NOTE:_** `QUARKUS_MAILER_SSL` is deprecated, use `QUARKUS_MAILER_TLS` instead. If you still have an
 > `.env` file from an older setup that contains `_DEV_QUARKUS_MAILER_MOCK=false`, it is no longer needed.
 
+## Push notifications
+
+- The subscription API stores an FCM registration token for each web, Android or iOS subscription.
+- Issue pushes carry an `issueId` so the frontend can open the corresponding issue when the user taps the
+  notification. Test pushes display a notification without an issue link.
+- The FCM message selects the notification channel created by Capacitor on Android. On iOS, FCM delivers
+  through APNs with the default notification sound.
+
+For local testing, set `FCM_SERVICE_ACCOUNT_PATH` to the local Firebase service account JSON file.
+Use a fresh local notification database if it already ran the earlier push-subscription migrations from
+this branch. The current changeset creates the token-based schema directly.
+
 ## Running the application in dev mode
 
 You can run this microservice in dev mode that enables live coding using:
