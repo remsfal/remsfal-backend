@@ -5,7 +5,7 @@ inputs:
   java-version:
     required: true
     type: string
-    default: '17'
+    default: '21'
   skip-tests:
     required: true
     type: boolean
