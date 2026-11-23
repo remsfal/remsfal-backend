@@ -100,7 +100,7 @@ public class AuthorizationController {
         final Optional<UserIdentityEntity> identity = identityRepository.findByProviderAndSubject(provider, subject);
         if (identity.isPresent()) {
             final UserEntity user = identity.get().getUser();
-            authenticatedUser.fireAsync(new AuthenticationEvent(user.getId(), provider, subject, email));
+            authenticatedUser.fireAsync(AuthenticationEvent.of(user.getId(), provider, subject, email));
             return user;
         }
 
@@ -109,7 +109,7 @@ public class AuthorizationController {
             if (linkable.isPresent()) {
                 final UserEntity user = linkable.get();
                 userController.linkIdentity(user, provider, subject, email);
-                authenticatedUser.fireAsync(new AuthenticationEvent(user.getId(), provider, subject, email));
+                authenticatedUser.fireAsync(AuthenticationEvent.of(user.getId(), provider, subject, email));
                 return user;
             }
         }
@@ -125,10 +125,10 @@ public class AuthorizationController {
 
     public void onPrincipalAuthentication(@ObservesAsync final AuthenticationEvent event) {
         logger.infov("Updating authentication timestamp of user (id={0}, provider={1}, email={2})",
-            event.getUserId(), event.getProvider(), event.getEmail());
+            event.userId(), event.provider(), event.email());
         try {
-            userRepository.updateAuthenticatedAt(event.getUserId(), event.getAuthenticatedAt());
-            identityRepository.updateLastUsedAt(event.getProvider(), event.getSubject(), event.getAuthenticatedAt());
+            userRepository.updateAuthenticatedAt(event.userId(), event.authenticatedAt());
+            identityRepository.updateLastUsedAt(event.provider(), event.subject(), event.authenticatedAt());
         } catch (Exception e) {
             logger.error("Unable to update authentication timestamp", e);
         }

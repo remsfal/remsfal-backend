@@ -3,8 +3,8 @@ package de.remsfal.service.boundary.project;
 import de.remsfal.core.api.project.MemberEndpoint;
 import de.remsfal.core.json.project.ProjectMemberJson;
 import de.remsfal.core.json.project.ProjectMemberListJson;
-import de.remsfal.core.model.project.ProjectMemberModel;
 import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
+import de.remsfal.core.model.project.ProjectMemberModel;
 import de.remsfal.service.control.ProjectController;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
@@ -45,7 +45,7 @@ public class MemberResource extends AbstractProjectResource implements MemberEnd
         if (MemberRole.PROPRIETOR == member.getRole() && principal.getId().equals(memberId)) {
             throw new ForbiddenException("Nobody can upgrade their own role");
         }
-        final ProjectMemberModel model = controller.changeProjectMemberRole(projectId,
+        final ProjectMemberModel model = controller.changeProjectMemberRole(principal, projectId,
             memberId, member.getRole());
         return ProjectMemberJson.valueOf(model);
     }
@@ -57,7 +57,7 @@ public class MemberResource extends AbstractProjectResource implements MemberEnd
             && principal.getProjectRole(projectId) != MemberRole.PROPRIETOR) {
             throw new ForbiddenException("Only a proprietor can remove a proprietor from a project");
         }
-        controller.removeProjectMember(projectId, memberId);
+        controller.removeProjectMember(principal, projectId, memberId);
     }
 
 }

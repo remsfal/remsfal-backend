@@ -239,7 +239,7 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
         mockGoogleIdentity(true);
 
         final UUID placeholderId = runInTransaction(() ->
-            userController.findOrCreateUser(ImmutableUserJson.builder().email(TestData.USER_EMAIL_1).build())
+            userController.findOrCreateUser(ImmutableUserJson.builder().email(TestData.USER_EMAIL_1).build(), ACTING_USER)
                 .getId());
 
         givenValidState("/")
@@ -263,7 +263,7 @@ class AuthenticationResourceMockitoTest extends AbstractResourceTest {
     void session_FAILED_unverifiedEmailDoesNotReclaimPlaceholderUser() {
         mockGoogleIdentity(false);
         final UUID placeholderId = runInTransaction(() ->
-            userController.findOrCreateUser(ImmutableUserJson.builder().email(TestData.USER_EMAIL_1).build())
+            userController.findOrCreateUser(ImmutableUserJson.builder().email(TestData.USER_EMAIL_1).build(), ACTING_USER)
                 .getId());
 
         givenValidState("/")

@@ -17,7 +17,7 @@ import jakarta.annotation.Nullable;
 @ImmutableStyle
 @JsonDeserialize(as = ImmutableUserEventJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public interface UserEventJson {
+public interface UserEventJson extends EventHeaderJson {
 
     String TOPIC = "user-events";
 
@@ -31,7 +31,7 @@ public interface UserEventJson {
     UUID getUserId();
 
     /**
-     * The updated user profile. Only present for {@link UserEventType#USER_UPDATED}.
+     * The user profile, for {@link UserEventType#USER_DELETED} its last state.
      */
     @Nullable
     UserJson getUser();

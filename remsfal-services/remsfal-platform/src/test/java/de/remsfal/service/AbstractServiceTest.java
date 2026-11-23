@@ -16,10 +16,20 @@ import jakarta.transaction.UserTransaction;
 
 import org.junit.jupiter.api.BeforeEach;
 
+import de.remsfal.core.json.ImmutableUserJson;
+import de.remsfal.core.model.UserModel;
 import de.remsfal.test.AbstractTest;
 import de.remsfal.test.TestData;
 
 public abstract class AbstractServiceTest extends AbstractTest {
+
+    /**
+     * Acting user of the controller calls in the tests, as passed by the boundary from the access token.
+     */
+    protected static final UserModel ACTING_USER = ImmutableUserJson.builder()
+        .id(TestData.USER_ID)
+        .email(TestData.USER_EMAIL)
+        .build();
 
     @Inject
     protected EntityManager entityManager;
@@ -39,6 +49,13 @@ public abstract class AbstractServiceTest extends AbstractTest {
             entityManager.createQuery("DELETE FROM EmailLoginCodeEntity").executeUpdate();
             entityManager.createQuery("DELETE FROM EmailLoginAttemptEntity").executeUpdate();
         });
+    }
+
+    /**
+     * @return a user who acts on the own account, e.g. for updating or deleting it
+     */
+    protected static UserModel actingUser(final UUID userId) {
+        return ImmutableUserJson.builder().id(userId).build();
     }
 
     /**

@@ -100,7 +100,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .issue(issue)
             .project(project)
             .link("https://remsfal.de/issue/123")
-            .principal(creator)
+            .actingUser(creator)
             .assignee(assignee)
             .build();
 
@@ -154,7 +154,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .issue(issue)
             .project(project)
             .link("https://remsfal.de/issue/123")
-            .principal(user)
+            .actingUser(user)
             .assignee(user)
             .build();
 
@@ -212,7 +212,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .issue(issue)
             .project(project)
             .link("https://remsfal.de/issue/456")
-            .principal(updater)
+            .actingUser(updater)
             .assignee(assignee)
             .build();
 
@@ -271,7 +271,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .issue(issue)
             .project(project)
             .link("https://remsfal.de/issue/789")
-            .principal(assigner)
+            .actingUser(assigner)
             .assignee(newOwner)
             .build();
 
@@ -322,7 +322,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .issue(issue)
             .project(project)
             .link("https://remsfal.de/issue/111")
-            .principal(creator)
+            .actingUser(creator)
             .build();
 
         companion.produce(ImmutableIssueEventJson.class)
@@ -483,7 +483,7 @@ class IssueEventConsumerTest extends AbstractKafkaTest {
             .issue(issue)
             .project(project)
             .link("https://remsfal.de/issue/444")
-            .principal(creator)
+            .actingUser(creator)
             .assignee(assignee)
             .build();
 

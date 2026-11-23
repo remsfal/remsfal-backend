@@ -155,9 +155,22 @@ public abstract class UserJson implements CustomerModel {
     /**
      * Builds a slim UserJson from a plain {@link UserModel}, which only exposes id, email and a
      * single combined name (split here into first/last) - unlike {@link #valueOf(CustomerModel)},
-     * no address, phone numbers, or other profile fields are available to populate.
+     * no address, phone numbers, or other profile fields are available to populate. A {@link CustomerModel}
+     * passed as {@link UserModel} contributes its first and last name directly, still without the profile fields.
+     * Returns null if no model is given, e.g. for the acting user of a system action.
      */
     public static UserJson valueOf(final UserModel model) {
+        if (model == null) {
+            return null;
+        }
+        if (model instanceof CustomerModel customer) {
+            return ImmutableUserJson.builder()
+                .id(customer.getId())
+                .email(customer.getEmail())
+                .firstName(customer.getFirstName())
+                .lastName(customer.getLastName())
+                .build();
+        }
         final ImmutableUserJson.Builder builder = ImmutableUserJson.builder();
         if (model.getId() != null) {
             builder.id(model.getId());

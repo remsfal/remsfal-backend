@@ -47,7 +47,7 @@ public class EmployeeResource extends OrganizationSubResource implements Employe
             checkWritePermissions(organizationId);
         }
         return OrganizationEmployeeJson.valueOf(
-                controller.updateEmployeeRole(organizationId, employeeId, employee.getEmployeeRole())
+                controller.updateEmployeeRole(principal, organizationId, employeeId, employee.getEmployeeRole())
         );
     }
 
@@ -61,6 +61,6 @@ public class EmployeeResource extends OrganizationSubResource implements Employe
         } else {
             checkWritePermissions(organizationId);
         }
-        controller.removeEmployee(organizationId, employeeId);
+        controller.removeEmployee(principal, organizationId, employeeId);
     }
 }

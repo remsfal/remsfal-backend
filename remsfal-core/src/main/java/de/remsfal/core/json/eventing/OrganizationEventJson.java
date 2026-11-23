@@ -17,7 +17,7 @@ import jakarta.annotation.Nullable;
 @ImmutableStyle
 @JsonDeserialize(as = ImmutableOrganizationEventJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public interface OrganizationEventJson {
+public interface OrganizationEventJson extends EventHeaderJson {
 
     String TOPIC = "organization-events";
 
@@ -34,18 +34,6 @@ public interface OrganizationEventJson {
      */
     @Nullable
     OrganizationJson getOrganization();
-
-    /**
-     * The ID of the user who performed the change that triggered this event.
-     */
-    @Nullable
-    UUID getChangedByUserId();
-
-    /**
-     * The display name of the user who performed the change that triggered this event.
-     */
-    @Nullable
-    String getChangedByName();
 
     /**
      * Contractor records linked to this organization, each with the project it belongs to. Only present

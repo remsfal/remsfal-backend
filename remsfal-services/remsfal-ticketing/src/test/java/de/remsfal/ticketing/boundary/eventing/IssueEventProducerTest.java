@@ -90,10 +90,10 @@ class IssueEventProducerTest {
         assertEquals(issue.getBlockedBy(), event.getIssue().getBlockedBy());
         assertEquals(issue.getRelatedTo(), event.getIssue().getRelatedTo());
         assertEquals(issue.getDuplicateOf(), event.getIssue().getDuplicateOf());
-        assertNotNull(event.getPrincipal());
-        assertEquals(actor.getId(), event.getPrincipal().getId());
-        assertEquals(actor.getEmail(), event.getPrincipal().getEmail());
-        assertEquals(actor.getName(), event.getPrincipal().getName());
+        assertNotNull(event.getActingUser());
+        assertEquals(actor.getId(), event.getActingUser().getId());
+        assertEquals(actor.getEmail(), event.getActingUser().getEmail());
+        assertEquals(actor.getName(), event.getActingUser().getName());
         assertNotNull(event.getAssignee());
         assertEquals(issue.getAssigneeId(), event.getAssignee().getId());
         assertNotNull(event.getReporter());
@@ -219,8 +219,8 @@ class IssueEventProducerTest {
         IssueEventJson event = eventCaptor.getValue();
 
         assertEquals(IssueEventType.CHAT_MESSAGE_CREATED, event.getIssueEventType());
-        assertNotNull(event.getPrincipal());
-        assertEquals(chatMessage.getSenderId(), event.getPrincipal().getId());
+        assertNotNull(event.getActingUser());
+        assertEquals(chatMessage.getSenderId(), event.getActingUser().getId());
         assertNotNull(event.getChatMessage());
         assertEquals(chatMessage.getMessage(), event.getChatMessage().getMessage());
         assertNotNull(event.getReporter());
@@ -271,8 +271,8 @@ class IssueEventProducerTest {
         assertNotNull(event.getContractor());
         assertEquals(request.getContractorId(), event.getContractor().getId());
         // the actor who performed the status change is only carried as the principal
-        assertNotNull(event.getPrincipal());
-        assertEquals(contractorActor.getId(), event.getPrincipal().getId());
+        assertNotNull(event.getActingUser());
+        assertEquals(contractorActor.getId(), event.getActingUser().getId());
         assertEquals(RequestStatus.REJECTED, event.getQuotationRequest().getStatus());
     }
 

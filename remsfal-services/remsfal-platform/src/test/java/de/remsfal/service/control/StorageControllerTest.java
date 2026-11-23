@@ -1,10 +1,10 @@
 package de.remsfal.service.control;
 
-import de.remsfal.core.json.project.StorageJson;
 import de.remsfal.core.json.project.ImmutableStorageJson;
+import de.remsfal.core.json.project.StorageJson;
 import de.remsfal.core.model.project.BuildingModel;
-import de.remsfal.core.model.project.StorageModel;
 import de.remsfal.core.model.project.PropertyModel;
+import de.remsfal.core.model.project.StorageModel;
 import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.entity.dto.StorageEntity;
 import de.remsfal.test.TestData;
@@ -36,7 +36,7 @@ class StorageControllerTest extends AbstractServiceTest {
     }
 
     private PropertyModel createTestProperty() {
-        PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
+        PropertyModel property = propertyController.createProperty(ACTING_USER, TestData.PROJECT_ID, TestData.propertyBuilder().build());
         assertNotNull(property.getId(), "Property ID should not be null");
         return property;
     }
@@ -47,7 +47,7 @@ class StorageControllerTest extends AbstractServiceTest {
                 .address(TestData.addressBuilder().build())
                 .build();
 
-        BuildingModel buildingResult = buildingController.createBuilding(TestData.PROJECT_ID, property.getId(), building);
+        BuildingModel buildingResult = buildingController.createBuilding(ACTING_USER, TestData.PROJECT_ID, property.getId(), building);
         assertNotNull(buildingResult.getId(), "Building ID should not be null");
         return buildingResult;
     }
@@ -61,7 +61,7 @@ class StorageControllerTest extends AbstractServiceTest {
                 .id(null)
                 .build();
 
-        final StorageModel storageResult = storageController.createStorage(TestData.PROJECT_ID, buildingResult.getId(), storage);
+        final StorageModel storageResult = storageController.createStorage(ACTING_USER, TestData.PROJECT_ID, buildingResult.getId(), storage);
 
         assertNotNull(storageResult.getId(), "Storage ID should not be null");
         assertNotEquals(storage.getId(), storageResult.getId());
@@ -88,7 +88,7 @@ class StorageControllerTest extends AbstractServiceTest {
                 .id(null)
                 .build();
 
-        final StorageModel storageResult = storageController.createStorage(TestData.PROJECT_ID, buildingResult.getId(), storage);
+        final StorageModel storageResult = storageController.createStorage(ACTING_USER, TestData.PROJECT_ID, buildingResult.getId(), storage);
         assertNotNull(storageResult.getId(), "Storage ID should not be null");
 
         final StorageModel result = storageController.getStorage(TestData.PROJECT_ID, storageResult.getId());
@@ -110,7 +110,7 @@ class StorageControllerTest extends AbstractServiceTest {
                 .id(null)
                 .build();
 
-        final StorageModel storageResult = storageController.createStorage(TestData.PROJECT_ID, buildingResult.getId(), storage);
+        final StorageModel storageResult = storageController.createStorage(ACTING_USER, TestData.PROJECT_ID, buildingResult.getId(), storage);
         assertNotNull(storageResult.getId(), "Storage ID should not be null");
 
         StorageModel StorageModel = ImmutableStorageJson.builder()
@@ -124,7 +124,7 @@ class StorageControllerTest extends AbstractServiceTest {
 
         StorageJson updatedStorageJson = StorageJson.valueOf(StorageModel);
 
-        final StorageModel updatedStorage = storageController.updateStorage(
+        final StorageModel updatedStorage = storageController.updateStorage(ACTING_USER,
                 TestData.PROJECT_ID, storageResult.getId(), updatedStorageJson);
 
         assertEquals(storageResult.getId(), updatedStorage.getId(), "Storage ID should remain the same");
@@ -144,10 +144,10 @@ class StorageControllerTest extends AbstractServiceTest {
                 .id(null)
                 .build();
 
-        final StorageModel storageResult = storageController.createStorage(TestData.PROJECT_ID, buildingResult.getId(), storage);
+        final StorageModel storageResult = storageController.createStorage(ACTING_USER, TestData.PROJECT_ID, buildingResult.getId(), storage);
         assertNotNull(storageResult.getId(), "Storage ID should not be null");
 
-        storageController.deleteStorage(TestData.PROJECT_ID, storageResult.getId());
+        storageController.deleteStorage(ACTING_USER, TestData.PROJECT_ID, storageResult.getId());
 
         assertThrows(NotFoundException.class,
                 () -> storageController.getStorage(TestData.PROJECT_ID, storageResult.getId()));

@@ -1,12 +1,16 @@
 package de.remsfal.service.control;
 
+import de.remsfal.core.json.ContractorJson;
+import de.remsfal.core.json.UserJson;
 import de.remsfal.core.model.ContractorModel;
 import de.remsfal.core.model.UserModel;
+import de.remsfal.service.control.event.ContractorEvent;
 import de.remsfal.service.entity.dao.ContractorRepository;
 import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dto.ContractorEntity;
 import de.remsfal.service.entity.dto.ProjectEntity;
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.NotFoundException;
@@ -35,6 +39,9 @@ public class ContractorController {
 
     @Inject
     AddressController addressController;
+
+    @Inject
+    Event<ContractorEvent> contractorEvent;
 
     public boolean isContractorEmployee(final UserModel user) {
         logger.infov("Checking whether user (id = {0}) belongs to a contractor-linked organization", user.getId());
@@ -106,6 +113,8 @@ public class ContractorController {
         }
 
         contractorRepository.persistAndFlush(entity);
+        contractorEvent.fire(new ContractorEvent.Created(projectId, ContractorJson.valueOf(entity),
+            UserJson.valueOf(user)));
         return entity;
     }
 
@@ -134,7 +143,10 @@ public class ContractorController {
             }
         }
 
-        return contractorRepository.merge(mergeContractorFields(contractor, entity));
+        final ContractorEntity merged = contractorRepository.mergeAndFlush(mergeContractorFields(contractor, entity));
+        contractorEvent.fire(new ContractorEvent.Updated(projectId, ContractorJson.valueOf(merged),
+            UserJson.valueOf(user)));
+        return merged;
     }
 
     private ContractorEntity mergeContractorFields(final ContractorModel model, final ContractorEntity entity) {
@@ -173,7 +185,12 @@ public class ContractorController {
         logger.infov("Deleting contractor (id = {0}) for project (id = {1})", contractorId, projectId);
         ContractorEntity entity = contractorRepository.findByProjectIdAndContractorId(projectId, contractorId)
             .orElseThrow(() -> new NotFoundException("Contractor not found"));
-        return contractorRepository.deleteById(entity.getId());
+        final ContractorJson snapshot = ContractorJson.valueOf(entity);
+        final boolean deleted = contractorRepository.deleteById(entity.getId());
+        if (deleted) {
+            contractorEvent.fire(new ContractorEvent.Deleted(projectId, snapshot, UserJson.valueOf(user)));
+        }
+        return deleted;
     }
 
 }

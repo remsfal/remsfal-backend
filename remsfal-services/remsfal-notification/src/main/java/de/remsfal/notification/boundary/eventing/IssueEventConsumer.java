@@ -69,10 +69,10 @@ public class IssueEventConsumer {
         if (isRecipient(event, event.getAssignee())) {
             result = result.chain(v -> mailingController.sendIssueCreatedEmail(event, event.getAssignee()));
         }
-        if (isRecipient(event, event.getPrincipal())
+        if (isRecipient(event, event.getActingUser())
             && (event.getAssignee() == null
-            || !event.getPrincipal().getEmail().equals(event.getAssignee().getEmail()))) {
-            result = result.chain(v -> mailingController.sendIssueCreatedEmail(event, event.getPrincipal()));
+            || !event.getActingUser().getEmail().equals(event.getAssignee().getEmail()))) {
+            result = result.chain(v -> mailingController.sendIssueCreatedEmail(event, event.getActingUser()));
         }
         return result;
     }
@@ -83,10 +83,10 @@ public class IssueEventConsumer {
         if (isRecipient(event, event.getAssignee())) {
             result = result.chain(v -> mailingController.sendIssueUpdatedEmail(event, event.getAssignee()));
         }
-        if (isRecipient(event, event.getPrincipal())
+        if (isRecipient(event, event.getActingUser())
             && (event.getAssignee() == null
-            || !event.getPrincipal().getEmail().equals(event.getAssignee().getEmail()))) {
-            result = result.chain(v -> mailingController.sendIssueUpdatedEmail(event, event.getPrincipal()));
+            || !event.getActingUser().getEmail().equals(event.getAssignee().getEmail()))) {
+            result = result.chain(v -> mailingController.sendIssueUpdatedEmail(event, event.getActingUser()));
         }
         return result;
     }
@@ -97,10 +97,10 @@ public class IssueEventConsumer {
         if (isRecipient(event, event.getAssignee())) {
             result = result.chain(v -> mailingController.sendIssueAssignedEmail(event, event.getAssignee()));
         }
-        if (isRecipient(event, event.getPrincipal())
+        if (isRecipient(event, event.getActingUser())
             && (event.getAssignee() == null
-            || !event.getPrincipal().getEmail().equals(event.getAssignee().getEmail()))) {
-            result = result.chain(v -> mailingController.sendIssueAssignedEmail(event, event.getPrincipal()));
+            || !event.getActingUser().getEmail().equals(event.getAssignee().getEmail()))) {
+            result = result.chain(v -> mailingController.sendIssueAssignedEmail(event, event.getActingUser()));
         }
         return result;
     }

@@ -37,7 +37,7 @@ A live version is available at **[remsfal.online](https://remsfal.online)**.
 
 | Area              | Technology                                                                     |
 |-------------------|--------------------------------------------------------------------------------|
-| Runtime           | Java 17+, Quarkus                                                              |
+| Runtime           | Java 21+, Quarkus                                                              |
 | APIs              | JAX-RS (REST), OpenAPI via SmallRye                                            |
 | Persistence       | PostgreSQL (platform), Apache Cassandra (ticketing), Liquibase migrations      |
 | Messaging         | Apache Kafka for asynchronous service-to-service communication                 |
@@ -75,7 +75,7 @@ mvn package
 
 To develop or start this project locally, you need
 
-- Java 17 or higher
+- Java 21 or higher
 - Maven 3.8.1 or higher
 - Docker or Podman to start containers
 

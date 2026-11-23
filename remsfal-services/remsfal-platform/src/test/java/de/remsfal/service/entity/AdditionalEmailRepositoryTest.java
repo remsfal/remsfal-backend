@@ -1,11 +1,5 @@
 package de.remsfal.service.entity;
 
-import de.remsfal.service.control.UserController;
-import de.remsfal.service.entity.dao.AdditionalEmailRepository;
-import de.remsfal.service.entity.dao.UserRepository;
-import de.remsfal.service.entity.dto.AdditionalEmailEntity;
-import de.remsfal.service.entity.dto.UserEntity;
-import de.remsfal.test.TestData;
 import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -14,6 +8,12 @@ import org.junit.jupiter.api.Test;
 import java.util.UUID;
 
 import de.remsfal.service.AbstractServiceTest;
+import de.remsfal.service.control.UserController;
+import de.remsfal.service.entity.dao.AdditionalEmailRepository;
+import de.remsfal.service.entity.dao.UserRepository;
+import de.remsfal.service.entity.dto.AdditionalEmailEntity;
+import de.remsfal.service.entity.dto.UserEntity;
+import de.remsfal.test.TestData;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -84,7 +84,7 @@ class AdditionalEmailRepositoryTest extends AbstractServiceTest {
 
         assertEquals(1L, countBeforeDelete);
 
-        boolean deleted = userController.deleteUser(userId);
+        boolean deleted = userController.deleteUser(actingUser(userId));
         assertTrue(deleted);
 
         Long countAfterDelete = entityManager

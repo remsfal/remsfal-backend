@@ -24,7 +24,7 @@ public class ApartmentResource extends AbstractProjectResource implements Apartm
     public Response createApartment(final UUID projectId, final UUID buildingId,
         final ApartmentJson apartment) {
         checkPropertyWritePermissions(projectId);
-        final ApartmentModel model = controller.createApartment(projectId, buildingId, apartment);
+        final ApartmentModel model = controller.createApartment(principal, projectId, buildingId, apartment);
         return getCreatedResponseBuilder(model.getId())
             .type(MediaType.APPLICATION_JSON)
             .entity(ApartmentJson.valueOf(model))
@@ -44,13 +44,13 @@ public class ApartmentResource extends AbstractProjectResource implements Apartm
         final ApartmentJson apartment) {
         checkPropertyWritePermissions(projectId);
         return ApartmentJson
-            .valueOf(controller.updateApartment(projectId, apartmentId, apartment));
+            .valueOf(controller.updateApartment(principal, projectId, apartmentId, apartment));
     }
 
     @Override
     public void deleteApartment(final UUID projectId, final UUID apartmentId) {
         checkPropertyWritePermissions(projectId);
-        controller.deleteApartment(projectId, apartmentId);
+        controller.deleteApartment(principal, projectId, apartmentId);
     }
 
 }

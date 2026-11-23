@@ -30,7 +30,7 @@ public class BuildingResource extends AbstractProjectResource implements Buildin
     @Override
     public Response createBuilding(final UUID projectId, final UUID propertyId, final BuildingJson building) {
         checkPropertyWritePermissions(projectId);
-        final BuildingModel model = controller.createBuilding(projectId, propertyId, building);
+        final BuildingModel model = controller.createBuilding(principal, projectId, propertyId, building);
         return getCreatedResponseBuilder(model.getId())
             .type(MediaType.APPLICATION_JSON)
             .entity(BuildingJson.valueOf(model))
@@ -48,14 +48,14 @@ public class BuildingResource extends AbstractProjectResource implements Buildin
     @Override
     public BuildingJson updateBuilding(final UUID projectId, final UUID buildingId, final BuildingJson building) {
         checkPropertyWritePermissions(projectId);
-        final BuildingModel model = controller.updateBuilding(projectId, buildingId, building);
+        final BuildingModel model = controller.updateBuilding(principal, projectId, buildingId, building);
         return BuildingJson.valueOf(model);
     }
 
     @Override
     public void deleteBuilding(final UUID projectId, final UUID buildingId) {
         checkPropertyWritePermissions(projectId);
-        controller.deleteBuilding(projectId, buildingId);
+        controller.deleteBuilding(principal, projectId, buildingId);
     }
 
     @Override

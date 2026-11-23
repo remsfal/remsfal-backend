@@ -104,7 +104,7 @@ public class TenantIssueResource extends AbstractTicketingResource implements Te
     @Override
     public void closeIssue(final UUID issueId) {
         checkTenancyIssueAccessPermissions(issueId);
-        issueController.closeIssue(issueId, UserContext.TENANT);
+        issueController.closeIssue(principal, issueId, UserContext.TENANT);
     }
 
     @Override

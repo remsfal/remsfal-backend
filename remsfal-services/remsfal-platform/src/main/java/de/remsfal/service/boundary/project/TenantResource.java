@@ -62,7 +62,7 @@ public class TenantResource extends AbstractProjectResource implements TenantEnd
     @Override
     public TenantJson updateTenant(final UUID projectId, final UUID tenantId, TenantJson tenant) {
         checkRentalAgreementWritePermissions(projectId);
-        final TenantModel model = controller.updateTenant(projectId, tenantId, tenant);
+        final TenantModel model = controller.updateTenant(principal, projectId, tenantId, tenant);
         return TenantJson.valueOf(model);
     }
 }

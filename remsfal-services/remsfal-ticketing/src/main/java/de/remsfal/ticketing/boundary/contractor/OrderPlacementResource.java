@@ -49,7 +49,8 @@ public class OrderPlacementResource extends AbstractTicketingResource implements
             throw new BadRequestException("Status must be provided");
         }
         return withAttachments(
-            orderManagementController.updateOrderPlacementStatus(eligibleOrgIds, placementId, body.getStatus()));
+            orderManagementController.updateOrderPlacementStatus(principal, eligibleOrgIds, placementId,
+                body.getStatus()));
     }
 
     private OrderPlacementJson withAttachments(final OrderPlacementEntity placement) {

@@ -22,20 +22,19 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.BadRequestException;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
+import org.junit.jupiter.api.BeforeEach;
 
 import de.remsfal.core.json.ImmutableUserJson;
-import de.remsfal.core.json.UserJson;
-import de.remsfal.core.json.eventing.AffectedTenantJson;
 import de.remsfal.core.model.CustomerModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.boundary.authentication.AppleAuthenticator;
-import de.remsfal.service.boundary.eventing.UserEventProducer;
 import de.remsfal.service.control.exception.AlreadyExistsException;
 import de.remsfal.service.entity.dto.AddressEntity;
 import de.remsfal.service.entity.dto.UserIdentityEntity.IdentityProvider;
 import de.remsfal.service.entity.dto.UserEntity;
+import de.remsfal.service.control.event.EventRecorder;
+import de.remsfal.service.control.event.UserEvent;
 import de.remsfal.test.TestData;
 import io.quarkus.test.InjectMock;
 
@@ -45,11 +44,13 @@ class UserControllerTest extends AbstractServiceTest {
     @Inject
     UserController controller;
 
-    @InjectMock
-    UserEventProducer userEventProducer;
+    @Inject
+    EventRecorder recorder;
 
-    @InjectMock
-    NotificationController notificationController;
+    @BeforeEach
+    void resetRecorder() {
+        recorder.reset();
+    }
 
     @InjectMock
     AppleAuthenticator appleAuthenticator;
@@ -80,7 +81,7 @@ class UserControllerTest extends AbstractServiceTest {
     @Test
     void createUser_SUCCESS_reclaimsPlaceholderUser() {
         final UserEntity placeholder = runInTransaction(() ->
-            controller.findOrCreateUser(ImmutableUserJson.builder().email(TestData.USER_EMAIL).build()));
+            controller.findOrCreateUser(ImmutableUserJson.builder().email(TestData.USER_EMAIL).build(), ACTING_USER));
         final UUID placeholderId = placeholder.getId();
         assertFalse(placeholder.isActive());
 
@@ -101,15 +102,15 @@ class UserControllerTest extends AbstractServiceTest {
     }
 
     @Test
-    void createUser_SUCCESS_reclaimSendsRegistrationNotification() {
+    void createUser_SUCCESS_reclaimFiresRegistered() {
         runInTransaction(() ->
-            controller.findOrCreateUser(ImmutableUserJson.builder().email(TestData.USER_EMAIL).build()));
+            controller.findOrCreateUser(ImmutableUserJson.builder().email(TestData.USER_EMAIL).build(), ACTING_USER));
 
         controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
 
-        final ArgumentCaptor<CustomerModel> userCaptor = ArgumentCaptor.forClass(CustomerModel.class);
-        verify(notificationController).informUserAboutRegistration(userCaptor.capture());
-        assertEquals(TestData.USER_EMAIL, userCaptor.getValue().getEmail());
+        final List<UserEvent.Registered> events = recorder.getEvents(UserEvent.Registered.class);
+        assertEquals(1, events.size());
+        assertEquals(TestData.USER_EMAIL, events.get(0).user().getEmail());
     }
 
     @Test
@@ -170,7 +171,7 @@ class UserControllerTest extends AbstractServiceTest {
     @Test
     void createUser_SUCCESS_skipsConflictingTenantWithoutFailingRegistration() {
         final UserEntity placeholder = runInTransaction(() ->
-            controller.findOrCreateUser(ImmutableUserJson.builder().email(TestData.USER_EMAIL).build()));
+            controller.findOrCreateUser(ImmutableUserJson.builder().email(TestData.USER_EMAIL).build(), ACTING_USER));
         final UUID placeholderId = placeholder.getId();
 
         insertProject(TestData.PROJECT_ID_1, TestData.PROJECT_TITLE_1);
@@ -238,7 +239,7 @@ class UserControllerTest extends AbstractServiceTest {
         final String newUserName = "Dr. " + TestData.USER_LAST_NAME;
         CustomerModel updatedUser =
             ImmutableUserJson.builder().id(user.getId()).lastName(newUserName).email(TestData.USER_EMAIL).build();
-        updatedUser = controller.updateUser(user.getId(), updatedUser);
+        updatedUser = controller.updateUser(actingUser(user.getId()), updatedUser);
         assertEquals(user.getId(), updatedUser.getId());
         assertEquals(user.getEmail(), updatedUser.getEmail());
         assertEquals(newUserName, updatedUser.getLastName());
@@ -251,48 +252,32 @@ class UserControllerTest extends AbstractServiceTest {
     }
 
     @Test
-    void updateUser_SUCCESS_notifiesLinkedTenantOnRelevantChange() {
+    void updateUser_SUCCESS_firesContactDataChangedOnRelevantChange() {
         UserModel user = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
         UUID userId = user.getId();
-
-        insertProject(TestData.PROJECT_ID, TestData.PROJECT_TITLE_1);
-        UUID tenantId = UUID.randomUUID();
-        runInTransaction(() -> entityManager
-            .createNativeQuery(
-                "INSERT INTO tenants (id, project_id, user_id, first_name, last_name) VALUES (?,?,?,?,?)")
-            .setParameter(1, tenantId)
-            .setParameter(2, TestData.PROJECT_ID)
-            .setParameter(3, userId)
-            .setParameter(4, TestData.USER_FIRST_NAME)
-            .setParameter(5, TestData.USER_LAST_NAME)
-            .executeUpdate());
+        recorder.reset();
 
         final String newLastName = "Dr. " + TestData.USER_LAST_NAME;
         CustomerModel updatedUser = ImmutableUserJson.builder().id(userId).lastName(newLastName).build();
-        controller.updateUser(userId, updatedUser);
+        controller.updateUser(actingUser(userId), updatedUser);
 
-        final ArgumentCaptor<UUID> userIdCaptor = ArgumentCaptor.forClass(UUID.class);
-        final ArgumentCaptor<UserJson> userJsonCaptor = ArgumentCaptor.forClass(UserJson.class);
-        @SuppressWarnings("unchecked")
-        final ArgumentCaptor<List<AffectedTenantJson>> tenantsCaptor = ArgumentCaptor.forClass(List.class);
-        verify(userEventProducer).sendUserUpdated(userIdCaptor.capture(), userJsonCaptor.capture(),
-            tenantsCaptor.capture());
-
-        assertEquals(userId, userIdCaptor.getValue());
-        assertEquals(newLastName, userJsonCaptor.getValue().getLastName());
-        assertEquals(1, tenantsCaptor.getValue().size());
-        assertEquals(tenantId, tenantsCaptor.getValue().get(0).getTenantId());
-        assertEquals(TestData.PROJECT_ID, tenantsCaptor.getValue().get(0).getProjectId());
+        final List<UserEvent.ContactDataChanged> events = recorder.getEvents(UserEvent.ContactDataChanged.class);
+        assertEquals(1, events.size());
+        assertEquals(userId, events.get(0).userId());
+        assertEquals(newLastName, events.get(0).user().getLastName());
+        assertEquals(1, recorder.getEvents(UserEvent.Updated.class).size());
     }
 
     @Test
-    void updateUser_SUCCESS_noTenantNotificationWhenOnlyLocaleChanged() {
+    void updateUser_SUCCESS_noContactDataChangedWhenOnlyLocaleChanged() {
         UserModel user = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
 
+        recorder.reset();
         CustomerModel updatedUser = ImmutableUserJson.builder().id(user.getId()).locale("en").build();
-        controller.updateUser(user.getId(), updatedUser);
+        controller.updateUser(actingUser(user.getId()), updatedUser);
 
-        verifyNoInteractions(userEventProducer);
+        assertTrue(recorder.getEvents(UserEvent.ContactDataChanged.class).isEmpty());
+        assertEquals(1, recorder.getEvents(UserEvent.Updated.class).size());
     }
 
     @Test
@@ -305,7 +290,7 @@ class UserControllerTest extends AbstractServiceTest {
             .placeOfBirth(placeOfBirth)
             .dateOfBirth(dateOfBirth)
             .build();
-        updatedUser = controller.updateUser(user.getId(), updatedUser);
+        updatedUser = controller.updateUser(actingUser(user.getId()), updatedUser);
         assertEquals(placeOfBirth, updatedUser.getPlaceOfBirth());
         assertEquals(dateOfBirth, updatedUser.getDateOfBirth());
 
@@ -321,7 +306,7 @@ class UserControllerTest extends AbstractServiceTest {
 
         CustomerModel updatedUser =
             ImmutableUserJson.builder().address(TestData.addressBuilder().build()).build();
-        updatedUser = controller.updateUser(user.getId(), updatedUser);
+        updatedUser = controller.updateUser(actingUser(user.getId()), updatedUser);
         assertEquals(user.getId(), updatedUser.getId());
         assertNotNull(updatedUser.getAddress());
         assertEquals(TestData.ADDRESS_STREET, updatedUser.getAddress().getStreet());
@@ -344,12 +329,12 @@ class UserControllerTest extends AbstractServiceTest {
 
         CustomerModel updatedUser =
             ImmutableUserJson.builder().address(TestData.addressBuilder().build()).build();
-        updatedUser = controller.updateUser(user.getId(), updatedUser);
+        updatedUser = controller.updateUser(actingUser(user.getId()), updatedUser);
         assertEquals(user.getId(), updatedUser.getId());
 
         updatedUser =
             ImmutableUserJson.builder().address(TestData.addressBuilder().street("Berliner Str. 101").build()).build();
-        updatedUser = controller.updateUser(user.getId(), updatedUser);
+        updatedUser = controller.updateUser(actingUser(user.getId()), updatedUser);
         assertEquals(user.getId(), updatedUser.getId());
         assertEquals("Berliner Str. 101", updatedUser.getAddress().getStreet());
 
@@ -374,7 +359,7 @@ class UserControllerTest extends AbstractServiceTest {
         final String newUserName = "Dr. " + TestData.USER_LAST_NAME;
         CustomerModel updatedUser =
             ImmutableUserJson.builder().id(user.getId()).lastName(newUserName).email(TestData.USER_EMAIL).build();
-        updatedUser = controller.updateUser(user.getId(), updatedUser);
+        updatedUser = controller.updateUser(actingUser(user.getId()), updatedUser);
         assertEquals("de", updatedUser.getLocale());
 
         final String locale = entityManager
@@ -392,7 +377,7 @@ class UserControllerTest extends AbstractServiceTest {
         final String insertedLocale = "en";
         CustomerModel updatedUser =
             ImmutableUserJson.builder().id(user.getId()).email(TestData.USER_EMAIL).locale(insertedLocale).build();
-        updatedUser = controller.updateUser(user.getId(), updatedUser);
+        updatedUser = controller.updateUser(actingUser(user.getId()), updatedUser);
         assertEquals(insertedLocale, updatedUser.getLocale());
 
         final String locale = entityManager
@@ -412,7 +397,7 @@ class UserControllerTest extends AbstractServiceTest {
            .additionalEmails(List.of(TestData.ALTERNATIVE_EMAIL_1))
            .build();
 
-        controller.updateUser(userId, updatedUser);
+        controller.updateUser(actingUser(userId), updatedUser);
 
         AlreadyExistsException ex = assertThrows(
             AlreadyExistsException.class,
@@ -441,7 +426,7 @@ class UserControllerTest extends AbstractServiceTest {
             .additionalEmails(List.of(TestData.ALTERNATIVE_EMAIL_1, TestData.ALTERNATIVE_EMAIL_2))
             .build();
 
-        updatedUser = controller.updateUser(userId, updatedUser);
+        updatedUser = controller.updateUser(actingUser(userId), updatedUser);
         assertEquals(userId, updatedUser.getId());
 
         List<String> emailsBeforeSecondUpdate = entityManager
@@ -459,7 +444,7 @@ class UserControllerTest extends AbstractServiceTest {
             .additionalEmails(List.of(TestData.ALTERNATIVE_EMAIL_2))
             .build();
 
-        updatedUserAfterRemoval = controller.updateUser(userId, updatedUserAfterRemoval);
+        updatedUserAfterRemoval = controller.updateUser(actingUser(userId), updatedUserAfterRemoval);
         assertEquals(userId, updatedUserAfterRemoval.getId());
 
         List<String> emailsAfterUpdate = entityManager
@@ -483,9 +468,10 @@ class UserControllerTest extends AbstractServiceTest {
            .additionalEmails(List.of(TestData.USER_EMAIL))
            .build();
 
+        final UserModel actingUser = actingUser(userId);
         AlreadyExistsException ex = assertThrows(
             AlreadyExistsException.class,
-            () -> controller.updateUser(userId, update)
+            () -> controller.updateUser(actingUser, update)
         );
 
         assertEquals("Alternative email must not be equal to an existing login email.", ex.getMessage());
@@ -509,7 +495,7 @@ class UserControllerTest extends AbstractServiceTest {
             .additionalEmails(List.of(TestData.ALTERNATIVE_EMAIL_1))
             .build();
 
-        updatedUser = controller.updateUser(userId, updatedUser);
+        updatedUser = controller.updateUser(actingUser(userId), updatedUser);
         assertEquals(userId, updatedUser.getId());
 
         List<String> emailsAfterFirstUpdate = entityManager
@@ -526,7 +512,7 @@ class UserControllerTest extends AbstractServiceTest {
             .additionalEmails(List.of(TestData.ALTERNATIVE_EMAIL_1))
             .build();
 
-        updatedUserAgain = controller.updateUser(userId, updatedUserAgain);
+        updatedUserAgain = controller.updateUser(actingUser(userId), updatedUserAgain);
         assertEquals(userId, updatedUserAgain.getId());
 
         List<String> emailsAfterSecondUpdate = entityManager
@@ -548,7 +534,7 @@ class UserControllerTest extends AbstractServiceTest {
             .additionalEmails(List.of(TestData.ALTERNATIVE_EMAIL_1))
             .build();
 
-        controller.updateUser(userId1, update1);
+        controller.updateUser(actingUser(userId1), update1);
 
         UserModel user2 = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN_2, TestData.USER_EMAIL_2);
         UUID userId2 = user2.getId();
@@ -558,7 +544,8 @@ class UserControllerTest extends AbstractServiceTest {
             .additionalEmails(List.of(TestData.ALTERNATIVE_EMAIL_1))
             .build();
 
-        AlreadyExistsException ex = assertThrows(AlreadyExistsException.class, () -> controller.updateUser(userId2, update2));
+        final UserModel actingUser = actingUser(userId2);
+        AlreadyExistsException ex = assertThrows(AlreadyExistsException.class, () -> controller.updateUser(actingUser, update2));
         assertEquals("Alternative email already exists.", ex.getMessage());
 
         Long count = entityManager
@@ -586,7 +573,7 @@ class UserControllerTest extends AbstractServiceTest {
             .additionalEmails(List.of(TestData.ALTERNATIVE_EMAIL_1))
             .build();
 
-        controller.updateUser(userId, update);
+        controller.updateUser(actingUser(userId), update);
 
         Object[] result = entityManager.createQuery(
             "SELECT ae.verified, ae.verificationToken, ae.verificationTokenExpiresAt "
@@ -610,7 +597,7 @@ class UserControllerTest extends AbstractServiceTest {
             .id(userId)
             .additionalEmails(List.of(TestData.ALTERNATIVE_EMAIL_1))
             .build();
-        controller.updateUser(userId, update);
+        controller.updateUser(actingUser(userId), update);
 
         String token = entityManager.createQuery(
             "SELECT ae.verificationToken FROM AdditionalEmailEntity ae WHERE ae.user.id = :userId AND ae.email = :email",
@@ -643,7 +630,7 @@ class UserControllerTest extends AbstractServiceTest {
             .id(userId)
             .additionalEmails(List.of(TestData.ALTERNATIVE_EMAIL_1))
             .build();
-        controller.updateUser(userId, update);
+        controller.updateUser(actingUser(userId), update);
 
         String token = entityManager.createQuery(
             "SELECT ae.verificationToken FROM AdditionalEmailEntity ae WHERE ae.user.id = :userId AND ae.email = :email",
@@ -667,14 +654,14 @@ class UserControllerTest extends AbstractServiceTest {
         UserModel user = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
         assertNotNull(user.getId());
 
-        assertTrue(controller.deleteUser(user.getId()));
+        assertTrue(controller.deleteUser(actingUser(user.getId())));
         final long enties = entityManager
             .createQuery("SELECT count(user) FROM UserEntity user where user.id = :userId", Long.class)
             .setParameter("userId", user.getId())
             .getSingleResult();
         assertEquals(0, enties);
 
-        assertFalse(controller.deleteUser(user.getId()));
+        assertFalse(controller.deleteUser(actingUser(user.getId())));
     }
 
     @Test
@@ -683,7 +670,7 @@ class UserControllerTest extends AbstractServiceTest {
         controller.updateIdentityToken(IdentityProvider.APPLE, "appleSubject", "appleRefreshToken",
             "de.remsfal.test.app");
 
-        assertTrue(controller.deleteUser(user.getId()));
+        assertTrue(controller.deleteUser(actingUser(user.getId())));
 
         verify(appleAuthenticator).revoke("appleRefreshToken", "de.remsfal.test.app");
     }
@@ -695,7 +682,7 @@ class UserControllerTest extends AbstractServiceTest {
             "de.remsfal.test.web");
         doThrow(new IllegalStateException("Apple is down")).when(appleAuthenticator).revoke(any(), any());
 
-        assertTrue(controller.deleteUser(user.getId()));
+        assertTrue(controller.deleteUser(actingUser(user.getId())));
 
         final long entities = entityManager
             .createQuery("SELECT count(user) FROM UserEntity user where user.id = :userId", Long.class)
@@ -708,7 +695,7 @@ class UserControllerTest extends AbstractServiceTest {
     void deleteUser_SUCCESS_noRevocationWithoutAppleToken() {
         UserModel user = controller.createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
 
-        assertTrue(controller.deleteUser(user.getId()));
+        assertTrue(controller.deleteUser(actingUser(user.getId())));
 
         verifyNoInteractions(appleAuthenticator);
     }

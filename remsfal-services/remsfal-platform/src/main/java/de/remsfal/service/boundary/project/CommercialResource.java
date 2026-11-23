@@ -26,7 +26,7 @@ public class CommercialResource extends AbstractProjectResource implements Comme
     public Response createCommercial(final UUID projectId, final UUID buildingId,
         final CommercialJson commercial) {
         checkPropertyWritePermissions(projectId);
-        final CommercialModel model = controller.createCommercial(projectId, buildingId, commercial);
+        final CommercialModel model = controller.createCommercial(principal, projectId, buildingId, commercial);
         return getCreatedResponseBuilder(model.getId())
             .type(MediaType.APPLICATION_JSON)
             .entity(CommercialJson.valueOf(model))
@@ -43,13 +43,13 @@ public class CommercialResource extends AbstractProjectResource implements Comme
     public CommercialJson updateCommercial(final UUID projectId, final UUID commercialId,
         final CommercialJson commercial) {
         checkPropertyWritePermissions(projectId);
-        return CommercialJson.valueOf(controller.updateCommercial(projectId, commercialId, commercial));
+        return CommercialJson.valueOf(controller.updateCommercial(principal, projectId, commercialId, commercial));
     }
 
     @Override
     public void deleteCommercial(final UUID projectId, final UUID commercialId) {
         checkPropertyWritePermissions(projectId);
-        controller.deleteCommercial(projectId, commercialId);
+        controller.deleteCommercial(principal, projectId, commercialId);
     }
 
 }

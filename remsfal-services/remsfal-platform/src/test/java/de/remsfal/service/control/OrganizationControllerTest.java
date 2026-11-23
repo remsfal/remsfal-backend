@@ -1,21 +1,19 @@
 package de.remsfal.service.control;
 
-import de.remsfal.core.json.eventing.AffectedContractorJson;
 import de.remsfal.core.json.organization.ClientProjectJson;
 import de.remsfal.core.json.organization.ClientProjectListJson;
 import de.remsfal.core.json.organization.ImmutableOrganizationJson;
 import de.remsfal.core.json.organization.OrganizationJson;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.boundary.AbstractResourceTest;
-import de.remsfal.service.boundary.eventing.OrganizationEventProducer;
+import de.remsfal.service.control.event.EventRecorder;
+import de.remsfal.service.control.event.OrganizationEvent;
 import de.remsfal.service.entity.dto.OrganizationEntity;
 import de.remsfal.test.TestData;
-import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
+import org.junit.jupiter.api.BeforeEach;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,9 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 
 @QuarkusTest
 public class OrganizationControllerTest extends AbstractResourceTest {
@@ -38,8 +33,13 @@ public class OrganizationControllerTest extends AbstractResourceTest {
     @Inject
     UserController userController;
 
-    @InjectMock
-    OrganizationEventProducer organizationEventProducer;
+    @Inject
+    EventRecorder recorder;
+
+    @BeforeEach
+    void resetRecorder() {
+        recorder.reset();
+    }
 
     @BeforeEach
     protected void setupTestData() {
@@ -205,39 +205,30 @@ public class OrganizationControllerTest extends AbstractResourceTest {
     }
 
     @Test
-    void updateOrganization_SUCCESS_notifiesLinkedContractorOnRelevantChange() {
+    void updateOrganization_SUCCESS_firesContactDataChangedOnRelevantChange() {
         final UserModel user = userController.getUser(TestData.USER_ID_1);
-        final UUID projectId = UUID.fromString("dd000000-0000-0000-0000-000000000097");
-        final UUID contractorId = UUID.fromString("ee000000-0000-0000-0000-000000000097");
-        insertProject(projectId, "Test Project 3");
-        insertContractor(contractorId, projectId, "Test Contractor 3", TestData.ORGANIZATION_ID);
-
         final String newPhone = "+491234567899";
         OrganizationJson update = ImmutableOrganizationJson.builder().phone(newPhone).build();
 
         organizationController.updateOrganization(user, TestData.ORGANIZATION_ID, update);
 
-        final ArgumentCaptor<UUID> orgIdCaptor = ArgumentCaptor.forClass(UUID.class);
-        final ArgumentCaptor<OrganizationJson> orgJsonCaptor = ArgumentCaptor.forClass(OrganizationJson.class);
-        @SuppressWarnings("unchecked")
-        final ArgumentCaptor<List<AffectedContractorJson>> contractorsCaptor = ArgumentCaptor.forClass(List.class);
-        verify(organizationEventProducer).sendOrganizationUpdated(orgIdCaptor.capture(), orgJsonCaptor.capture(),
-            contractorsCaptor.capture(), eq(user.getId()), eq(user.getName()));
-
-        assertEquals(TestData.ORGANIZATION_ID, orgIdCaptor.getValue());
-        assertEquals(newPhone, orgJsonCaptor.getValue().getPhone());
-        assertEquals(1, contractorsCaptor.getValue().size());
-        assertEquals(contractorId, contractorsCaptor.getValue().get(0).getContractorId());
-        assertEquals(projectId, contractorsCaptor.getValue().get(0).getProjectId());
+        final List<OrganizationEvent.ContactDataChanged> events =
+            recorder.getEvents(OrganizationEvent.ContactDataChanged.class);
+        assertEquals(1, events.size());
+        assertEquals(TestData.ORGANIZATION_ID, events.get(0).organizationId());
+        assertEquals(newPhone, events.get(0).organization().getPhone());
+        assertEquals(user.getId(), events.get(0).actingUser().getId());
+        assertEquals(1, recorder.getEvents(OrganizationEvent.Updated.class).size());
     }
 
     @Test
-    void updateOrganization_SUCCESS_noEventWhenNothingChanged() {
+    void updateOrganization_SUCCESS_noContactDataChangedWhenNothingChanged() {
         final UserModel user = userController.getUser(TestData.USER_ID_1);
         OrganizationJson update = ImmutableOrganizationJson.builder().build();
 
         organizationController.updateOrganization(user, TestData.ORGANIZATION_ID, update);
 
-        verifyNoInteractions(organizationEventProducer);
+        assertTrue(recorder.getEvents(OrganizationEvent.ContactDataChanged.class).isEmpty());
+        assertEquals(1, recorder.getEvents(OrganizationEvent.Updated.class).size());
     }
 }

@@ -148,7 +148,7 @@ class IssueEventEnrichmentControllerTest {
             .issueEventType(IssueEventType.ISSUE_ASSIGNED)
             .issueId(issueId)
             .issue(issue)
-            .principal(ImmutableUserJson.builder().id(actorId).email("actor@example.com").build())
+            .actingUser(ImmutableUserJson.builder().id(actorId).email("actor@example.com").build())
             .assignee(ImmutableUserJson.builder().id(assigneeId).build())
             .build();
 
@@ -160,7 +160,7 @@ class IssueEventEnrichmentControllerTest {
         assertEquals("assignee@example.com", enriched.getAssignee().getEmail());
         assertEquals("Assignee", enriched.getAssignee().getFirstName());
         assertEquals("Person", enriched.getAssignee().getLastName());
-        assertEquals(event.getPrincipal(), enriched.getPrincipal());
+        assertEquals(event.getActingUser(), enriched.getActingUser());
         assertEquals(reporterId, enriched.getIssue().getReporterId());
         assertEquals(tenancyId, enriched.getIssue().getAgreementId());
         assertEquals(assigneeId, enriched.getIssue().getAssigneeId());
@@ -360,14 +360,14 @@ class IssueEventEnrichmentControllerTest {
             .issueEventType(IssueEventType.CHAT_MESSAGE_CREATED)
             .issueId(issueId)
             .issue(issue)
-            .principal(ImmutableUserJson.builder().id(senderId).build())
+            .actingUser(ImmutableUserJson.builder().id(senderId).build())
             .chatMessage(chatMessage)
             .build();
 
         IssueEventJson enriched = controller.enrich(event);
 
-        assertNotNull(enriched.getPrincipal());
-        assertEquals("sender@example.com", enriched.getPrincipal().getEmail());
+        assertNotNull(enriched.getActingUser());
+        assertEquals("sender@example.com", enriched.getActingUser().getEmail());
         assertNotNull(enriched.getChatMessage());
         assertEquals("Hi there", enriched.getChatMessage().getMessage());
         verify(userRepository).findByIdOptional(senderId);

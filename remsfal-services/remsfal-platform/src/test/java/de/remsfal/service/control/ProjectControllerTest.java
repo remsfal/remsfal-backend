@@ -102,7 +102,7 @@ class ProjectControllerTest extends AbstractServiceTest {
     void createProject_SUCCESS_setOwnerAndAddressFromCreator() {
         final UserModel user = userController
             .createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
-        userController.updateUser(user.getId(), ImmutableUserJson.builder()
+        userController.updateUser(actingUser(user.getId()), ImmutableUserJson.builder()
             .firstName(TestData.USER_FIRST_NAME)
             .lastName(TestData.USER_LAST_NAME)
             .address(TestData.addressBuilder().build())
@@ -239,7 +239,7 @@ class ProjectControllerTest extends AbstractServiceTest {
     void updateProject_SUCCESS_reuseAddressIdFromUserOrOrganization() {
         final UserModel user = userController
             .createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
-        userController.updateUser(user.getId(), ImmutableUserJson.builder()
+        userController.updateUser(actingUser(user.getId()), ImmutableUserJson.builder()
             .firstName(TestData.USER_FIRST_NAME)
             .lastName(TestData.USER_LAST_NAME)
             .address(TestData.addressBuilder1().build())
@@ -278,7 +278,7 @@ class ProjectControllerTest extends AbstractServiceTest {
     void updateProject_SUCCESS_createDedicatedAddressId() {
         final UserModel user = userController
             .createUser(IdentityProvider.GOOGLE, TestData.USER_TOKEN, TestData.USER_EMAIL);
-        userController.updateUser(user.getId(), ImmutableUserJson.builder()
+        userController.updateUser(actingUser(user.getId()), ImmutableUserJson.builder()
             .firstName(TestData.USER_FIRST_NAME)
             .lastName(TestData.USER_LAST_NAME)
             .address(TestData.addressBuilder1().build())
@@ -463,7 +463,7 @@ class ProjectControllerTest extends AbstractServiceTest {
         
         assertNotNull(user2.getId());
 
-        assertTrue(projectController.removeProjectMember(project.getId(), user2.getId()));
+        assertTrue(projectController.removeProjectMember(ACTING_USER, project.getId(), user2.getId()));
         enties = entityManager
             .createQuery("SELECT count(membership) FROM ProjectMembershipEntity membership", Long.class)
             .getSingleResult();
@@ -480,9 +480,9 @@ class ProjectControllerTest extends AbstractServiceTest {
         final UUID userId = user.getId();
 
         assertThrows(ProprietorRequiredException.class,
-            () -> projectController.changeProjectMemberRole(projectId, userId, MemberRole.MANAGER));
+            () -> projectController.changeProjectMemberRole(ACTING_USER, projectId, userId, MemberRole.MANAGER));
         assertThrows(ProprietorRequiredException.class,
-            () -> projectController.removeProjectMember(projectId, userId));
+            () -> projectController.removeProjectMember(ACTING_USER, projectId, userId));
     }
 
     @Test
@@ -502,9 +502,9 @@ class ProjectControllerTest extends AbstractServiceTest {
         final UUID userId = user.getId();
 
         assertThrows(ProprietorRequiredException.class,
-            () -> projectController.changeProjectMemberRole(projectId, userId, MemberRole.MANAGER));
+            () -> projectController.changeProjectMemberRole(ACTING_USER, projectId, userId, MemberRole.MANAGER));
         assertThrows(ProprietorRequiredException.class,
-            () -> projectController.removeProjectMember(projectId, userId));
+            () -> projectController.removeProjectMember(ACTING_USER, projectId, userId));
     }
 
     @Test
@@ -524,7 +524,7 @@ class ProjectControllerTest extends AbstractServiceTest {
             .build());
 
         final ProjectMemberModel memberResponse = projectController
-            .changeProjectMemberRole(project.getId(), user.getId(), MemberRole.LESSOR);
+            .changeProjectMemberRole(ACTING_USER, project.getId(), user.getId(), MemberRole.LESSOR);
         assertEquals(MemberRole.LESSOR, memberResponse.getRole());
         final String userRole = entityManager
             .createNativeQuery(

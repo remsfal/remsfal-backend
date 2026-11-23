@@ -66,14 +66,14 @@ public class UserResource implements UserEndpoint {
     @Override
     @Timed("update_user_timer")
     public UserJson updateUser(final UserJson user) {
-        final CustomerModel updatedUser = userController.updateUser(principal.getId(), user);
+        final CustomerModel updatedUser = userController.updateUser(principal, user);
         return UserJson.valueOf(updatedUser);
     }
 
     @Override
     @Timed("delete_user_timer")
     public void deleteUser() {
-        if (!userController.deleteUser(principal.getId())) {
+        if (!userController.deleteUser(principal)) {
             throw new NotFoundException();
         }
     }

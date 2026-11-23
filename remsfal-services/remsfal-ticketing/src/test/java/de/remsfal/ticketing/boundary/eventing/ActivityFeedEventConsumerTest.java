@@ -98,7 +98,7 @@ class ActivityFeedEventConsumerTest {
             .issueId(issueId)
             .issue(issue)
             .link("/api/issues/" + issueId)
-            .principal(ImmutableUserJson.builder()
+            .actingUser(ImmutableUserJson.builder()
                 .id(UUID.randomUUID())
                 .firstName("Actor")
                 .lastName("Person")
@@ -239,7 +239,7 @@ class ActivityFeedEventConsumerTest {
             .issueId(UUID.randomUUID())
             .issue(issue)
             .link("/api/issues/test")
-            .principal(ImmutableUserJson.builder()
+            .actingUser(ImmutableUserJson.builder()
                 .id(UUID.randomUUID())
                 .build())
             .build();

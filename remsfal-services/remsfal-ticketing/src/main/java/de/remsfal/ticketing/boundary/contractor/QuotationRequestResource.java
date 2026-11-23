@@ -38,7 +38,7 @@ public class QuotationRequestResource extends AbstractTicketingResource implemen
     public QuotationRequestJson updateQuotationRequest(final UUID requestId, final QuotationRequestJson body) {
         final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
         final QuotationRequestEntity request =
-            orderManagementController.updateRequestForQuotationByContractor(eligibleOrgIds, requestId, body);
+            orderManagementController.updateRequestForQuotationByContractor(principal, eligibleOrgIds, requestId, body);
         return QuotationRequestJson.valueOf(request)
             .withAttachments(resolveAttachments(request.getIssueId(), request.getAttachmentIds(),
                 UserContext.CONTRACTOR));
@@ -48,7 +48,7 @@ public class QuotationRequestResource extends AbstractTicketingResource implemen
     public QuotationJson createQuotation(final UUID requestId, final QuotationJson body) {
         final Set<UUID> eligibleOrgIds = resolveEligibleOrganizationIds();
         final QuotationEntity quotation =
-            orderManagementController.createQuotationByContractor(eligibleOrgIds, requestId, body);
+            orderManagementController.createQuotationByContractor(principal, eligibleOrgIds, requestId, body);
         return QuotationJson.valueOf(quotation)
             .withAttachments(resolveAttachments(quotation.getIssueId(), quotation.getAttachmentIds(),
                 UserContext.CONTRACTOR));

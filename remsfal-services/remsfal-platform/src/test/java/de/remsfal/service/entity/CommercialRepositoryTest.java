@@ -42,11 +42,11 @@ class CommercialRepositoryTest extends AbstractServiceTest {
                 .setParameter(2, TestData.PROJECT_TITLE)
                 .executeUpdate());
         propertyId = propertyController
-                .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
+                .createProperty(ACTING_USER, TestData.PROJECT_ID, TestData.propertyBuilder().build())
                 .getId();
         assertNotNull(propertyId);
         buildingId = buildingController
-                .createBuilding(TestData.PROJECT_ID, propertyId,
+                .createBuilding(ACTING_USER, TestData.PROJECT_ID, propertyId,
                         TestData.buildingBuilder()
                                 .id(null)
                                 .address(TestData.addressBuilder().build())

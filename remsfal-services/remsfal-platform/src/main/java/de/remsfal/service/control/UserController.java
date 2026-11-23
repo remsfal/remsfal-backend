@@ -1,7 +1,5 @@
 package de.remsfal.service.control;
 
-import de.remsfal.service.entity.dao.AdditionalEmailRepository;
-import de.remsfal.service.entity.dto.AdditionalEmailEntity;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
@@ -25,21 +23,20 @@ import java.util.stream.Collectors;
 import org.jboss.logging.Logger;
 
 import de.remsfal.core.json.UserJson;
-import de.remsfal.core.json.eventing.AffectedTenantJson;
-import de.remsfal.core.json.eventing.ImmutableAffectedTenantJson;
 import de.remsfal.core.model.CustomerModel;
 import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
-import de.remsfal.service.boundary.eventing.UserEventProducer;
+import de.remsfal.service.control.event.UserEvent;
 import de.remsfal.service.control.event.IdentityRevocationEvent;
 import de.remsfal.service.control.exception.AlreadyExistsException;
 import de.remsfal.service.control.exception.ProprietorRequiredException;
+import de.remsfal.service.entity.dao.AdditionalEmailRepository;
 import de.remsfal.service.entity.dao.OrganizationRepository;
 import de.remsfal.service.entity.dao.ProjectRepository;
-import de.remsfal.service.entity.dao.TenantRepository;
 import de.remsfal.service.entity.dao.UserIdentityRepository;
 import de.remsfal.service.entity.dao.UserRepository;
+import de.remsfal.service.entity.dto.AdditionalEmailEntity;
 import de.remsfal.service.entity.dto.UserIdentityEntity.IdentityProvider;
 import de.remsfal.service.entity.dto.OrganizationEmployeeEntity;
 import de.remsfal.service.entity.dto.OrganizationEntity;
@@ -58,9 +55,6 @@ public class UserController {
 
     @Inject
     UserRepository repository;
-
-    @Inject
-    TenantRepository tenantRepository;
 
     @Inject
     ProjectRepository projectRepository;
@@ -83,11 +77,9 @@ public class UserController {
     @Inject
     AddressController addressController;
 
-    @Inject
-    NotificationController notificationController;
 
     @Inject
-    UserEventProducer userEventProducer;
+    Event<UserEvent> userEvent;
 
     @Inject
     Event<IdentityRevocationEvent> identityRevocation;
@@ -127,7 +119,7 @@ public class UserController {
             final UserEntity reclaimed = repository.mergeAndFlush(existing);
             linkIdentity(reclaimed, provider, subject, normalizedEmail);
             tenantUserLinker.linkTenantsForNewUser(reclaimed);
-            notificationController.informUserAboutRegistration(reclaimed);
+            userEvent.fire(new UserEvent.Registered(UserJson.valueOf(reclaimed), asActingUser(reclaimed)));
             return reclaimed;
         }
 
@@ -141,7 +133,9 @@ public class UserController {
             repository.persistAndFlush(entity);
             linkIdentity(entity, provider, subject, normalizedEmail);
             tenantUserLinker.linkTenantsForNewUser(entity);
-            notificationController.informUserAboutRegistration(entity);
+            final UserJson snapshot = UserJson.valueOf(entity);
+            userEvent.fire(new UserEvent.Created(snapshot, asActingUser(entity)));
+            userEvent.fire(new UserEvent.Registered(snapshot, asActingUser(entity)));
             return entity;
         } catch (PersistenceException e) {
             throw new AlreadyExistsException("Unable to create user", e);
@@ -176,7 +170,7 @@ public class UserController {
     }
 
     @Transactional(TxType.MANDATORY)
-    public UserEntity findOrCreateUser(final UserModel user) {
+    public UserEntity findOrCreateUser(final UserModel user, final UserModel actingUser) {
         if (user.getId() != null) {
             return repository.findByIdOptional(user.getId())
                 .orElseThrow(() -> new NotFoundException("User does not exist"));
@@ -190,40 +184,41 @@ public class UserController {
             userEntity.generateId();
             userEntity.setEmail(user.getEmail());
             repository.persist(userEntity);
+            userEvent.fire(new UserEvent.Created(UserJson.valueOf(userEntity), asActingUser(actingUser)));
             return userEntity;
         } else {
             throw new BadRequestException("Project member's email is missing");
         }
     }
 
+    /**
+     * Updates the account of the given user, who is also the acting user of the change.
+     */
     @Transactional
-    public CustomerModel updateUser(final UUID userId, final CustomerModel user) {
-        logger.infov("Updating a user ({0})", user);
-        final UserEntity entity = repository.findByIdWithAdditionalEmails(userId)
+    public CustomerModel updateUser(final UserModel user, final CustomerModel update) {
+        logger.infov("Updating a user ({0})", update);
+        final UserEntity entity = repository.findByIdWithAdditionalEmails(user.getId())
             .orElseThrow(() -> new NotFoundException("User not exist"));
 
-        final boolean tenantRelevantChange = user.getFirstName() != null || user.getLastName() != null
-            || user.getAddress() != null || user.getMobilePhoneNumber() != null
-            || user.getBusinessPhoneNumber() != null || user.getPrivatePhoneNumber() != null;
+        final boolean tenantRelevantChange = update.getFirstName() != null || update.getLastName() != null
+            || update.getAddress() != null || update.getMobilePhoneNumber() != null
+            || update.getBusinessPhoneNumber() != null || update.getPrivatePhoneNumber() != null;
 
-        mergeUserFields(user, entity);
+        mergeUserFields(update, entity);
 
-        final UserEntity mergedEntity;
-        if (user.getAdditionalEmails() != null) {
-            final List<AdditionalEmailEntity> createdEmails = syncAdditionalEmails(entity, user.getAdditionalEmails());
-            mergedEntity = repository.merge(entity);
-            createdEmails.forEach(additionalEmail -> notificationController.informUserAboutAdditionalEmailVerification(
-                mergedEntity,
-                additionalEmail.getEmail(),
-                additionalEmail.getVerificationToken()
-            ));
-        } else {
-            mergedEntity = repository.merge(entity);
-        }
+        final List<AdditionalEmailEntity> createdEmails = update.getAdditionalEmails() != null
+            ? syncAdditionalEmails(entity, update.getAdditionalEmails())
+            : List.of();
+        final UserEntity mergedEntity = repository.mergeAndFlush(entity);
 
+        final UserJson actingUser = asActingUser(user);
+        final UserJson snapshot = UserJson.valueOf(mergedEntity);
+        userEvent.fire(new UserEvent.Updated(snapshot, actingUser));
         if (tenantRelevantChange) {
-            notifyTenantRelevantUserUpdate(userId, mergedEntity);
+            userEvent.fire(new UserEvent.ContactDataChanged(snapshot, actingUser));
         }
+        createdEmails.forEach(additionalEmail -> userEvent.fire(new UserEvent.AdditionalEmailAdded(snapshot,
+            additionalEmail.getEmail(), additionalEmail.getVerificationToken(), actingUser)));
         return mergedEntity;
     }
 
@@ -261,15 +256,6 @@ public class UserController {
         return entity;
     }
 
-    private void notifyTenantRelevantUserUpdate(final UUID userId, final UserEntity updatedUser) {
-        final List<AffectedTenantJson> affectedTenants = tenantRepository.findByUserId(userId).stream()
-            .<AffectedTenantJson>map(tenant -> ImmutableAffectedTenantJson.builder()
-                .tenantId(tenant.getId())
-                .projectId(tenant.getProjectId())
-                .build())
-            .toList();
-        userEventProducer.sendUserUpdated(userId, UserJson.valueOf(updatedUser), affectedTenants);
-    }
     
     /**
      * Deletes a user. The user must not be the last active proprietor of a project, neither directly nor as the
@@ -282,7 +268,8 @@ public class UserController {
      * @throws ProprietorRequiredException if the user or one of its organizations is still required by a project
      */
     @Transactional
-    public boolean deleteUser(final UUID userId) {
+    public boolean deleteUser(final UserModel user) {
+        final UUID userId = user.getId();
         logger.infov("Deleting a user (id = {0})", userId);
         final List<OrganizationEntity> adminOrganizations = organizationRepository
             .findOrganizationEmployeesByUserId(userId).stream()
@@ -312,17 +299,18 @@ public class UserController {
                 + "that manages at least one project. Change the managing organization or delete these projects "
                 + "before deleting the account.");
         }
-        orphanedOrganizationIds.forEach(organizationController::deleteOrganization);
+        orphanedOrganizationIds.forEach(id -> organizationController.deleteOrganization(user, id));
         // Flush the organization deletions before the bulk delete of the user, which removes the employments
         // of the organizations via ON DELETE CASCADE and would otherwise let the flush find no rows to delete
         organizationRepository.flush();
+        final Optional<UserJson> snapshot = repository.findByIdWithAdditionalEmails(userId).map(UserJson::valueOf);
         final List<UserIdentityEntity> appleIdentities = identityRepository
             .findByUserIdAndProvider(userId, IdentityProvider.APPLE).stream()
             .filter(identity -> identity.getRefreshToken() != null)
             .toList();
         final boolean deleted = repository.remove(userId);
         if (deleted) {
-            userEventProducer.sendUserDeleted(userId);
+            snapshot.ifPresent(deletedUser -> userEvent.fire(new UserEvent.Deleted(deletedUser, asActingUser(user))));
             appleIdentities.forEach(identity -> identityRevocation.fire(new IdentityRevocationEvent(
                 identity.getProvider(), identity.getSubject(), identity.getRefreshToken(),
                 identity.getTokenClientId())));
@@ -343,7 +331,8 @@ public class UserController {
             logger.infov("Applying name reported by identity provider (id={0})", userId);
             entity.setFirstName(isBlank(firstName) ? null : firstName.trim());
             entity.setLastName(isBlank(lastName) ? null : lastName.trim());
-            repository.merge(entity);
+            final UserEntity merged = repository.mergeAndFlush(entity);
+            userEvent.fire(new UserEvent.Updated(UserJson.valueOf(merged), asActingUser(merged)));
         }
     }
 
@@ -401,6 +390,9 @@ public class UserController {
         additionalEmail.setVerified(true);
         additionalEmail.setVerificationToken(null);
         additionalEmail.setVerificationTokenExpiresAt(null);
+        additionalEmailRepository.flush();
+        userEvent.fire(new UserEvent.Updated(UserJson.valueOf(additionalEmail.getUser()),
+            asActingUser(additionalEmail.getUser())));
     }
 
     private List<AdditionalEmailEntity> syncAdditionalEmails(UserEntity user, List<String> newEmailsRaw) {
@@ -451,6 +443,13 @@ public class UserController {
             createdEmails.add(ae);
         }
         return createdEmails;
+    }
+
+    /**
+     * The acting user of an event only carries id, email and name, also if the user is an entity.
+     */
+    private static UserJson asActingUser(final UserModel user) {
+        return UserJson.valueOf(user);
     }
 
 }

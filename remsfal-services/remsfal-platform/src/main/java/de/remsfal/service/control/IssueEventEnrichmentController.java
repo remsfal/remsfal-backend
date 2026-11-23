@@ -93,7 +93,7 @@ public class IssueEventEnrichmentController {
             .placeOfPerformance(rentalUnit != null ? findPlaceOfPerformance(rentalUnit)
                 : event.getPlaceOfPerformance())
             .link(buildIssueLink(event))
-            .principal(enrichUser(event.getPrincipal()))
+            .actingUser(enrichUser(event.getActingUser()))
             .assignee(enrichUser(event.getAssignee()))
             .reporter(enrichUser(event.getReporter()))
             .initiator(enrichUser(event.getInitiator()))

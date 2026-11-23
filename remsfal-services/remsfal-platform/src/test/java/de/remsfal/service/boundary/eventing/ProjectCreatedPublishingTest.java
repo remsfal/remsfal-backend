@@ -17,11 +17,13 @@ import org.junit.jupiter.api.Test;
 import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.json.eventing.ProjectEventJson;
 import de.remsfal.core.json.project.ImmutableProjectJson;
+import de.remsfal.core.json.project.ProjectJson;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.ProjectModel;
 import de.remsfal.service.control.ProjectController;
 import de.remsfal.service.control.UserController;
-import de.remsfal.service.control.event.ProjectEventRecorder;
+import de.remsfal.service.control.event.EventRecorder;
+import de.remsfal.service.control.event.ProjectEvent;
 import de.remsfal.test.TestData;
 import de.remsfal.test.kafka.AbstractKafkaTest;
 import io.quarkus.narayana.jta.QuarkusTransaction;
@@ -44,7 +46,7 @@ class ProjectCreatedPublishingTest extends AbstractKafkaTest {
     ProjectController projectController;
 
     @Inject
-    ProjectEventRecorder recorder;
+    EventRecorder recorder;
 
     @Override
     @BeforeEach
@@ -73,10 +75,10 @@ class ProjectCreatedPublishingTest extends AbstractKafkaTest {
     @Test
     void createProject_rolledBack_publishesNoEvent() {
         final UserModel user = createUser();
-        recorder.setRejectProjectCreation(true);
+        final ProjectJson project = ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build();
+        recorder.setRejectedType(ProjectEvent.Created.class);
 
-        assertThrows(IllegalStateException.class, () -> projectController.createProject(user,
-            ImmutableProjectJson.builder().title(TestData.PROJECT_TITLE).build()));
+        assertThrows(IllegalStateException.class, () -> projectController.createProject(user, project));
 
         final List<?> records = companion.consumeStrings()
             .fromTopics(ProjectEventJson.TOPIC)
@@ -88,7 +90,7 @@ class ProjectCreatedPublishingTest extends AbstractKafkaTest {
     private UserModel createUser() {
         final String email = UUID.randomUUID() + "@example.org";
         return QuarkusTransaction.requiringNew().call(() ->
-            userController.findOrCreateUser(ImmutableUserJson.builder().email(email).build()));
+            userController.findOrCreateUser(ImmutableUserJson.builder().email(email).build(), null));
     }
 
 }

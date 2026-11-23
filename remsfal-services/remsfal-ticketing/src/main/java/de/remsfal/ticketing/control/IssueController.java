@@ -7,7 +7,6 @@ import jakarta.ws.rs.NotFoundException;
 
 import org.jboss.logging.Logger;
 
-import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.model.UserContext;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.ticketing.IssueModel;
@@ -32,9 +31,6 @@ public class IssueController {
 
     @Inject
     Logger logger;
-
-    @Inject
-    RemsfalPrincipal principal;
 
     @Inject
     IssueRepository issueRepository;
@@ -159,7 +155,7 @@ public class IssueController {
         return issueRepository.findByQuery(filter, cursor, limit);
     }
 
-    public IssueModel updateIssue(final UUID issueId, final IssueModel issue) {
+    public IssueModel updateIssue(final UserModel user, final UUID issueId, final IssueModel issue) {
         logger.infov("Updating issue (issueId={0})", issueId);
 
         final IssueEntity entity = issueRepository.findByIssueId(issueId)
@@ -190,9 +186,9 @@ public class IssueController {
         }
         if (issue.getAssigneeId() != null) {
             entity.setAssigneeId(issue.getAssigneeId());
-            issueEventProducer.sendIssueAssigned(entity, principal);
+            issueEventProducer.sendIssueAssigned(entity, user);
         } else {
-            issueEventProducer.sendIssueUpdated(entity, principal);
+            issueEventProducer.sendIssueUpdated(entity, user);
         }
         // Relations are managed through separate endpoints (PUT/POST/DELETE)
         // and should not be updated via PATCH
@@ -200,7 +196,7 @@ public class IssueController {
         if (entity.getAgreementId() != null && Boolean.TRUE.equals(entity.isVisibleToTenants())
             && issue.getStatus() != null && issue.getStatus() != oldStatus) {
             timelineController.createTimelineEntry(entity.getAgreementId(), entity.getId(),
-                entity.getProjectId(), principal, UserContext.MANAGER,
+                entity.getProjectId(), user, UserContext.MANAGER,
                 MessagePurpose.STATUS_CHANGED, entity.getStatus().name());
         }
 
@@ -217,7 +213,7 @@ public class IssueController {
         issueRepository.delete(entity.getKey());
     }
 
-    public void closeIssue(final UUID issueId, final UserContext closerRole) {
+    public void closeIssue(final UserModel user, final UUID issueId, final UserContext closerRole) {
         logger.infov("Closing issue (issueId={0})", issueId);
         final Optional<IssueEntity> entity = issueRepository.findByIssueId(issueId);
         entity.ifPresent((e) -> {
@@ -227,7 +223,7 @@ public class IssueController {
             if (oldStatus != IssueStatus.CLOSED && e.getAgreementId() != null
                 && Boolean.TRUE.equals(e.isVisibleToTenants())) {
                 timelineController.createTimelineEntry(e.getAgreementId(), e.getId(), e.getProjectId(),
-                    principal, closerRole, MessagePurpose.STATUS_CHANGED,
+                    user, closerRole, MessagePurpose.STATUS_CHANGED,
                     IssueStatus.CLOSED.name());
             }
         });

@@ -40,7 +40,7 @@ class SiteControllerTest extends AbstractServiceTest {
     @Test
     void createSite_FAILED_noProjectNoProperty() {
         final UUID propertyId = propertyController
-            .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
+            .createProperty(ACTING_USER, TestData.PROJECT_ID, TestData.propertyBuilder().build())
             .getId();
         assertNotNull(propertyId);
 
@@ -50,12 +50,12 @@ class SiteControllerTest extends AbstractServiceTest {
                 .build();
         
         assertThrows(ConstraintViolationException.class,
-            () -> siteController.createSite(TestData.PROJECT_ID, null, site));
+            () -> siteController.createSite(ACTING_USER, TestData.PROJECT_ID, null, site));
     }
     
     @Test
     void createSite_SUCCESS_idGenerated() {
-        final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
+        final PropertyModel property = propertyController.createProperty(ACTING_USER, TestData.PROJECT_ID, TestData.propertyBuilder().build());
         assertNotNull(property.getId());
 
         final SiteModel site = TestData.siteBuilder()
@@ -63,7 +63,7 @@ class SiteControllerTest extends AbstractServiceTest {
             .address(TestData.addressBuilder().build())
             .build();
         
-        final SiteModel result = siteController.createSite(TestData.PROJECT_ID, property.getId(), site);
+        final SiteModel result = siteController.createSite(ACTING_USER, TestData.PROJECT_ID, property.getId(), site);
         
         assertNotEquals(site.getId(), result.getId());
         assertEquals(site.getTitle(), result.getTitle());
@@ -85,9 +85,9 @@ class SiteControllerTest extends AbstractServiceTest {
     @Test
     void getSite_SUCCESS_siteRetrieved() {
         assertNotNull(TestData.propertyBuilder().build());
-        final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
+        final PropertyModel property = propertyController.createProperty(ACTING_USER, TestData.PROJECT_ID, TestData.propertyBuilder().build());
         assertNotNull(property.getId());
-        final SiteModel site = siteController.createSite(TestData.PROJECT_ID, property.getId(),
+        final SiteModel site = siteController.createSite(ACTING_USER, TestData.PROJECT_ID, property.getId(),
             TestData.siteBuilder().id(null).address(TestData.addressBuilder().build()).build());
         assertNotNull(site.getId());
 
@@ -102,11 +102,11 @@ class SiteControllerTest extends AbstractServiceTest {
     @Test
     void getSite_FAILED_wrongProjectId() {
         final UUID propertyId = propertyController
-            .createProperty(TestData.PROJECT_ID_1, TestData.propertyBuilder().build())
+            .createProperty(ACTING_USER, TestData.PROJECT_ID_1, TestData.propertyBuilder().build())
             .getId();
         assertNotNull(propertyId);
         final UUID siteId = siteController
-            .createSite(TestData.PROJECT_ID, propertyId,
+            .createSite(ACTING_USER, TestData.PROJECT_ID, propertyId,
             TestData.siteBuilder().id(null).address(TestData.addressBuilder().build()).build())
             .getId();
         assertNotNull(siteId);

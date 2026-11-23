@@ -98,7 +98,7 @@ public class IssueResource extends AbstractTicketingResource implements IssueEnd
     @Override
     public IssueJson updateIssue(final UUID issueId, final IssueJson issue) {
         checkProjectIssueAccessPermissions(issueId);
-        final IssueModel updatedIssue = issueController.updateIssue(issueId, issue);
+        final IssueModel updatedIssue = issueController.updateIssue(principal, issueId, issue);
         return IssueJson.valueOf(updatedIssue);
     }
 
