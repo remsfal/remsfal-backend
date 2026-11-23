@@ -133,7 +133,6 @@ class IssueControllerTest extends AbstractTicketingTest {
         final UUID agreementId = UUID.randomUUID();
         final UUID reporterId = UUID.randomUUID();
 
-        final UserModel user = mock(UserModel.class);
         when(user.getId()).thenReturn(reporterId);
         when(user.getName()).thenReturn("Max Manager");
 
@@ -160,7 +159,6 @@ class IssueControllerTest extends AbstractTicketingTest {
         final UUID projectId = UUID.randomUUID();
         final UUID agreementId = UUID.randomUUID();
 
-        final UserModel user = mock(UserModel.class);
         when(user.getId()).thenReturn(UUID.randomUUID());
         when(user.getName()).thenReturn("Max Manager");
 
@@ -178,7 +176,6 @@ class IssueControllerTest extends AbstractTicketingTest {
     void createIssue_managerCreated_noAgreement_createsNoTimelineEntry() {
         final UUID projectId = UUID.randomUUID();
 
-        final UserModel user = mock(UserModel.class);
         when(user.getId()).thenReturn(UUID.randomUUID());
         when(user.getName()).thenReturn("Max Manager");
 
@@ -201,7 +198,6 @@ class IssueControllerTest extends AbstractTicketingTest {
         final UUID agreementId = UUID.randomUUID();
         final UUID reporterId = UUID.randomUUID();
 
-        final UserModel user = mock(UserModel.class);
         when(user.getId()).thenReturn(reporterId);
         when(user.getName()).thenReturn("Tina Tenant");
 

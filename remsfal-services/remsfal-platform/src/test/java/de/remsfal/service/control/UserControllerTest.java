@@ -468,9 +468,10 @@ class UserControllerTest extends AbstractServiceTest {
            .additionalEmails(List.of(TestData.USER_EMAIL))
            .build();
 
+        final UserModel actingUser = actingUser(userId);
         AlreadyExistsException ex = assertThrows(
             AlreadyExistsException.class,
-            () -> controller.updateUser(actingUser(userId), update)
+            () -> controller.updateUser(actingUser, update)
         );
 
         assertEquals("Alternative email must not be equal to an existing login email.", ex.getMessage());
@@ -543,7 +544,8 @@ class UserControllerTest extends AbstractServiceTest {
             .additionalEmails(List.of(TestData.ALTERNATIVE_EMAIL_1))
             .build();
 
-        AlreadyExistsException ex = assertThrows(AlreadyExistsException.class, () -> controller.updateUser(actingUser(userId2), update2));
+        final UserModel actingUser = actingUser(userId2);
+        AlreadyExistsException ex = assertThrows(AlreadyExistsException.class, () -> controller.updateUser(actingUser, update2));
         assertEquals("Alternative email already exists.", ex.getMessage());
 
         Long count = entityManager
