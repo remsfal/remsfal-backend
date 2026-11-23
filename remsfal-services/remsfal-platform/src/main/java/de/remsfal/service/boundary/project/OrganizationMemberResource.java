@@ -1,9 +1,9 @@
 package de.remsfal.service.boundary.project;
 
 import de.remsfal.core.api.project.OrganizationMemberEndpoint;
-import de.remsfal.core.json.project.ProjectMemberJson;
 import de.remsfal.core.json.project.OrganizationMemberJson;
 import de.remsfal.core.json.project.OrganizationMemberListJson;
+import de.remsfal.core.json.project.ProjectMemberJson;
 import de.remsfal.core.model.project.OrganizationMemberModel;
 import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
 import de.remsfal.service.control.ProjectController;
@@ -53,7 +53,7 @@ public class OrganizationMemberResource extends AbstractProjectResource implemen
             && principal.getOrganizationRole(organizationId) != null) {
             throw new ForbiddenException("Nobody can upgrade their own role");
         }
-        final OrganizationMemberModel model = controller.changeProjectOrganizationRole(projectId,
+        final OrganizationMemberModel model = controller.changeProjectOrganizationRole(principal, projectId,
             organizationId, organization.getRole());
         return OrganizationMemberJson.valueOf(model, fetchMembers(model));
     }
@@ -71,7 +71,7 @@ public class OrganizationMemberResource extends AbstractProjectResource implemen
             && principal.getProjectRole(projectId) != MemberRole.PROPRIETOR) {
             throw new ForbiddenException("Only a proprietor can remove a proprietor from a project");
         }
-        controller.removeProjectOrganization(projectId, organizationId);
+        controller.removeProjectOrganization(principal, projectId, organizationId);
     }
 
 }

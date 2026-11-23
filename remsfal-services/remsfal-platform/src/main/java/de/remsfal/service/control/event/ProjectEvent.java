@@ -2,6 +2,7 @@ package de.remsfal.service.control.event;
 
 import java.util.UUID;
 
+import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.project.ProjectJson;
 
 /**
@@ -15,26 +16,26 @@ public sealed interface ProjectEvent {
     ProjectJson project();
 
     /** The user who triggered the change, null if the change was not triggered by a user. */
-    UUID actingUserId();
+    UserJson actingUser();
 
     default UUID projectId() {
         return project().getId();
     }
 
-    record Created(ProjectJson project, UUID actingUserId) implements ProjectEvent {
+    record Created(ProjectJson project, UserJson actingUser) implements ProjectEvent {
     }
 
-    record Updated(ProjectJson project, UUID actingUserId) implements ProjectEvent {
+    record Updated(ProjectJson project, UserJson actingUser) implements ProjectEvent {
     }
 
-    record Deleted(ProjectJson project, UUID actingUserId) implements ProjectEvent {
+    record Deleted(ProjectJson project, UserJson actingUser) implements ProjectEvent {
     }
 
     /**
      * The managing organization of the project has changed. The new managing organization (or none) is part of the
      * project snapshot.
      */
-    record ManagingOrganizationChanged(ProjectJson project, UUID previousOrganizationId, UUID actingUserId)
+    record ManagingOrganizationChanged(ProjectJson project, UUID previousOrganizationId, UserJson actingUser)
         implements ProjectEvent {
     }
 

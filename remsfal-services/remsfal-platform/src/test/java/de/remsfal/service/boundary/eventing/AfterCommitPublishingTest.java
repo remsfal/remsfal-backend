@@ -105,7 +105,7 @@ class AfterCommitPublishingTest extends AbstractServiceTest {
         insertTenant(tenantId, agreementId, TestData.PROJECT_ID, TestData.USER_ID_1,
             TestData.USER_FIRST_NAME_1, TestData.USER_LAST_NAME_1, null);
 
-        userController.updateUser(TestData.USER_ID_1,
+        userController.updateUser(actingUser(TestData.USER_ID_1),
             ImmutableUserJson.builder().lastName("Dr. " + TestData.USER_LAST_NAME_1).build());
 
         final JsonPath event = consumeFirst(UserEventJson.TOPIC);
@@ -118,7 +118,7 @@ class AfterCommitPublishingTest extends AbstractServiceTest {
 
     @Test
     void updateUser_onlyLocale_publishesNoUserUpdated() {
-        userController.updateUser(TestData.USER_ID_1, ImmutableUserJson.builder().locale("en").build());
+        userController.updateUser(actingUser(TestData.USER_ID_1), ImmutableUserJson.builder().locale("en").build());
 
         assertNoRecords(UserEventJson.TOPIC);
     }
@@ -137,10 +137,8 @@ class AfterCommitPublishingTest extends AbstractServiceTest {
         assertEquals("ORGANIZATION_UPDATED", event.getString("organizationEventType"));
         assertEquals("+491234567899", event.getString("organization.phone"));
         assertEquals(contractorId.toString(), event.getString("affectedContractors[0].contractorId"));
-        assertEquals(TestData.USER_ID_1.toString(), event.getString("actingUserId"));
-        assertEquals(TestData.USER_ID_1.toString(), event.getString("changedByUserId"));
-        assertEquals(TestData.USER_FIRST_NAME_1 + " " + TestData.USER_LAST_NAME_1,
-            event.getString("changedByName"));
+        assertEquals(TestData.USER_ID_1.toString(), event.getString("actingUser.id"));
+        assertEquals(TestData.USER_LAST_NAME_1, event.getString("actingUser.lastName"));
     }
 
     @Test
@@ -155,7 +153,7 @@ class AfterCommitPublishingTest extends AbstractServiceTest {
         assertEquals("PROJECT_DELETED", event.getString("projectEventType"));
         assertEquals(TestData.PROJECT_ID.toString(), event.getString("projectId"));
         assertEquals(TestData.PROJECT_TITLE, event.getString("project.title"));
-        assertEquals(TestData.USER_ID_1.toString(), event.getString("actingUserId"));
+        assertEquals(TestData.USER_ID_1.toString(), event.getString("actingUser.id"));
     }
 
     @Test

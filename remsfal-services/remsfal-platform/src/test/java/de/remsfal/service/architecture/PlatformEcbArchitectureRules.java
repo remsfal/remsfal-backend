@@ -142,6 +142,19 @@ public final class PlatformEcbArchitectureRules {
                     .allowEmptyShould(true);
 
     /**
+     * The user is authenticated in the boundary. Control logic receives the acting user explicitly as parameter
+     * ({@code UserModel user}) and must not depend on the request scoped {@code RemsfalPrincipal}, so that it also
+     * works outside of a request (Kafka consumers, schedulers) and the acting user is visible in its signature.
+     */
+    @ArchTest
+    public static final ArchRule control_should_not_depend_on_principal =
+            noClasses()
+                    .that().resideInAnyPackage("de.remsfal.service.control..")
+                    .should().dependOnClassesThat().haveFullyQualifiedName(
+                            "de.remsfal.common.authentication.RemsfalPrincipal")
+                    .allowEmptyShould(true);
+
+    /**
      * Ensures that entity classes are completely isolated from
      * boundary and control layers.
      * Entities represent pure domain state and must not depend

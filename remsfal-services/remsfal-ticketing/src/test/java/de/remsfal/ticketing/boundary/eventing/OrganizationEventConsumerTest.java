@@ -22,6 +22,7 @@ import org.mockito.ArgumentCaptor;
 
 import com.datastax.oss.quarkus.test.CassandraTestResource;
 
+import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.json.eventing.AffectedContractorJson;
 import de.remsfal.core.json.eventing.ImmutableAffectedContractorJson;
 import de.remsfal.core.json.eventing.ImmutableOrganizationEventJson;
@@ -98,8 +99,11 @@ class OrganizationEventConsumerTest {
             .organizationId(TestData.ORGANIZATION_ID)
             .organization(organization)
             .affectedContractors(affectedContractors)
-            .changedByUserId(changedByUserId)
-            .changedByName(TestData.USER_NAME)
+            .actingUser(ImmutableUserJson.builder()
+                .id(changedByUserId)
+                .firstName(TestData.USER_FIRST_NAME_1)
+                .lastName(TestData.USER_LAST_NAME_1)
+                .build())
             .build();
 
         consumer.consume(Message.of(event)).toCompletableFuture().join();
@@ -138,8 +142,11 @@ class OrganizationEventConsumerTest {
             .organizationEventType(OrganizationEventType.ORGANIZATION_UPDATED)
             .organizationId(TestData.ORGANIZATION_ID)
             .organization(ImmutableOrganizationJson.builder().name(TestData.ORGANIZATION_NAME).build())
-            .changedByUserId(changedByUserId)
-            .changedByName(TestData.USER_NAME)
+            .actingUser(ImmutableUserJson.builder()
+                .id(changedByUserId)
+                .firstName(TestData.USER_FIRST_NAME_1)
+                .lastName(TestData.USER_LAST_NAME_1)
+                .build())
             .build();
 
         consumer.consume(Message.of(event)).toCompletableFuture().join();
@@ -156,8 +163,11 @@ class OrganizationEventConsumerTest {
             .organizationId(TestData.ORGANIZATION_ID)
             .organization(ImmutableOrganizationJson.builder().name(TestData.ORGANIZATION_NAME).build())
             .affectedContractors(List.of())
-            .changedByUserId(changedByUserId)
-            .changedByName(TestData.USER_NAME)
+            .actingUser(ImmutableUserJson.builder()
+                .id(changedByUserId)
+                .firstName(TestData.USER_FIRST_NAME_1)
+                .lastName(TestData.USER_LAST_NAME_1)
+                .build())
             .build();
 
         consumer.consume(Message.of(event)).toCompletableFuture().join();
@@ -182,8 +192,11 @@ class OrganizationEventConsumerTest {
             .organization(organization)
             .affectedContractors(List.of(
                 ImmutableAffectedContractorJson.builder().contractorId(contractorId).projectId(projectId).build()))
-            .changedByUserId(changedByUserId)
-            .changedByName(TestData.USER_NAME)
+            .actingUser(ImmutableUserJson.builder()
+                .id(changedByUserId)
+                .firstName(TestData.USER_FIRST_NAME_1)
+                .lastName(TestData.USER_LAST_NAME_1)
+                .build())
             .build();
 
         consumer.consume(Message.of(event)).toCompletableFuture().join();

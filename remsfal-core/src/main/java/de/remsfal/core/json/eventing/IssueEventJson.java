@@ -40,7 +40,7 @@ import jakarta.annotation.Nullable;
 @ImmutableStyle
 @JsonDeserialize(as = ImmutableIssueEventJson.class)
 @JsonNaming(PropertyNamingStrategies.LowerCamelCaseStrategy.class)
-public interface IssueEventJson {
+public interface IssueEventJson extends EventHeaderJson {
 
     String TOPIC_BASIC = "issue-events-basic";
     String TOPIC_ENRICHED = "issue-events-enriched";
@@ -104,13 +104,6 @@ public interface IssueEventJson {
      */
     @Nullable
     String getLink();
-
-    /**
-     * The user who directly triggered this event. Always populated by the producer, present on
-     * every event type regardless of which role fields below also apply.
-     */
-    @Nullable
-    UserJson getPrincipal();
 
     /**
      * Target user for owner assignment events. Also carried on every event as the issue's

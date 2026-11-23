@@ -45,7 +45,7 @@ public class PropertyResource extends AbstractProjectResource implements Propert
     @Override
     public Response createProperty(final UUID projectId, final PropertyJson property) {
         checkPropertyWritePermissions(projectId);
-        final PropertyModel model = controller.createProperty(projectId, property);
+        final PropertyModel model = controller.createProperty(principal, projectId, property);
         return getCreatedResponseBuilder(model.getId())
             .type(MediaType.APPLICATION_JSON)
             .entity(PropertyJson.valueOf(model))
@@ -62,13 +62,13 @@ public class PropertyResource extends AbstractProjectResource implements Propert
     @Override
     public PropertyJson updateProperty(final UUID projectId, final UUID propertyId, final PropertyJson property) {
         checkPropertyWritePermissions(projectId);
-        return PropertyJson.valueOf(controller.updateProperty(projectId, propertyId, property));
+        return PropertyJson.valueOf(controller.updateProperty(principal, projectId, propertyId, property));
     }
 
     @Override
     public void deleteProperty(final UUID projectId, final UUID propertyId) {
         checkPropertyWritePermissions(projectId);
-        controller.deleteProperty(projectId, propertyId);
+        controller.deleteProperty(principal, projectId, propertyId);
     }
 
     @Override

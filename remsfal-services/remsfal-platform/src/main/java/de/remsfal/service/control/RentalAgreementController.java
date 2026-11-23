@@ -1,13 +1,14 @@
 package de.remsfal.service.control;
 
+import de.remsfal.core.json.UserJson;
+import de.remsfal.core.json.project.RentalAgreementJson;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.UserModel;
+import de.remsfal.core.model.project.RentModel.BillingCycle;
+import de.remsfal.core.model.project.RentModel;
 import de.remsfal.core.model.project.RentalAgreementKeysModel;
 import de.remsfal.core.model.project.RentalAgreementModel;
-import de.remsfal.core.model.project.RentModel;
-import de.remsfal.core.model.project.RentModel.BillingCycle;
 import de.remsfal.core.model.project.TenantModel;
-import de.remsfal.core.json.project.RentalAgreementJson;
 import de.remsfal.service.control.event.RentalAgreementEvent;
 import de.remsfal.service.entity.dao.ProjectRepository;
 import de.remsfal.service.entity.dao.RentalAgreementRepository;
@@ -64,9 +65,6 @@ public class RentalAgreementController {
     TenantController tenantController;
 
     @Inject
-    ActingUserController actingUser;
-
-    @Inject
     Event<RentalAgreementEvent> rentalAgreementEvent;
 
     public List<RentalAgreementEntity> getRentalAgreements(final UserModel tenant) {
@@ -93,7 +91,7 @@ public class RentalAgreementController {
      * agreement of the project. Linked user accounts are never deleted.
      */
     @Transactional
-    public boolean deleteRentalAgreement(final UUID projectId, final UUID agreementId) {
+    public boolean deleteRentalAgreement(final UserModel user, final UUID projectId, final UUID agreementId) {
         logger.infov("Deleting a Rental Agreement (projectId={0}, agreementId={1})",
             projectId, agreementId);
         final Optional<RentalAgreementEntity> entity = rentalAgreementRepository
@@ -107,8 +105,8 @@ public class RentalAgreementController {
         final RentalAgreementJson snapshot = RentalAgreementJson.valueOf(entity.get());
         rentalAgreementRepository.delete(entity.get());
         rentalAgreementRepository.flush();
-        tenantController.deleteOrphanedTenants(tenantIds);
-        rentalAgreementEvent.fire(new RentalAgreementEvent.Deleted(projectId, snapshot, actingUser.getId()));
+        tenantController.deleteOrphanedTenants(user, tenantIds);
+        rentalAgreementEvent.fire(new RentalAgreementEvent.Deleted(projectId, snapshot, UserJson.valueOf(user)));
         return true;
     }
 
@@ -144,7 +142,8 @@ public class RentalAgreementController {
     }
 
     @Transactional
-    public RentalAgreementEntity createRentalAgreement(final UUID projectId, final RentalAgreementModel agreement) {
+    public RentalAgreementEntity createRentalAgreement(final UserModel user, final UUID projectId,
+        final RentalAgreementModel agreement) {
         logger.infov("Creating a rental agreement (project={0})", projectId);
 
         if (projectRepository.findById(projectId) == null) {
@@ -158,7 +157,7 @@ public class RentalAgreementController {
         entity.setProjectId(projectId);
 
         // Process tenants
-        entity.setTenants(tenantController.resolveOrCreateTenants(projectId, agreement.getTenants()));
+        entity.setTenants(tenantController.resolveOrCreateTenants(user, projectId, agreement.getTenants()));
 
         // Process keys
         entity.setKeys(processKeys(agreement.getKeys()));
@@ -168,7 +167,7 @@ public class RentalAgreementController {
 
         rentalAgreementRepository.persistAndFlush(entity);
         rentalAgreementEvent.fire(new RentalAgreementEvent.Created(projectId, RentalAgreementJson.valueOf(entity),
-            actingUser.getId()));
+            UserJson.valueOf(user)));
         return entity;
     }
 
@@ -199,7 +198,8 @@ public class RentalAgreementController {
     }
 
     @Transactional
-    public RentalAgreementEntity updateRentalAgreement(final UUID projectId, final UUID agreementId,
+    public RentalAgreementEntity updateRentalAgreement(final UserModel user, final UUID projectId,
+        final UUID agreementId,
         final RentalAgreementModel agreement) {
         logger.infov("Updating a rental agreement (projectId={0}, agreementId={1})", projectId, agreementId);
         final RentalAgreementEntity entity = rentalAgreementRepository
@@ -212,7 +212,7 @@ public class RentalAgreementController {
         final List<? extends TenantModel> tenants = agreement.getTenants();
         if (tenants != null && !tenants.isEmpty()) {
             entity.getTenants().clear();
-            List<TenantEntity> tenantEntities = tenantController.resolveOrCreateTenants(projectId, tenants);
+            List<TenantEntity> tenantEntities = tenantController.resolveOrCreateTenants(user, projectId, tenants);
             entity.getTenants().addAll(tenantEntities);
         }
 
@@ -221,7 +221,7 @@ public class RentalAgreementController {
             entity.setKeys(processKeys(agreement.getKeys()));
         }
 
-        return fireUpdated(projectId, rentalAgreementRepository.merge(entity));
+        return fireUpdated(user, projectId, rentalAgreementRepository.merge(entity));
     }
 
     /**
@@ -241,16 +241,17 @@ public class RentalAgreementController {
     }
 
     @Transactional
-    public TenantEntity addTenant(final UUID projectId, final UUID agreementId, final TenantModel tenantInput) {
+    public TenantEntity addTenant(final UserModel user, final UUID projectId, final UUID agreementId,
+        final TenantModel tenantInput) {
         logger.infov("Adding a tenant to a rental agreement (projectId={0}, agreementId={1})",
             projectId, agreementId);
         final RentalAgreementEntity entity = rentalAgreementRepository
             .findRentalAgreementByProject(projectId, agreementId)
             .orElseThrow(() -> new NotFoundException("Rental agreement not exist"));
 
-        final TenantEntity tenant = tenantController.resolveOrCreateTenant(projectId, tenantInput);
+        final TenantEntity tenant = tenantController.resolveOrCreateTenant(user, projectId, tenantInput);
         entity.addTenant(tenant);
-        fireUpdated(projectId, rentalAgreementRepository.merge(entity));
+        fireUpdated(user, projectId, rentalAgreementRepository.merge(entity));
         return tenant;
     }
 
@@ -259,7 +260,7 @@ public class RentalAgreementController {
      * agreement of the project. A linked user account is never deleted.
      */
     @Transactional
-    public void removeTenant(final UUID projectId, final UUID agreementId, final UUID tenantId) {
+    public void removeTenant(final UserModel user, final UUID projectId, final UUID agreementId, final UUID tenantId) {
         logger.infov("Removing a tenant from a rental agreement (projectId={0}, agreementId={1}, tenantId={2})",
             projectId, agreementId, tenantId);
         final RentalAgreementEntity entity = rentalAgreementRepository
@@ -269,8 +270,8 @@ public class RentalAgreementController {
         entity.removeTenant(tenantId);
         rentalAgreementRepository.merge(entity);
         rentalAgreementRepository.flush();
-        tenantController.deleteOrphanedTenants(List.of(tenantId));
-        fireUpdated(projectId, entity);
+        tenantController.deleteOrphanedTenants(user, List.of(tenantId));
+        fireUpdated(user, projectId, entity);
     }
 
     /**
@@ -288,7 +289,7 @@ public class RentalAgreementController {
      * @return the updated rental agreement entity
      */
     @Transactional
-    public RentalAgreementEntity addRent(final UUID projectId, final UUID agreementId,
+    public RentalAgreementEntity addRent(final UserModel user, final UUID projectId, final UUID agreementId,
             final UnitType rentalUnitType, final UUID rentalUnitId, final RentModel rentInput) {
         logger.infov("Adding a rent to a rental agreement (projectId={0}, agreementId={1}, "
             + "rentalUnitType={2}, rentalUnitId={3})", projectId, agreementId, rentalUnitType, rentalUnitId);
@@ -332,7 +333,7 @@ public class RentalAgreementController {
                 rentalUnitId, rentInput, CommercialRentEntity::new, CommercialRentEntity::setCommercialId);
         }
 
-        return fireUpdated(projectId, rentalAgreementRepository.merge(entity));
+        return fireUpdated(user, projectId, rentalAgreementRepository.merge(entity));
     }
 
     /**
@@ -402,7 +403,8 @@ public class RentalAgreementController {
      * @param rentalUnitId the ID of the rental unit
      */
     @Transactional
-    public void deleteRents(final UUID projectId, final UUID agreementId, final UnitType rentalUnitType,
+    public void deleteRents(final UserModel user, final UUID projectId, final UUID agreementId,
+        final UnitType rentalUnitType,
             final UUID rentalUnitId) {
         logger.infov("Deleting rents of a rental unit from a rental agreement (projectId={0}, agreementId={1}, "
             + "rentalUnitType={2}, rentalUnitId={3})", projectId, agreementId, rentalUnitType, rentalUnitId);
@@ -419,16 +421,17 @@ public class RentalAgreementController {
             case COMMERCIAL -> removeRentsForUnit(entity.getCommercialRents(), rentalUnitId);
         }
 
-        fireUpdated(projectId, rentalAgreementRepository.merge(entity));
+        fireUpdated(user, projectId, rentalAgreementRepository.merge(entity));
     }
 
     /**
      * Fires {@link RentalAgreementEvent.Updated} with a snapshot of the flushed rental agreement.
      */
-    private RentalAgreementEntity fireUpdated(final UUID projectId, final RentalAgreementEntity entity) {
+    private RentalAgreementEntity fireUpdated(final UserModel user, final UUID projectId,
+        final RentalAgreementEntity entity) {
         rentalAgreementRepository.flush();
         rentalAgreementEvent.fire(new RentalAgreementEvent.Updated(projectId, RentalAgreementJson.valueOf(entity),
-            actingUser.getId()));
+            UserJson.valueOf(user)));
         return entity;
     }
 

@@ -2,6 +2,7 @@ package de.remsfal.service.control.event;
 
 import java.util.UUID;
 
+import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.project.TenantJson;
 
 /**
@@ -14,15 +15,15 @@ public sealed interface TenantEvent {
     /** Snapshot of the tenant, taken within the transaction (for a deletion the last state). */
     TenantJson tenant();
 
-    UUID actingUserId();
+    UserJson actingUser();
 
-    record Created(UUID projectId, TenantJson tenant, UUID actingUserId) implements TenantEvent {
+    record Created(UUID projectId, TenantJson tenant, UserJson actingUser) implements TenantEvent {
     }
 
-    record Updated(UUID projectId, TenantJson tenant, UUID actingUserId) implements TenantEvent {
+    record Updated(UUID projectId, TenantJson tenant, UserJson actingUser) implements TenantEvent {
     }
 
-    record Deleted(UUID projectId, TenantJson tenant, UUID actingUserId) implements TenantEvent {
+    record Deleted(UUID projectId, TenantJson tenant, UserJson actingUser) implements TenantEvent {
     }
 
 }

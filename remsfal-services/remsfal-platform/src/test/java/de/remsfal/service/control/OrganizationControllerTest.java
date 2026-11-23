@@ -6,9 +6,9 @@ import de.remsfal.core.json.organization.ImmutableOrganizationJson;
 import de.remsfal.core.json.organization.OrganizationJson;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.service.boundary.AbstractResourceTest;
-import de.remsfal.service.entity.dto.OrganizationEntity;
 import de.remsfal.service.control.event.EventRecorder;
 import de.remsfal.service.control.event.OrganizationEvent;
+import de.remsfal.service.entity.dto.OrganizationEntity;
 import de.remsfal.test.TestData;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -217,7 +217,7 @@ public class OrganizationControllerTest extends AbstractResourceTest {
         assertEquals(1, events.size());
         assertEquals(TestData.ORGANIZATION_ID, events.get(0).organizationId());
         assertEquals(newPhone, events.get(0).organization().getPhone());
-        assertEquals(user.getId(), events.get(0).actingUserId());
+        assertEquals(user.getId(), events.get(0).actingUser().getId());
         assertEquals(1, recorder.getEvents(OrganizationEvent.Updated.class).size());
     }
 

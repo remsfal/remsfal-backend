@@ -1,6 +1,5 @@
 package de.remsfal.notification.control;
 
-import de.remsfal.notification.control.parameter.StatusColor;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -16,6 +15,7 @@ import de.remsfal.core.json.eventing.IssueEventJson;
 import de.remsfal.core.json.organization.OrganizationJson;
 import de.remsfal.core.json.project.ProjectJson;
 import de.remsfal.core.model.UserModel;
+import de.remsfal.notification.control.parameter.StatusColor;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.reactive.ReactiveMailer;
 import io.quarkus.qute.Location;
@@ -210,8 +210,8 @@ public class MailingController {
             .data("status", statusName)
             .data("ownerName", event.getAssignee() != null ? event.getAssignee().getName() : "N/A")
             .data("ownerEmail", event.getAssignee() != null ? event.getAssignee().getEmail() : "N/A")
-            .data("actorName", event.getPrincipal() != null ? event.getPrincipal().getName() : "N/A")
-            .data("actorEmail", event.getPrincipal() != null ? event.getPrincipal().getEmail() : "N/A")
+            .data("actorName", event.getActingUser() != null ? event.getActingUser().getName() : "N/A")
+            .data("actorEmail", event.getActingUser() != null ? event.getActingUser().getEmail() : "N/A")
             .data("reporterName", event.getReporter() != null ? event.getReporter().getName() : "N/A")
             .data("reporterEmail", event.getReporter() != null ? event.getReporter().getEmail() : "N/A")
             .data("buttonLink", buttonLink);

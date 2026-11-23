@@ -20,8 +20,6 @@ import de.remsfal.core.json.eventing.OrganizationEventJson;
 import de.remsfal.core.json.eventing.OrganizationEventJson.OrganizationEventType;
 import de.remsfal.service.control.event.OrganizationEvent;
 import de.remsfal.service.entity.dao.ContractorRepository;
-import de.remsfal.service.entity.dao.UserRepository;
-import de.remsfal.service.entity.dto.UserEntity;
 
 /**
  * Publishes organization events to Kafka once the transaction of the change has been committed, so that no event is
@@ -39,9 +37,6 @@ public class OrganizationEventProducer {
 
     @Inject
     ContractorRepository contractorRepository;
-
-    @Inject
-    UserRepository userRepository;
 
     void onOrganizationEvent(@Observes(during = TransactionPhase.AFTER_SUCCESS) final OrganizationEvent event) {
         switch (event) {
@@ -71,23 +66,15 @@ public class OrganizationEventProducer {
             .toList();
     }
 
-    private String findUserName(final UUID userId) {
-        return userId == null ? null : userRepository.findByIdOptional(userId)
-            .map(UserEntity::getName)
-            .orElse(null);
-    }
-
     private void send(final OrganizationEvent.ContactDataChanged changed) {
         final OrganizationEventType type = OrganizationEventType.ORGANIZATION_UPDATED;
         final UUID organizationId = changed.organizationId();
         final OrganizationEventJson event = ImmutableOrganizationEventJson.builder()
-            .actingUserId(changed.actingUserId())
+            .actingUser(changed.actingUser())
             .organizationEventType(type)
             .organizationId(organizationId)
             .organization(changed.organization())
             .affectedContractors(findAffectedContractors(organizationId))
-            .changedByUserId(changed.actingUserId())
-            .changedByName(findUserName(changed.actingUserId()))
             .build();
         try {
             logger.infov("Sending organization event (type={0}, organizationId={1})", type, organizationId);

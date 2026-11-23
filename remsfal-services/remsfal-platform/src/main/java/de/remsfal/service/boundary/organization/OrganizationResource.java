@@ -95,7 +95,7 @@ public class OrganizationResource extends OrganizationSubResource implements Org
     @Timed("checks_timer_delete_organization")
     public void deleteOrganization(final UUID organizationId) {
         checkOwnerPermissions(organizationId);
-        if (!controller.deleteOrganization(organizationId)) {
+        if (!controller.deleteOrganization(principal, organizationId)) {
             throw new NotFoundException("Organization not found");
         }
     }

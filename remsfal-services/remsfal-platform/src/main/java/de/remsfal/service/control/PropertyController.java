@@ -2,6 +2,7 @@ package de.remsfal.service.control;
 
 import de.remsfal.core.json.AddressJson;
 import de.remsfal.core.json.RentalUnitJson;
+import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.project.ApartmentJson;
 import de.remsfal.core.json.project.BuildingJson;
 import de.remsfal.core.json.project.CommercialJson;
@@ -12,14 +13,15 @@ import de.remsfal.core.json.project.RentalUnitTreeNodeJson;
 import de.remsfal.core.json.project.SiteJson;
 import de.remsfal.core.json.project.StorageJson;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
+import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.PropertyModel;
 import de.remsfal.service.control.event.RentalUnitEvent;
 import de.remsfal.service.entity.dao.ApartmentRepository;
-import de.remsfal.service.entity.dao.CommercialRepository;
 import de.remsfal.service.entity.dao.BuildingRepository;
-import de.remsfal.service.entity.dao.StorageRepository;
+import de.remsfal.service.entity.dao.CommercialRepository;
 import de.remsfal.service.entity.dao.PropertyRepository;
 import de.remsfal.service.entity.dao.SiteRepository;
+import de.remsfal.service.entity.dao.StorageRepository;
 import de.remsfal.service.entity.dto.BuildingEntity;
 import de.remsfal.service.entity.dto.PropertyEntity;
 import jakarta.enterprise.context.RequestScoped;
@@ -45,9 +47,6 @@ public class PropertyController {
     Logger logger;
 
     @Inject
-    ActingUserController actingUser;
-
-    @Inject
     Event<RentalUnitEvent> rentalUnitEvent;
     
     @Inject
@@ -69,7 +68,7 @@ public class PropertyController {
     StorageRepository storageRepository;
 
     @Transactional
-    public PropertyModel createProperty(final UUID projectId, final PropertyModel property) {
+    public PropertyModel createProperty(final UserModel user, final UUID projectId, final PropertyModel property) {
         logger.infov("Creating a property (projectId={0})", projectId);
         PropertyEntity entity = mergePropertyFields(property, new PropertyEntity());
         entity.generateId();
@@ -77,7 +76,8 @@ public class PropertyController {
         propertyRepository.persistAndFlush(entity);
         propertyRepository.getEntityManager().refresh(entity);
         final PropertyModel created = getProperty(projectId, entity.getId());
-        rentalUnitEvent.fire(new RentalUnitEvent.Created(projectId, PropertyJson.valueOf(created), actingUser.getId()));
+        rentalUnitEvent.fire(new RentalUnitEvent.Created(projectId, PropertyJson.valueOf(created),
+            UserJson.valueOf(user)));
         return created;
     }
 
@@ -120,13 +120,15 @@ public class PropertyController {
     }
 
     @Transactional
-    public PropertyModel updateProperty(final UUID projectId, final UUID propertyId, final PropertyModel property) {
+    public PropertyModel updateProperty(final UserModel user, final UUID projectId, final UUID propertyId,
+        final PropertyModel property) {
         logger.infov("Updating a property (projectId = {0}, propertyId = {1}, property={2})",
             projectId, propertyId, property);
         final PropertyEntity entity = propertyRepository.findPropertyById(projectId, propertyId)
             .orElseThrow(() -> new NotFoundException("Project not exist or user has no membership"));
         final PropertyModel updated = propertyRepository.merge(mergePropertyFields(property, entity));
-        rentalUnitEvent.fire(new RentalUnitEvent.Updated(projectId, PropertyJson.valueOf(updated), actingUser.getId()));
+        rentalUnitEvent.fire(new RentalUnitEvent.Updated(projectId, PropertyJson.valueOf(updated),
+            UserJson.valueOf(user)));
         return updated;
     }
 
@@ -168,13 +170,13 @@ public class PropertyController {
     }
 
     @Transactional
-    public boolean deleteProperty(final UUID projectId, final UUID propertyId) {
+    public boolean deleteProperty(final UserModel user, final UUID projectId, final UUID propertyId) {
         logger.infov("Deleting a property (projectId={0}, propertyId={1})", projectId, propertyId);
         final Optional<PropertyJson> snapshot = propertyRepository.findPropertyById(projectId, propertyId)
             .map(PropertyJson::valueOf);
         final boolean deleted = propertyRepository.deletePropertyById(projectId, propertyId) > 0;
         if (deleted && snapshot.isPresent()) {
-            rentalUnitEvent.fire(new RentalUnitEvent.Deleted(projectId, snapshot.get(), actingUser.getId()));
+            rentalUnitEvent.fire(new RentalUnitEvent.Deleted(projectId, snapshot.get(), UserJson.valueOf(user)));
         }
         return deleted;
     }

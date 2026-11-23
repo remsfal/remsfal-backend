@@ -1,19 +1,5 @@
 package de.remsfal.service.control;
 
-import de.remsfal.core.json.project.ImmutableRentJson;
-import de.remsfal.core.json.project.RentJson;
-import de.remsfal.core.json.project.TenantJson;
-import de.remsfal.core.json.project.ImmutableTenantJson;
-import de.remsfal.core.json.project.RentalAgreementJson;
-import de.remsfal.core.json.project.ImmutableRentalAgreementJson;
-import de.remsfal.core.json.project.RentalAgreementKeysJson;
-import de.remsfal.core.json.project.ImmutableRentalAgreementKeysJson;
-import de.remsfal.core.model.RentalUnitModel.UnitType;
-import de.remsfal.core.model.project.RentModel;
-import de.remsfal.service.control.exception.AlreadyExistsException;
-import de.remsfal.service.entity.dto.RentalAgreementEntity;
-import de.remsfal.service.entity.dto.TenantEntity;
-import de.remsfal.service.entity.dto.UserEntity;
 import io.quarkus.test.junit.QuarkusTest;
 
 import jakarta.inject.Inject;
@@ -21,7 +7,21 @@ import jakarta.ws.rs.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import de.remsfal.core.json.project.ImmutableRentJson;
+import de.remsfal.core.json.project.ImmutableRentalAgreementJson;
+import de.remsfal.core.json.project.ImmutableRentalAgreementKeysJson;
+import de.remsfal.core.json.project.ImmutableTenantJson;
+import de.remsfal.core.json.project.RentJson;
+import de.remsfal.core.json.project.RentalAgreementJson;
+import de.remsfal.core.json.project.RentalAgreementKeysJson;
+import de.remsfal.core.json.project.TenantJson;
+import de.remsfal.core.model.RentalUnitModel.UnitType;
+import de.remsfal.core.model.project.RentModel;
 import de.remsfal.service.AbstractServiceTest;
+import de.remsfal.service.control.exception.AlreadyExistsException;
+import de.remsfal.service.entity.dto.RentalAgreementEntity;
+import de.remsfal.service.entity.dto.TenantEntity;
+import de.remsfal.service.entity.dto.UserEntity;
 import de.remsfal.test.TestData;
 
 import java.time.LocalDate;
@@ -84,7 +84,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
         final UUID projectId = UUID.randomUUID();
 
         assertThrows(NotFoundException.class,
-            () -> controller.createRentalAgreement(projectId, agreement));
+            () -> controller.createRentalAgreement(ACTING_USER, projectId, agreement));
     }
 
     @Test
@@ -95,7 +95,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
             .tenants(List.of())
             .build();
 
-        RentalAgreementEntity result = controller.createRentalAgreement(projectId, agreement);
+        RentalAgreementEntity result = controller.createRentalAgreement(ACTING_USER, projectId, agreement);
 
         assertNotNull(result.getId());
         assertEquals(projectId, result.getProjectId());
@@ -112,7 +112,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
             .startOfRental(LocalDate.now())
             .tenants(List.of())
             .build();
-        RentalAgreementEntity created = controller.createRentalAgreement(projectId, agreement);
+        RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, agreement);
 
         RentalAgreementEntity retrieved = controller.getRentalAgreementByProject(projectId, created.getId());
 
@@ -136,14 +136,14 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .startOfRental(LocalDate.now())
           .tenants(List.of())
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, agreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, agreement);
 
       RentalAgreementJson updateJson = ImmutableRentalAgreementJson.builder()
           .startOfRental(LocalDate.of(2025, 1, 1))
           .endOfRental(LocalDate.of(2026, 1, 1))
           .build();
 
-      RentalAgreementEntity updated = controller.updateRentalAgreement(projectId, created.getId(), updateJson);
+      RentalAgreementEntity updated = controller.updateRentalAgreement(ACTING_USER, projectId, created.getId(), updateJson);
 
       assertEquals(created.getId(), updated.getId());
       assertEquals(agreement.getStartOfRental(), created.getStartOfRental()); // Helper check on original
@@ -168,7 +168,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addTenants(tenant)
           .build();
 
-      RentalAgreementEntity result = controller.createRentalAgreement(projectId, agreement);
+      RentalAgreementEntity result = controller.createRentalAgreement(ACTING_USER, projectId, agreement);
 
       assertNotNull(result.getId());
       assertEquals(1, result.getTenants().size());
@@ -186,7 +186,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .startOfRental(LocalDate.now())
           .tenants(List.of())
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, startAgreement);
 
       final TenantJson tenant = ImmutableTenantJson.builder()
           .email(TestData.USER_EMAIL_1)
@@ -198,7 +198,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addTenants(tenant)
           .build();
 
-      RentalAgreementEntity updated = controller.updateRentalAgreement(projectId, created.getId(), updateJson);
+      RentalAgreementEntity updated = controller.updateRentalAgreement(ACTING_USER, projectId, created.getId(), updateJson);
 
       assertEquals(1, updated.getTenants().size());
       assertEquals(TestData.USER_EMAIL_1, updated.getTenants().get(0).getEmail());
@@ -216,7 +216,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       final UUID agreementId = UUID.randomUUID();
 
       assertThrows(NotFoundException.class,
-          () -> controller.updateRentalAgreement(projectId, agreementId, updateJson));
+          () -> controller.updateRentalAgreement(ACTING_USER, projectId, agreementId, updateJson));
     }
 
     @Test
@@ -235,7 +235,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addKeys(key)
           .build();
 
-      RentalAgreementEntity result = controller.createRentalAgreement(projectId, agreement);
+      RentalAgreementEntity result = controller.createRentalAgreement(ACTING_USER, projectId, agreement);
 
       assertNotNull(result.getId());
       assertEquals(1, result.getKeys().size());
@@ -263,7 +263,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .tenants(List.of())
           .addKeys(key1)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, startAgreement);
 
       assertEquals(1, created.getKeys().size());
       assertEquals("Haustürschlüssel", created.getKeys().get(0).getKeyDescription());
@@ -278,7 +278,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addKeys(key2)
           .build();
 
-      RentalAgreementEntity updated = controller.updateRentalAgreement(projectId, created.getId(), updateJson);
+      RentalAgreementEntity updated = controller.updateRentalAgreement(ACTING_USER, projectId, created.getId(), updateJson);
 
       // Old key should be replaced by new one
       assertEquals(1, updated.getKeys().size());
@@ -303,14 +303,14 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .tenants(List.of())
           .addKeys(key)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, startAgreement);
 
       // Update without touching keys
       RentalAgreementJson updateJson = ImmutableRentalAgreementJson.builder()
           .endOfRental(LocalDate.now().plusYears(1))
           .build();
 
-      RentalAgreementEntity updated = controller.updateRentalAgreement(projectId, created.getId(), updateJson);
+      RentalAgreementEntity updated = controller.updateRentalAgreement(ACTING_USER, projectId, created.getId(), updateJson);
 
       assertEquals(1, updated.getKeys().size());
       assertEquals("Haustürschlüssel", updated.getKeys().get(0).getKeyDescription());
@@ -340,7 +340,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addApartmentRents(apartmentRent)
           .build();
 
-      RentalAgreementEntity result = controller.createRentalAgreement(projectId, agreement);
+      RentalAgreementEntity result = controller.createRentalAgreement(ACTING_USER, projectId, agreement);
 
       assertNotNull(result.getId());
       assertEquals(1, result.getTenants().size());
@@ -387,7 +387,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addPropertyRents(propertyRent)
           .build();
 
-      RentalAgreementEntity result = controller.createRentalAgreement(projectId, agreement);
+      RentalAgreementEntity result = controller.createRentalAgreement(ACTING_USER, projectId, agreement);
 
       assertNotNull(result.getId());
       assertEquals(1, result.getApartmentRents().size());
@@ -425,7 +425,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .build();
 
       assertThrows(jakarta.ws.rs.BadRequestException.class,
-          () -> controller.createRentalAgreement(projectId, agreement));
+          () -> controller.createRentalAgreement(ACTING_USER, projectId, agreement));
     }
 
     @Test
@@ -451,7 +451,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .build();
 
       assertThrows(jakarta.ws.rs.BadRequestException.class,
-          () -> controller.createRentalAgreement(projectId, agreement));
+          () -> controller.createRentalAgreement(ACTING_USER, projectId, agreement));
     }
 
     @Test
@@ -475,7 +475,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addTenants(tenant)
           .addApartmentRents(apartmentRent1)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, startAgreement);
 
       assertEquals(1, created.getApartmentRents().size());
       assertEquals(TestData.APARTMENT_ID_1, created.getApartmentRents().get(0).getRentalUnitId());
@@ -492,7 +492,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addApartmentRents(apartmentRent2)
           .build();
 
-      RentalAgreementEntity updated = controller.updateRentalAgreement(projectId, created.getId(), updateJson);
+      RentalAgreementEntity updated = controller.updateRentalAgreement(ACTING_USER, projectId, created.getId(), updateJson);
 
       // Original rent must remain untouched
       assertEquals(1, updated.getApartmentRents().size());
@@ -518,7 +518,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .startOfRental(LocalDate.of(2025, 1, 1))
           .addTenants(tenant)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, startAgreement);
 
       final RentJson apartmentRent = ImmutableRentJson.builder()
           .rentalUnitId(TestData.APARTMENT_ID_1)
@@ -526,7 +526,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .basicRent(1200.0f)
           .build();
 
-      RentalAgreementEntity updated = controller.addRent(
+      RentalAgreementEntity updated = controller.addRent(ACTING_USER,
           projectId, created.getId(), UnitType.APARTMENT, TestData.APARTMENT_ID_1, apartmentRent);
 
       assertEquals(1, updated.getApartmentRents().size());
@@ -561,7 +561,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addTenants(tenant)
           .addApartmentRents(apartmentRent1)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, startAgreement);
 
       final RentJson apartmentRent2 = ImmutableRentJson.builder()
           .rentalUnitId(TestData.APARTMENT_ID_1)
@@ -569,7 +569,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .basicRent(1500.0f)
           .build();
 
-      RentalAgreementEntity updated = controller.addRent(
+      RentalAgreementEntity updated = controller.addRent(ACTING_USER,
           projectId, created.getId(), UnitType.APARTMENT, TestData.APARTMENT_ID_1, apartmentRent2);
 
       assertEquals(2, updated.getApartmentRents().size());
@@ -599,14 +599,14 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .startOfRental(LocalDate.of(2025, 1, 1))
           .addTenants(tenant)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, startAgreement);
 
       final RentJson apartmentRent = ImmutableRentJson.builder()
           .rentalUnitId(TestData.APARTMENT_ID_1)
           .basicRent(1200.0f)
           .build();
 
-      assertThrows(jakarta.ws.rs.BadRequestException.class, () -> controller.addRent(
+      assertThrows(jakarta.ws.rs.BadRequestException.class, () -> controller.addRent(ACTING_USER,
           projectId, created.getId(), UnitType.APARTMENT, TestData.APARTMENT_ID_1, apartmentRent));
     }
 
@@ -623,7 +623,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .startOfRental(LocalDate.of(2025, 2, 1))
           .addTenants(tenant)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, startAgreement);
 
       final RentJson apartmentRent = ImmutableRentJson.builder()
           .rentalUnitId(TestData.APARTMENT_ID_1)
@@ -631,7 +631,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .basicRent(1200.0f)
           .build();
 
-      assertThrows(jakarta.ws.rs.BadRequestException.class, () -> controller.addRent(
+      assertThrows(jakarta.ws.rs.BadRequestException.class, () -> controller.addRent(ACTING_USER,
           projectId, created.getId(), UnitType.APARTMENT, TestData.APARTMENT_ID_1, apartmentRent));
     }
 
@@ -649,7 +649,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .endOfRental(LocalDate.of(2025, 6, 30))
           .addTenants(tenant)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, startAgreement);
 
       final RentJson apartmentRent = ImmutableRentJson.builder()
           .rentalUnitId(TestData.APARTMENT_ID_1)
@@ -657,7 +657,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .basicRent(1200.0f)
           .build();
 
-      assertThrows(jakarta.ws.rs.BadRequestException.class, () -> controller.addRent(
+      assertThrows(jakarta.ws.rs.BadRequestException.class, () -> controller.addRent(ACTING_USER,
           projectId, created.getId(), UnitType.APARTMENT, TestData.APARTMENT_ID_1, apartmentRent));
     }
 
@@ -675,7 +675,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .endOfRental(LocalDate.of(2025, 6, 30))
           .addTenants(tenant)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, startAgreement);
 
       final RentJson apartmentRent = ImmutableRentJson.builder()
           .rentalUnitId(TestData.APARTMENT_ID_1)
@@ -684,7 +684,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .basicRent(1200.0f)
           .build();
 
-      assertThrows(jakarta.ws.rs.BadRequestException.class, () -> controller.addRent(
+      assertThrows(jakarta.ws.rs.BadRequestException.class, () -> controller.addRent(ACTING_USER,
           projectId, created.getId(), UnitType.APARTMENT, TestData.APARTMENT_ID_1, apartmentRent));
     }
 
@@ -698,7 +698,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .build();
 
-      assertThrows(NotFoundException.class, () -> controller.addRent(
+      assertThrows(NotFoundException.class, () -> controller.addRent(ACTING_USER,
           projectId, agreementId, UnitType.APARTMENT, TestData.APARTMENT_ID_1, apartmentRent));
     }
 
@@ -730,10 +730,10 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addApartmentRents(apartmentRent1)
           .addApartmentRents(otherApartmentRent)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, startAgreement);
       assertEquals(2, created.getApartmentRents().size());
 
-      controller.deleteRents(projectId, created.getId(), UnitType.APARTMENT, TestData.APARTMENT_ID_1);
+      controller.deleteRents(ACTING_USER, projectId, created.getId(), UnitType.APARTMENT, TestData.APARTMENT_ID_1);
 
       RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, created.getId());
       assertEquals(1, entity.getApartmentRents().size());
@@ -745,7 +745,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
       final UUID projectId = TestData.PROJECT_ID_1;
       final UUID agreementId = UUID.randomUUID();
 
-      assertThrows(NotFoundException.class, () -> controller.deleteRents(
+      assertThrows(NotFoundException.class, () -> controller.deleteRents(ACTING_USER,
           projectId, agreementId, UnitType.APARTMENT, TestData.APARTMENT_ID_1));
     }
 
@@ -762,7 +762,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .startOfRental(LocalDate.of(2025, 1, 1))
           .addTenants(tenant)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, startAgreement);
       assertNull(created.getPropertyRents());
 
       final UUID leafPropertyId = insertLeafProperty();
@@ -773,7 +773,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .heatingCostsPrepayment(400.0f)
           .build();
 
-      RentalAgreementEntity updated = controller.addRent(
+      RentalAgreementEntity updated = controller.addRent(ACTING_USER,
           projectId, created.getId(), UnitType.PROPERTY, leafPropertyId, propertyRent);
 
       assertEquals(1, updated.getPropertyRents().size());
@@ -800,7 +800,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .startOfRental(LocalDate.of(2025, 1, 1))
           .addTenants(tenant)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, startAgreement);
 
       final RentJson siteRent = ImmutableRentJson.builder()
           .rentalUnitId(TestData.SITE_ID_1)
@@ -808,7 +808,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .basicRent(150.0f)
           .build();
 
-      RentalAgreementEntity updated = controller.addRent(
+      RentalAgreementEntity updated = controller.addRent(ACTING_USER,
           projectId, created.getId(), UnitType.SITE, TestData.SITE_ID_1, siteRent);
 
       assertEquals(1, updated.getSiteRents().size());
@@ -833,11 +833,11 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .startOfRental(LocalDate.of(2025, 1, 1))
           .addTenants(tenant)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, startAgreement);
       assertNull(created.getPropertyRents());
 
       // The unit was never rented, so the property-rents list is still null; deleting must be a no-op
-      controller.deleteRents(projectId, created.getId(), UnitType.PROPERTY, TestData.PROPERTY_ID_1);
+      controller.deleteRents(ACTING_USER, projectId, created.getId(), UnitType.PROPERTY, TestData.PROPERTY_ID_1);
 
       RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, created.getId());
       assertTrue(entity.getPropertyRents() == null || entity.getPropertyRents().isEmpty());
@@ -863,10 +863,10 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addTenants(tenant)
           .addSiteRents(siteRent)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, startAgreement);
       assertEquals(1, created.getSiteRents().size());
 
-      controller.deleteRents(projectId, created.getId(), UnitType.SITE, TestData.SITE_ID_1);
+      controller.deleteRents(ACTING_USER, projectId, created.getId(), UnitType.SITE, TestData.SITE_ID_1);
 
       RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, created.getId());
       assertEquals(0, entity.getSiteRents().size());
@@ -885,7 +885,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .startOfRental(LocalDate.of(2025, 1, 1))
           .addTenants(tenant)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, startAgreement);
 
       final UUID leafBuildingId = insertLeafBuilding();
       final RentJson buildingRent = ImmutableRentJson.builder()
@@ -893,9 +893,9 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .basicRent(3500.0f)
           .build();
-      controller.addRent(projectId, created.getId(), UnitType.BUILDING, leafBuildingId, buildingRent);
+      controller.addRent(ACTING_USER, projectId, created.getId(), UnitType.BUILDING, leafBuildingId, buildingRent);
 
-      controller.deleteRents(projectId, created.getId(), UnitType.BUILDING, leafBuildingId);
+      controller.deleteRents(ACTING_USER, projectId, created.getId(), UnitType.BUILDING, leafBuildingId);
 
       RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, created.getId());
       assertEquals(0, entity.getBuildingRents().size());
@@ -921,10 +921,10 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addTenants(tenant)
           .addStorageRents(storageRent)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, startAgreement);
       assertEquals(1, created.getStorageRents().size());
 
-      controller.deleteRents(projectId, created.getId(), UnitType.STORAGE, TestData.STORAGE_ID_1);
+      controller.deleteRents(ACTING_USER, projectId, created.getId(), UnitType.STORAGE, TestData.STORAGE_ID_1);
 
       RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, created.getId());
       assertEquals(0, entity.getStorageRents().size());
@@ -950,10 +950,10 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addTenants(tenant)
           .addCommercialRents(commercialRent)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, startAgreement);
       assertEquals(1, created.getCommercialRents().size());
 
-      controller.deleteRents(projectId, created.getId(), UnitType.COMMERCIAL, TestData.COMMERCIAL_ID_1);
+      controller.deleteRents(ACTING_USER, projectId, created.getId(), UnitType.COMMERCIAL, TestData.COMMERCIAL_ID_1);
 
       RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, created.getId());
       assertEquals(0, entity.getCommercialRents().size());
@@ -978,13 +978,13 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addTenants(tenant)
           .addApartmentRents(apartmentRent)
           .build();
-      RentalAgreementEntity withApartment = controller.createRentalAgreement(projectId, agreementWithApartment);
+      RentalAgreementEntity withApartment = controller.createRentalAgreement(ACTING_USER, projectId, agreementWithApartment);
 
       final RentalAgreementJson agreementWithoutApartment = ImmutableRentalAgreementJson.builder()
           .startOfRental(LocalDate.of(2025, 1, 1))
           .addTenants(tenant)
           .build();
-      controller.createRentalAgreement(projectId, agreementWithoutApartment);
+      controller.createRentalAgreement(ACTING_USER, projectId, agreementWithoutApartment);
 
       List<RentalAgreementEntity> filtered = controller.getRentalAgreementsByProject(
           projectId, UnitType.APARTMENT, TestData.APARTMENT_ID_1);
@@ -1012,7 +1012,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addTenants(tenant)
           .addApartmentRents(apartmentRent)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, agreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, agreement);
 
       List<RentalAgreementEntity> filtered = controller.getRentalAgreementsByProject(
           projectId, UnitType.APARTMENT, null);
@@ -1040,7 +1040,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addTenants(tenant)
           .addApartmentRents(apartmentRent)
           .build();
-      controller.createRentalAgreement(projectId, agreement);
+      controller.createRentalAgreement(ACTING_USER, projectId, agreement);
 
       List<RentalAgreementEntity> filtered = controller.getRentalAgreementsByProject(
           projectId, UnitType.APARTMENT, TestData.APARTMENT_ID_2);
@@ -1060,7 +1060,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .startOfRental(LocalDate.of(2025, 1, 1))
           .addTenants(tenant)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, startAgreement);
 
       final UUID leafPropertyId = insertLeafProperty();
       final RentJson propertyRent = ImmutableRentJson.builder()
@@ -1068,7 +1068,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .basicRent(5000.0f)
           .build();
-      controller.addRent(projectId, created.getId(), UnitType.PROPERTY, leafPropertyId, propertyRent);
+      controller.addRent(ACTING_USER, projectId, created.getId(), UnitType.PROPERTY, leafPropertyId, propertyRent);
 
       List<RentalAgreementEntity> filtered = controller.getRentalAgreementsByProject(
           projectId, UnitType.PROPERTY, leafPropertyId);
@@ -1095,7 +1095,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addTenants(tenant)
           .addSiteRents(siteRent)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, agreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, agreement);
 
       List<RentalAgreementEntity> filtered = controller.getRentalAgreementsByProject(
           projectId, UnitType.SITE, TestData.SITE_ID_1);
@@ -1116,7 +1116,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .startOfRental(LocalDate.of(2025, 1, 1))
           .addTenants(tenant)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, startAgreement);
 
       final UUID leafBuildingId = insertLeafBuilding();
       final RentJson buildingRent = ImmutableRentJson.builder()
@@ -1124,7 +1124,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .firstPaymentDate(LocalDate.of(2025, 1, 1))
           .basicRent(3500.0f)
           .build();
-      controller.addRent(projectId, created.getId(), UnitType.BUILDING, leafBuildingId, buildingRent);
+      controller.addRent(ACTING_USER, projectId, created.getId(), UnitType.BUILDING, leafBuildingId, buildingRent);
 
       List<RentalAgreementEntity> filtered = controller.getRentalAgreementsByProject(
           projectId, UnitType.BUILDING, leafBuildingId);
@@ -1151,7 +1151,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addTenants(tenant)
           .addStorageRents(storageRent)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, agreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, agreement);
 
       List<RentalAgreementEntity> filtered = controller.getRentalAgreementsByProject(
           projectId, UnitType.STORAGE, TestData.STORAGE_ID_1);
@@ -1178,7 +1178,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addTenants(tenant)
           .addCommercialRents(commercialRent)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, agreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, agreement);
 
       List<RentalAgreementEntity> filtered = controller.getRentalAgreementsByProject(
           projectId, UnitType.COMMERCIAL, TestData.COMMERCIAL_ID_1);
@@ -1212,7 +1212,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addBuildingRents(buildingRent)
           .build();
 
-      RentalAgreementEntity result = controller.createRentalAgreement(projectId, agreement);
+      RentalAgreementEntity result = controller.createRentalAgreement(ACTING_USER, projectId, agreement);
 
       assertNotNull(result.getId());
       assertEquals(1, result.getTenants().size());
@@ -1252,7 +1252,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addCommercialRents(commercialRent)
           .build();
 
-      RentalAgreementEntity result = controller.createRentalAgreement(projectId, agreement);
+      RentalAgreementEntity result = controller.createRentalAgreement(ACTING_USER, projectId, agreement);
 
       assertNotNull(result.getId());
       assertEquals(1, result.getTenants().size());
@@ -1291,7 +1291,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addSiteRents(siteRent)
           .build();
 
-      RentalAgreementEntity result = controller.createRentalAgreement(projectId, agreement);
+      RentalAgreementEntity result = controller.createRentalAgreement(ACTING_USER, projectId, agreement);
 
       assertNotNull(result.getId());
       assertEquals(1, result.getTenants().size());
@@ -1330,7 +1330,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addStorageRents(storageRent)
           .build();
 
-      RentalAgreementEntity result = controller.createRentalAgreement(projectId, agreement);
+      RentalAgreementEntity result = controller.createRentalAgreement(ACTING_USER, projectId, agreement);
 
       assertNotNull(result.getId());
       assertEquals(1, result.getTenants().size());
@@ -1410,7 +1410,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addStorageRents(storageRent)
           .build();
 
-      RentalAgreementEntity result = controller.createRentalAgreement(projectId, agreement);
+      RentalAgreementEntity result = controller.createRentalAgreement(ACTING_USER, projectId, agreement);
 
       assertNotNull(result.getId());
       assertEquals(1, result.getApartmentRents().size());
@@ -1451,7 +1451,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .startOfRental(LocalDate.of(2025, 1, 1))
           .addTenants(tenant)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, startAgreement);
 
       final UUID leafBuildingId = insertLeafBuilding();
       final RentJson buildingRent = ImmutableRentJson.builder()
@@ -1461,7 +1461,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .basicRent(3500.0f)
           .build();
 
-      RentalAgreementEntity updated = controller.addRent(
+      RentalAgreementEntity updated = controller.addRent(ACTING_USER,
           projectId, created.getId(), UnitType.BUILDING, leafBuildingId, buildingRent);
 
       assertEquals(1, updated.getBuildingRents().size());
@@ -1486,7 +1486,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .startOfRental(LocalDate.of(2025, 1, 1))
           .addTenants(tenant)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, startAgreement);
 
       // PROPERTY_ID_1 has sites and buildings beneath it, so it is not a leaf rental unit
       final RentJson propertyRent = ImmutableRentJson.builder()
@@ -1495,7 +1495,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .basicRent(5000.0f)
           .build();
 
-      assertThrows(jakarta.ws.rs.BadRequestException.class, () -> controller.addRent(
+      assertThrows(jakarta.ws.rs.BadRequestException.class, () -> controller.addRent(ACTING_USER,
           projectId, created.getId(), UnitType.PROPERTY, TestData.PROPERTY_ID_1, propertyRent));
     }
 
@@ -1512,7 +1512,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .startOfRental(LocalDate.of(2025, 1, 1))
           .addTenants(tenant)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, startAgreement);
 
       // BUILDING_ID_1 has apartments, commercials and storages beneath it, so it is not a leaf
       final RentJson buildingRent = ImmutableRentJson.builder()
@@ -1521,7 +1521,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .basicRent(3500.0f)
           .build();
 
-      assertThrows(jakarta.ws.rs.BadRequestException.class, () -> controller.addRent(
+      assertThrows(jakarta.ws.rs.BadRequestException.class, () -> controller.addRent(ACTING_USER,
           projectId, created.getId(), UnitType.BUILDING, TestData.BUILDING_ID_1, buildingRent));
     }
 
@@ -1538,7 +1538,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .startOfRental(LocalDate.of(2025, 1, 1))
           .addTenants(tenant)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, startAgreement);
 
       final RentJson commercialRent = ImmutableRentJson.builder()
           .rentalUnitId(TestData.COMMERCIAL_ID_1)
@@ -1548,7 +1548,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .operatingCostsPrepayment(350.0f)
           .build();
 
-      RentalAgreementEntity updated = controller.addRent(
+      RentalAgreementEntity updated = controller.addRent(ACTING_USER,
           projectId, created.getId(), UnitType.COMMERCIAL, TestData.COMMERCIAL_ID_1, commercialRent);
 
       assertEquals(1, updated.getCommercialRents().size());
@@ -1575,7 +1575,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .startOfRental(LocalDate.of(2025, 1, 1))
           .addTenants(tenant)
           .build();
-      RentalAgreementEntity created = controller.createRentalAgreement(projectId, startAgreement);
+      RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, startAgreement);
 
       final RentJson storageRent = ImmutableRentJson.builder()
           .rentalUnitId(TestData.STORAGE_ID_1)
@@ -1584,7 +1584,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .basicRent(85.0f)
           .build();
 
-      RentalAgreementEntity updated = controller.addRent(
+      RentalAgreementEntity updated = controller.addRent(ACTING_USER,
           projectId, created.getId(), UnitType.STORAGE, TestData.STORAGE_ID_1, storageRent);
 
       assertEquals(1, updated.getStorageRents().size());
@@ -1619,7 +1619,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addSiteRents(siteRent)
           .build();
 
-      RentalAgreementEntity result = controller.createRentalAgreement(projectId, agreement);
+      RentalAgreementEntity result = controller.createRentalAgreement(ACTING_USER, projectId, agreement);
 
       assertNotNull(result.getId());
       assertEquals(1, result.getSiteRents().size());
@@ -1654,7 +1654,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addTenants(tenant2)
           .build();
 
-      RentalAgreementEntity result = controller.createRentalAgreement(projectId, agreement);
+      RentalAgreementEntity result = controller.createRentalAgreement(ACTING_USER, projectId, agreement);
       
       assertNotNull(result.getId());
       // Should have 2 tenants (both are different)
@@ -1683,7 +1683,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addTenants(tenant1)
           .build();
 
-      RentalAgreementEntity result1 = controller.createRentalAgreement(projectId, agreement1);
+      RentalAgreementEntity result1 = controller.createRentalAgreement(ACTING_USER, projectId, agreement1);
       assertNotNull(result1.getId());
       assertEquals(1, result1.getTenants().size());
       UUID firstTenantId = result1.getTenants().get(0).getId();
@@ -1703,7 +1703,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
           .addTenants(tenant2)
           .build();
 
-      RentalAgreementEntity result2 = controller.createRentalAgreement(projectId, agreement2);
+      RentalAgreementEntity result2 = controller.createRentalAgreement(ACTING_USER, projectId, agreement2);
       assertNotNull(result2.getId());
       assertEquals(1, result2.getTenants().size());
       UUID secondTenantId = result2.getTenants().get(0).getId();
@@ -1735,9 +1735,9 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
             .tenants(List.of())
             .build();
 
-        RentalAgreementEntity created = controller.createRentalAgreement(projectId, agreement);
+        RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, agreement);
 
-        boolean deleted = controller.deleteRentalAgreement(projectId, created.getId());
+        boolean deleted = controller.deleteRentalAgreement(ACTING_USER, projectId, created.getId());
 
         assertTrue(deleted);
 
@@ -1754,12 +1754,12 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
             .lastName(TestData.USER_LAST_NAME_1)
             .email(TestData.USER_EMAIL_1)
             .build();
-        final RentalAgreementEntity created = controller.createRentalAgreement(projectId,
+        final RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId,
             ImmutableRentalAgreementJson.builder().startOfRental(LocalDate.now()).addTenants(tenant).build());
         final TenantEntity createdTenant = created.getTenants().get(0);
         assertEquals(TestData.USER_ID_1, createdTenant.getUserId());
 
-        assertTrue(controller.deleteRentalAgreement(projectId, created.getId()));
+        assertTrue(controller.deleteRentalAgreement(ACTING_USER, projectId, created.getId()));
 
         entityManager.clear();
         assertNull(entityManager.find(RentalAgreementEntity.class, created.getId()));
@@ -1775,13 +1775,13 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
             .lastName(TestData.USER_LAST_NAME_1)
             .email(TestData.USER_EMAIL_1)
             .build();
-        final RentalAgreementEntity first = controller.createRentalAgreement(projectId,
+        final RentalAgreementEntity first = controller.createRentalAgreement(ACTING_USER, projectId,
             ImmutableRentalAgreementJson.builder().startOfRental(LocalDate.now()).addTenants(tenant).build());
-        final RentalAgreementEntity second = controller.createRentalAgreement(projectId,
+        final RentalAgreementEntity second = controller.createRentalAgreement(ACTING_USER, projectId,
             ImmutableRentalAgreementJson.builder().startOfRental(LocalDate.now()).addTenants(tenant).build());
         final UUID tenantId = first.getTenants().get(0).getId();
 
-        assertTrue(controller.deleteRentalAgreement(projectId, first.getId()));
+        assertTrue(controller.deleteRentalAgreement(ACTING_USER, projectId, first.getId()));
 
         entityManager.clear();
         assertNotNull(entityManager.find(TenantEntity.class, tenantId));
@@ -1790,7 +1790,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
 
     @Test
     void deleteRentalAgreement_FAILED_notFound() {
-        assertFalse(controller.deleteRentalAgreement(TestData.PROJECT_ID_1, UUID.randomUUID()));
+        assertFalse(controller.deleteRentalAgreement(ACTING_USER, TestData.PROJECT_ID_1, UUID.randomUUID()));
     }
 
     @Test
@@ -1800,7 +1800,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
             .startOfRental(LocalDate.now())
             .tenants(List.of())
             .build();
-        RentalAgreementEntity created = controller.createRentalAgreement(projectId, agreement);
+        RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, agreement);
 
         final TenantJson tenant = ImmutableTenantJson.builder()
             .firstName(TestData.USER_FIRST_NAME_1)
@@ -1809,7 +1809,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
             .build();
 
         TenantEntity addedTenant =
-            controller.addTenant(projectId, created.getId(), tenant);
+            controller.addTenant(ACTING_USER, projectId, created.getId(), tenant);
 
         assertNotNull(addedTenant.getId());
         assertEquals(TestData.USER_EMAIL_1, addedTenant.getEmail());
@@ -1832,17 +1832,17 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
             .startOfRental(LocalDate.now())
             .addTenants(tenant)
             .build();
-        RentalAgreementEntity created1 = controller.createRentalAgreement(projectId, agreement1);
+        RentalAgreementEntity created1 = controller.createRentalAgreement(ACTING_USER, projectId, agreement1);
         final UUID firstTenantId = created1.getTenants().get(0).getId();
 
         final RentalAgreementJson agreement2 = ImmutableRentalAgreementJson.builder()
             .startOfRental(LocalDate.now())
             .tenants(List.of())
             .build();
-        RentalAgreementEntity created2 = controller.createRentalAgreement(projectId, agreement2);
+        RentalAgreementEntity created2 = controller.createRentalAgreement(ACTING_USER, projectId, agreement2);
 
         TenantEntity addedTenant =
-            controller.addTenant(projectId, created2.getId(), tenant);
+            controller.addTenant(ACTING_USER, projectId, created2.getId(), tenant);
 
         assertEquals(firstTenantId, addedTenant.getId());
     }
@@ -1860,13 +1860,13 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
             .startOfRental(LocalDate.now())
             .addTenants(firstTenant)
             .build();
-        controller.createRentalAgreement(projectId, agreement1);
+        controller.createRentalAgreement(ACTING_USER, projectId, agreement1);
 
         final RentalAgreementJson agreement2 = ImmutableRentalAgreementJson.builder()
             .startOfRental(LocalDate.now())
             .tenants(List.of())
             .build();
-        RentalAgreementEntity created2 = controller.createRentalAgreement(projectId, agreement2);
+        RentalAgreementEntity created2 = controller.createRentalAgreement(ACTING_USER, projectId, agreement2);
         final UUID agreementId2 = created2.getId();
 
         final TenantJson differentNamedTenant = ImmutableTenantJson.builder()
@@ -1876,7 +1876,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
             .build();
 
         assertThrows(AlreadyExistsException.class,
-            () -> controller.addTenant(projectId, agreementId2, differentNamedTenant),
+            () -> controller.addTenant(ACTING_USER, projectId, agreementId2, differentNamedTenant),
             "Should fail because the email is already used by a differently-named tenant in this project.");
     }
 
@@ -1890,7 +1890,7 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
             .build();
 
         assertThrows(NotFoundException.class,
-            () -> controller.addTenant(projectId, agreementId, tenant));
+            () -> controller.addTenant(ACTING_USER, projectId, agreementId, tenant));
     }
 
     @Test
@@ -1905,10 +1905,10 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
             .startOfRental(LocalDate.now())
             .addTenants(tenant)
             .build();
-        RentalAgreementEntity created = controller.createRentalAgreement(projectId, agreement);
+        RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, agreement);
         final UUID tenantId = created.getTenants().get(0).getId();
 
-        controller.removeTenant(projectId, created.getId(), tenantId);
+        controller.removeTenant(ACTING_USER, projectId, created.getId(), tenantId);
 
         RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, created.getId());
         assertEquals(0, entity.getTenants().size());
@@ -1925,14 +1925,14 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
             .lastName(TestData.USER_LAST_NAME_1)
             .email(TestData.USER_EMAIL_1)
             .build();
-        final RentalAgreementEntity first = controller.createRentalAgreement(projectId,
+        final RentalAgreementEntity first = controller.createRentalAgreement(ACTING_USER, projectId,
             ImmutableRentalAgreementJson.builder().startOfRental(LocalDate.now()).addTenants(tenant).build());
-        final RentalAgreementEntity second = controller.createRentalAgreement(projectId,
+        final RentalAgreementEntity second = controller.createRentalAgreement(ACTING_USER, projectId,
             ImmutableRentalAgreementJson.builder().startOfRental(LocalDate.now()).addTenants(tenant).build());
         final UUID tenantId = first.getTenants().get(0).getId();
         assertEquals(tenantId, second.getTenants().get(0).getId());
 
-        controller.removeTenant(projectId, first.getId(), tenantId);
+        controller.removeTenant(ACTING_USER, projectId, first.getId(), tenantId);
 
         assertNotNull(entityManager.find(TenantEntity.class, tenantId));
     }
@@ -1944,9 +1944,9 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
             .startOfRental(LocalDate.now())
             .tenants(List.of())
             .build();
-        RentalAgreementEntity created = controller.createRentalAgreement(projectId, agreement);
+        RentalAgreementEntity created = controller.createRentalAgreement(ACTING_USER, projectId, agreement);
 
-        controller.removeTenant(projectId, created.getId(), UUID.randomUUID());
+        controller.removeTenant(ACTING_USER, projectId, created.getId(), UUID.randomUUID());
 
         RentalAgreementEntity entity = entityManager.find(RentalAgreementEntity.class, created.getId());
         assertEquals(0, entity.getTenants().size());
@@ -1959,6 +1959,6 @@ class RentalAgreementControllerTest extends AbstractServiceTest {
         final UUID tenantId = UUID.randomUUID();
 
         assertThrows(NotFoundException.class,
-            () -> controller.removeTenant(projectId, agreementId, tenantId));
+            () -> controller.removeTenant(ACTING_USER, projectId, agreementId, tenantId));
     }
 }

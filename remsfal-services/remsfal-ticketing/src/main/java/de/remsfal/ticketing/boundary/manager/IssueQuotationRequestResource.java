@@ -56,7 +56,8 @@ public class IssueQuotationRequestResource extends AbstractTicketingResource
     public QuotationRequestJson updateRequestForQuotation(final UUID issueId, final UUID requestId,
         final QuotationRequestJson body) {
         checkProjectIssueOrderPermissions(issueId);
-        return withAttachments(orderManagementController.updateRequestForQuotation(issueId, requestId, body));
+        return withAttachments(orderManagementController.updateRequestForQuotation(principal, issueId, requestId,
+            body));
     }
 
     private QuotationRequestJson withAttachments(final QuotationRequestEntity request) {

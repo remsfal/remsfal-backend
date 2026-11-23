@@ -36,18 +36,6 @@ public interface OrganizationEventJson extends EventHeaderJson {
     OrganizationJson getOrganization();
 
     /**
-     * The ID of the user who performed the change that triggered this event, same as {@link #getActingUserId()}.
-     */
-    @Nullable
-    UUID getChangedByUserId();
-
-    /**
-     * The display name of the user who performed the change that triggered this event.
-     */
-    @Nullable
-    String getChangedByName();
-
-    /**
      * Contractor records linked to this organization, each with the project it belongs to. Only present
      * for {@link OrganizationEventType#ORGANIZATION_UPDATED}. May be empty if the organization has no
      * linked contractors; consumers decide whether that implies any action.

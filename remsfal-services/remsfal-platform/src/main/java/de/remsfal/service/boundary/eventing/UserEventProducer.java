@@ -74,7 +74,7 @@ public class UserEventProducer {
 
     private void send(final ImmutableUserEventJson.Builder builder, final UserEvent userEvent) {
         final UserEventJson event = builder
-            .actingUserId(userEvent.actingUserId())
+            .actingUser(userEvent.actingUser())
             .userId(userEvent.userId())
             .user(userEvent.user())
             .build();

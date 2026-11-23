@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.Duration;
 import java.util.List;
 
+import de.remsfal.core.json.ImmutableUserJson;
+import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.eventing.OrganizationEventJson;
 import de.remsfal.core.json.organization.ImmutableOrganizationJson;
 import de.remsfal.core.json.organization.OrganizationJson;
@@ -45,9 +47,16 @@ class OrganizationEventProducerTest extends AbstractKafkaTest {
             .build();
     }
 
+    private static UserJson actingUser() {
+        return ImmutableUserJson.builder()
+            .id(TestData.USER_ID)
+            .email(TestData.USER_EMAIL)
+            .build();
+    }
+
     @Test
     void onContactDataChanged_publishesOrganizationUpdated() {
-        organizationEvent.fire(new OrganizationEvent.ContactDataChanged(organization(), TestData.USER_ID));
+        organizationEvent.fire(new OrganizationEvent.ContactDataChanged(organization(), actingUser()));
 
         given()
             .topic(OrganizationEventJson.TOPIC)
@@ -55,13 +64,13 @@ class OrganizationEventProducerTest extends AbstractKafkaTest {
             .json("organizationId", Matchers.equalTo(TestData.ORGANIZATION_ID.toString()))
             .json("organizationEventType", Matchers.equalTo("ORGANIZATION_UPDATED"))
             .json("organization.name", Matchers.equalTo(TestData.ORGANIZATION_NAME))
-            .json("actingUserId", Matchers.equalTo(TestData.USER_ID.toString()))
-            .json("changedByUserId", Matchers.equalTo(TestData.USER_ID.toString()));
+            .json("actingUser.id", Matchers.equalTo(TestData.USER_ID.toString()))
+            .json("actingUser.email", Matchers.equalTo(TestData.USER_EMAIL));
     }
 
     @Test
     void onOrganizationUpdated_publishesNoEvent() {
-        organizationEvent.fire(new OrganizationEvent.Updated(organization(), TestData.USER_ID));
+        organizationEvent.fire(new OrganizationEvent.Updated(organization(), actingUser()));
 
         final List<?> records = companion.consumeStrings()
             .fromTopics(OrganizationEventJson.TOPIC)

@@ -12,37 +12,37 @@ public sealed interface UserEvent {
     /** Snapshot of the user, taken within the transaction (for a deletion the last state). */
     UserJson user();
 
-    UUID actingUserId();
+    UserJson actingUser();
 
     default UUID userId() {
         return user().getId();
     }
 
     /** A (possibly inactive) user was created, e.g. as placeholder for an invited project member. */
-    record Created(UserJson user, UUID actingUserId) implements UserEvent {
+    record Created(UserJson user, UserJson actingUser) implements UserEvent {
     }
 
     /** A user has registered, i.e. logged in for the first time. */
-    record Registered(UserJson user, UUID actingUserId) implements UserEvent {
+    record Registered(UserJson user, UserJson actingUser) implements UserEvent {
     }
 
     /** Any change of the user profile. */
-    record Updated(UserJson user, UUID actingUserId) implements UserEvent {
+    record Updated(UserJson user, UserJson actingUser) implements UserEvent {
     }
 
     /**
      * The contact data of the user (name, address or phone numbers) has changed, which is relevant for the tenants
      * linked to the user. Fired in addition to {@link Updated}.
      */
-    record ContactDataChanged(UserJson user, UUID actingUserId) implements UserEvent {
+    record ContactDataChanged(UserJson user, UserJson actingUser) implements UserEvent {
     }
 
     /** An additional email was added to the user and has to be verified. */
-    record AdditionalEmailAdded(UserJson user, String email, String verificationToken, UUID actingUserId)
+    record AdditionalEmailAdded(UserJson user, String email, String verificationToken, UserJson actingUser)
         implements UserEvent {
     }
 
-    record Deleted(UserJson user, UUID actingUserId) implements UserEvent {
+    record Deleted(UserJson user, UserJson actingUser) implements UserEvent {
     }
 
 }

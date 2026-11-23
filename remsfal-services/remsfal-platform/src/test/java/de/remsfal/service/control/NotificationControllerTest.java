@@ -78,7 +78,7 @@ class NotificationControllerTest extends AbstractKafkaTest {
             .id(user.getId())
             .email(user.getEmail())
             .role(MemberRole.MANAGER)
-            .build(), TestData.USER_ID));
+            .build(), null));
 
         given()
             .topic(NotificationEventJson.TOPIC)
@@ -106,7 +106,7 @@ class NotificationControllerTest extends AbstractKafkaTest {
                 .email(user.getEmail())
                 .employeeRole(EmployeeRole.STAFF)
                 .build(),
-            TestData.USER_ID));
+            null));
 
         given()
             .topic(NotificationEventJson.TOPIC)
@@ -123,7 +123,7 @@ class NotificationControllerTest extends AbstractKafkaTest {
         userEvent.fire(new UserEvent.Registered(ImmutableUserJson.builder()
             .id(TestData.USER_ID)
             .email(TestData.USER_EMAIL)
-            .build(), TestData.USER_ID));
+            .build(), null));
 
         given()
             .topic(NotificationEventJson.TOPIC)
@@ -141,7 +141,7 @@ class NotificationControllerTest extends AbstractKafkaTest {
             .id(TestData.USER_ID)
             .email(TestData.USER_EMAIL)
             .locale("en")
-            .build(), TestData.USER_ID));
+            .build(), null));
 
         given()
             .topic(NotificationEventJson.TOPIC)
@@ -155,7 +155,7 @@ class NotificationControllerTest extends AbstractKafkaTest {
         userEvent.fire(new UserEvent.AdditionalEmailAdded(ImmutableUserJson.builder()
             .id(TestData.USER_ID)
             .email(TestData.USER_EMAIL)
-            .build(), "additional@example.org", "token+/=", TestData.USER_ID));
+            .build(), "additional@example.org", "token+/=", null));
 
         given()
             .topic(NotificationEventJson.TOPIC)

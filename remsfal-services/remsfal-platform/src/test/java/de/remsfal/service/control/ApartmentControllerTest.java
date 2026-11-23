@@ -38,12 +38,12 @@ class ApartmentControllerTest extends AbstractServiceTest {
     @Test
     void createApartment_SUCCESS_getApartment() {
         final UUID propertyId = propertyController
-                .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
+                .createProperty(ACTING_USER, TestData.PROJECT_ID, TestData.propertyBuilder().build())
                 .getId();
         assertNotNull(propertyId);
 
         final UUID buildingId = buildingController
-                .createBuilding(TestData.PROJECT_ID, propertyId,
+                .createBuilding(ACTING_USER, TestData.PROJECT_ID, propertyId,
                         TestData.buildingBuilder()
                                 .id(null)
                                 .address(TestData.addressBuilder().build())
@@ -53,7 +53,7 @@ class ApartmentControllerTest extends AbstractServiceTest {
 
         final ApartmentModel apartment = TestData.apartmentBuilder().build();
         final ApartmentModel result = apartmentController
-                .createApartment(TestData.PROJECT_ID, buildingId, apartment);
+                .createApartment(ACTING_USER, TestData.PROJECT_ID, buildingId, apartment);
 
         assertNotEquals(apartment.getId(), result.getId());
         assertEquals(apartment.getTitle(), result.getTitle());
@@ -77,12 +77,12 @@ class ApartmentControllerTest extends AbstractServiceTest {
     @Test
     void createApartment_SUCCESS_deleteApartment() {
         final UUID propertyId = propertyController
-                .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
+                .createProperty(ACTING_USER, TestData.PROJECT_ID, TestData.propertyBuilder().build())
                 .getId();
         assertNotNull(propertyId);
 
         final UUID buildingId = buildingController
-                .createBuilding(TestData.PROJECT_ID, propertyId,
+                .createBuilding(ACTING_USER, TestData.PROJECT_ID, propertyId,
                         TestData.buildingBuilder()
                                 .id(null)
                                 .address(TestData.addressBuilder().build())
@@ -92,7 +92,7 @@ class ApartmentControllerTest extends AbstractServiceTest {
 
         final ApartmentModel apartment = TestData.apartmentBuilder().build();
         final ApartmentModel result = apartmentController
-                .createApartment(TestData.PROJECT_ID, buildingId, apartment);
+                .createApartment(ACTING_USER, TestData.PROJECT_ID, buildingId, apartment);
 
         assertNotEquals(apartment.getId(), result.getId());
         assertEquals(apartment.getTitle(), result.getTitle());
@@ -107,19 +107,19 @@ class ApartmentControllerTest extends AbstractServiceTest {
                 .getSingleResult();
         assertEquals(result.getId(), apartmentId);
 
-        apartmentController.deleteApartment(TestData.PROJECT_ID, apartmentId);
+        apartmentController.deleteApartment(ACTING_USER, TestData.PROJECT_ID, apartmentId);
         assertThrows(NotFoundException.class, () -> apartmentController.getApartment(TestData.PROJECT_ID, apartmentId));
     }
 
     @Test
     void createApartment_SUCCESS_updateApartment() {
         final UUID propertyId = propertyController
-                .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
+                .createProperty(ACTING_USER, TestData.PROJECT_ID, TestData.propertyBuilder().build())
                 .getId();
         assertNotNull(propertyId);
 
         final UUID buildingId = buildingController
-                .createBuilding(TestData.PROJECT_ID, propertyId,
+                .createBuilding(ACTING_USER, TestData.PROJECT_ID, propertyId,
                         TestData.buildingBuilder()
                                 .id(null)
                                 .address(TestData.addressBuilder().build())
@@ -129,7 +129,7 @@ class ApartmentControllerTest extends AbstractServiceTest {
 
         final ApartmentModel apartment = TestData.apartmentBuilder().build();
         final ApartmentModel result = apartmentController
-                .createApartment(TestData.PROJECT_ID, buildingId, apartment);
+                .createApartment(ACTING_USER, TestData.PROJECT_ID, buildingId, apartment);
 
         assertNotEquals(apartment.getId(), result.getId());
         assertEquals(apartment.getTitle(), result.getTitle());
@@ -146,7 +146,7 @@ class ApartmentControllerTest extends AbstractServiceTest {
 
         final ApartmentModel updateTo = TestData.apartmentBuilder2().build();
 
-        final ApartmentModel updated = apartmentController.updateApartment(TestData.PROJECT_ID,
+        final ApartmentModel updated = apartmentController.updateApartment(ACTING_USER, TestData.PROJECT_ID,
                 apartmentId, updateTo);
 
         assertNotEquals(updateTo.getId(), updated.getId());

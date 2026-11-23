@@ -2,6 +2,7 @@ package de.remsfal.service.control.event;
 
 import java.util.UUID;
 
+import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.project.ProjectMemberJson;
 
 /**
@@ -14,15 +15,15 @@ public sealed interface ProjectMemberEvent {
     /** Snapshot of the membership, taken within the transaction (for a removal the last state). */
     ProjectMemberJson member();
 
-    UUID actingUserId();
+    UserJson actingUser();
 
-    record Added(UUID projectId, ProjectMemberJson member, UUID actingUserId) implements ProjectMemberEvent {
+    record Added(UUID projectId, ProjectMemberJson member, UserJson actingUser) implements ProjectMemberEvent {
     }
 
-    record RoleChanged(UUID projectId, ProjectMemberJson member, UUID actingUserId) implements ProjectMemberEvent {
+    record RoleChanged(UUID projectId, ProjectMemberJson member, UserJson actingUser) implements ProjectMemberEvent {
     }
 
-    record Removed(UUID projectId, ProjectMemberJson member, UUID actingUserId) implements ProjectMemberEvent {
+    record Removed(UUID projectId, ProjectMemberJson member, UserJson actingUser) implements ProjectMemberEvent {
     }
 
 }

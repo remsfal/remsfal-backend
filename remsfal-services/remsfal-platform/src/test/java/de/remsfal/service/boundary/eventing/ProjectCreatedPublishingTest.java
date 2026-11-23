@@ -90,7 +90,7 @@ class ProjectCreatedPublishingTest extends AbstractKafkaTest {
     private UserModel createUser() {
         final String email = UUID.randomUUID() + "@example.org";
         return QuarkusTransaction.requiringNew().call(() ->
-            userController.findOrCreateUser(ImmutableUserJson.builder().email(email).build()));
+            userController.findOrCreateUser(ImmutableUserJson.builder().email(email).build(), null));
     }
 
 }

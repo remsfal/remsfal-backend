@@ -3,6 +3,7 @@ package de.remsfal.service.control.event;
 import java.util.UUID;
 
 import de.remsfal.core.json.RentalUnitJson;
+import de.remsfal.core.json.UserJson;
 import de.remsfal.core.model.RentalUnitModel.UnitType;
 
 /**
@@ -16,19 +17,19 @@ public sealed interface RentalUnitEvent {
     /** Snapshot of the rental unit, taken within the transaction (for a deletion the last state). */
     RentalUnitJson unit();
 
-    UUID actingUserId();
+    UserJson actingUser();
 
     default UnitType unitType() {
         return unit().getType();
     }
 
-    record Created(UUID projectId, RentalUnitJson unit, UUID actingUserId) implements RentalUnitEvent {
+    record Created(UUID projectId, RentalUnitJson unit, UserJson actingUser) implements RentalUnitEvent {
     }
 
-    record Updated(UUID projectId, RentalUnitJson unit, UUID actingUserId) implements RentalUnitEvent {
+    record Updated(UUID projectId, RentalUnitJson unit, UserJson actingUser) implements RentalUnitEvent {
     }
 
-    record Deleted(UUID projectId, RentalUnitJson unit, UUID actingUserId) implements RentalUnitEvent {
+    record Deleted(UUID projectId, RentalUnitJson unit, UserJson actingUser) implements RentalUnitEvent {
     }
 
 }

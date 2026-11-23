@@ -1,6 +1,8 @@
 package de.remsfal.service.control;
 
+import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.project.ApartmentJson;
+import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.ApartmentModel;
 import de.remsfal.service.control.event.RentalUnitEvent;
 import de.remsfal.service.entity.dao.ApartmentRepository;
@@ -26,16 +28,13 @@ public class ApartmentController {
     Logger logger;
 
     @Inject
-    ActingUserController actingUser;
-
-    @Inject
     Event<RentalUnitEvent> rentalUnitEvent;
 
     @Inject
     ApartmentRepository apartmentRepository;
 
     @Transactional
-    public ApartmentModel createApartment(final UUID projectId, final UUID buildingId,
+    public ApartmentModel createApartment(final UserModel user, final UUID projectId, final UUID buildingId,
         final ApartmentModel apartment) {
         logger.infov("Creating an apartment (projectId={0}, buildingId={1}, apartment={2})",
             projectId, buildingId, apartment);
@@ -47,7 +46,7 @@ public class ApartmentController {
         apartmentRepository.getEntityManager().refresh(entity);
         final ApartmentModel created = getApartment(projectId, entity.getId());
         rentalUnitEvent.fire(new RentalUnitEvent.Created(projectId, ApartmentJson.valueOf(created),
-            actingUser.getId()));
+            UserJson.valueOf(user)));
         return created;
     }
 
@@ -59,7 +58,7 @@ public class ApartmentController {
     }
 
     @Transactional
-    public ApartmentModel updateApartment(final UUID projectId, final UUID apartmentId,
+    public ApartmentModel updateApartment(final UserModel user, final UUID projectId, final UUID apartmentId,
         final ApartmentModel apartment) {
         logger.infov("Update an apartment (projectId={0}, apartmentId={1}, apartment={2})",
             projectId, apartmentId, apartment);
@@ -67,7 +66,7 @@ public class ApartmentController {
             .orElseThrow(() -> new NotFoundException("Apartment does not exist"));
         final ApartmentModel updated = apartmentRepository.merge(mergeApartmentFields(apartment, entity));
         rentalUnitEvent.fire(new RentalUnitEvent.Updated(projectId, ApartmentJson.valueOf(updated),
-            actingUser.getId()));
+            UserJson.valueOf(user)));
         return updated;
     }
 
@@ -94,13 +93,13 @@ public class ApartmentController {
     }
 
     @Transactional
-    public boolean deleteApartment(final UUID projectId, final UUID apartmentId) {
+    public boolean deleteApartment(final UserModel user, final UUID projectId, final UUID apartmentId) {
         logger.infov("Delete an apartment (projectId={0}, apartmentId={1})", projectId, apartmentId);
         final Optional<ApartmentJson> snapshot = apartmentRepository.findByIds(projectId, apartmentId)
             .map(ApartmentJson::valueOf);
         final boolean deleted = apartmentRepository.removeApartmentByIds(projectId, apartmentId) > 0;
         if (deleted && snapshot.isPresent()) {
-            rentalUnitEvent.fire(new RentalUnitEvent.Deleted(projectId, snapshot.get(), actingUser.getId()));
+            rentalUnitEvent.fire(new RentalUnitEvent.Deleted(projectId, snapshot.get(), UserJson.valueOf(user)));
         }
         return deleted;
     }

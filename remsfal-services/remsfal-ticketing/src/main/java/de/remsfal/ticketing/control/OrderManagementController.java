@@ -7,7 +7,6 @@ import jakarta.ws.rs.NotFoundException;
 
 import org.jboss.logging.Logger;
 
-import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.json.ContractorJson;
 import de.remsfal.core.json.ImmutableUserJson;
 import de.remsfal.core.json.UserJson;
@@ -61,9 +60,6 @@ public class OrderManagementController {
 
     @Inject
     Logger logger;
-
-    @Inject
-    RemsfalPrincipal principal;
 
     @Inject
     IssueRepository issueRepository;
@@ -189,20 +185,21 @@ public class OrderManagementController {
             .orElseThrow(() -> new NotFoundException(QUOTATION_REQUEST_NOT_FOUND));
     }
 
-    public QuotationRequestEntity updateRequestForQuotation(final UUID issueId, final UUID requestId,
+    public QuotationRequestEntity updateRequestForQuotation(final UserModel user, final UUID issueId,
+        final UUID requestId,
         final QuotationRequestJson body) {
         QuotationRequestEntity entity = mergeQuotationRequestFields(body, getRequestForQuotation(issueId, requestId));
         final QuotationRequestEntity updated = quotationRequestRepository.update(entity);
         issueEventProducer.sendQuotationRequestStatusChanged(findIssue(entity.getIssueId()),
-            QuotationRequestJson.valueOf(updated), principal);
+            QuotationRequestJson.valueOf(updated), user);
         if (body.getStatus() != null) {
-            writeContractorTimelineEntry(updated.getIssueId(), updated.getOrganizationId(), principal,
+            writeContractorTimelineEntry(updated.getIssueId(), updated.getOrganizationId(), user,
                 UserContext.MANAGER, MessagePurpose.STATUS_CHANGED, updated.getStatus().name());
         }
         return updated;
     }
 
-    public QuotationRequestEntity updateRequestForQuotationByContractor(
+    public QuotationRequestEntity updateRequestForQuotationByContractor(final UserModel user,
         final Set<UUID> organizationIds, final UUID requestId, final QuotationRequestJson body) {
         if (body.getStatus() == null) {
             throw new BadRequestException("Status must be provided");
@@ -221,8 +218,8 @@ public class OrderManagementController {
         entity.setStatus(body.getStatus());
         final QuotationRequestEntity updated = quotationRequestRepository.update(entity);
         issueEventProducer.sendQuotationRequestStatusChanged(findIssue(entity.getIssueId()),
-            QuotationRequestJson.valueOf(updated), principal);
-        writeContractorTimelineEntry(updated.getIssueId(), updated.getOrganizationId(), principal,
+            QuotationRequestJson.valueOf(updated), user);
+        writeContractorTimelineEntry(updated.getIssueId(), updated.getOrganizationId(), user,
             UserContext.CONTRACTOR, MessagePurpose.STATUS_CHANGED, updated.getStatus().name());
         return updated;
     }
@@ -264,14 +261,15 @@ public class OrderManagementController {
         return visible;
     }
 
-    public QuotationEntity createQuotationByContractor(final Set<UUID> organizationIds, final UUID requestId,
+    public QuotationEntity createQuotationByContractor(final UserModel user, final Set<UUID> organizationIds,
+        final UUID requestId,
         final QuotationJson body) {
         final QuotationRequestEntity request = findByOrganizationIds(organizationIds,
             quotationRequestRepository::findByOrganizationId,
             r -> requestId.equals(r.getRequestId()),
             () -> new NotFoundException(QUOTATION_REQUEST_NOT_FOUND));
 
-        final QuotationEntity quotation = buildQuotation(request, body);
+        final QuotationEntity quotation = buildQuotation(user, request, body);
         if (body.getAttachmentIds() != null && !body.getAttachmentIds().isEmpty()) {
             final List<UUID> attachmentIds = body.getAttachmentIds().stream().distinct().toList();
             if (!getVisibleAttachmentIds(request.getIssueId(), request.getOrganizationId())
@@ -282,20 +280,20 @@ public class OrderManagementController {
         }
         final QuotationEntity inserted = quotationRepository.insert(quotation);
         issueEventProducer.sendQuotationCreated(findIssue(request.getIssueId()), QuotationJson.valueOf(inserted),
-            principal);
+            user);
         return inserted;
     }
 
-    public OrderPlacementEntity placeOrder(final UUID issueId, final UUID quotationId) {
+    public OrderPlacementEntity placeOrder(final UserModel user, final UUID issueId, final UUID quotationId) {
         QuotationEntity quotation = quotationRepository.findById(quotationKey(issueId, quotationId))
             .orElseThrow(() -> new NotFoundException("Quotation not found"));
 
         final OrderPlacementEntity inserted = orderPlacementRepository.insert(
-            buildOrderPlacement(issueId, quotationId, quotation));
+            buildOrderPlacement(user, issueId, quotationId, quotation));
         issueEventProducer.sendOrderPlaced(findIssue(issueId), OrderPlacementJson.valueOf(inserted),
-            principal);
+            user);
 
-        writeContractorTimelineEntry(issueId, quotation.getOrganizationId(), principal, UserContext.MANAGER,
+        writeContractorTimelineEntry(issueId, quotation.getOrganizationId(), user, UserContext.MANAGER,
             MessagePurpose.ORDER_PLACED, "");
 
         return inserted;
@@ -323,13 +321,13 @@ public class OrderManagementController {
             .orElseThrow(() -> new NotFoundException("Order placement not found"));
     }
 
-    public void withdrawOrderPlacement(final UUID issueId, final UUID orderId) {
+    public void withdrawOrderPlacement(final UserModel user, final UUID issueId, final UUID orderId) {
         OrderPlacementEntity placement = getOrderPlacementForIssue(issueId, orderId);
         placement.setStatus(OrderPlacementStatus.WITHDRAWN);
         final OrderPlacementEntity updated = orderPlacementRepository.update(placement);
         issueEventProducer.sendOrderPlacementWithdrawn(findIssue(issueId), OrderPlacementJson.valueOf(updated),
-            principal);
-        writeContractorTimelineEntry(issueId, updated.getOrganizationId(), principal, UserContext.MANAGER,
+            user);
+        writeContractorTimelineEntry(issueId, updated.getOrganizationId(), user, UserContext.MANAGER,
             MessagePurpose.STATUS_CHANGED, updated.getStatus().name());
     }
 
@@ -369,7 +367,7 @@ public class OrderManagementController {
             () -> new NotFoundException("Order placement not found"));
     }
 
-    public OrderPlacementEntity updateOrderPlacementStatus(final Set<UUID> organizationIds,
+    public OrderPlacementEntity updateOrderPlacementStatus(final UserModel user, final Set<UUID> organizationIds,
         final UUID placementId, final OrderPlacementStatus status) {
         validateAllowedStatus(status, Set.of(
             OrderPlacementStatus.CONFIRMED,
@@ -377,12 +375,12 @@ public class OrderManagementController {
         ), "Contractor can only set status to CONFIRMED or REJECTED");
         OrderPlacementEntity placement = getOrderPlacementForOrganization(organizationIds, placementId);
         placement.setStatus(status);
-        placement.setConfirmorId(principal.getId());
-        placement.setConfirmedBy(principal.getName());
+        placement.setConfirmorId(user.getId());
+        placement.setConfirmedBy(user.getName());
         final OrderPlacementEntity updated = orderPlacementRepository.update(placement);
         issueEventProducer.sendOrderPlacementStatusChangedByContractor(findIssue(placement.getIssueId()),
-            OrderPlacementJson.valueOf(updated), principal);
-        writeContractorTimelineEntry(updated.getIssueId(), updated.getOrganizationId(), principal,
+            OrderPlacementJson.valueOf(updated), user);
+        writeContractorTimelineEntry(updated.getIssueId(), updated.getOrganizationId(), user,
             UserContext.CONTRACTOR, MessagePurpose.STATUS_CHANGED, updated.getStatus().name());
         return updated;
     }
@@ -442,7 +440,8 @@ public class OrderManagementController {
         return key;
     }
 
-    private QuotationEntity buildQuotation(final QuotationRequestEntity request, final QuotationJson body) {
+    private QuotationEntity buildQuotation(final UserModel user, final QuotationRequestEntity request,
+        final QuotationJson body) {
         QuotationEntity quotation = new QuotationEntity();
         quotation.generateId();
         quotation.setIssueId(request.getIssueId());
@@ -453,8 +452,8 @@ public class OrderManagementController {
         quotation.setProjectBillingAddress1(request.getProjectBillingAddress1());
         quotation.setProjectBillingAddress2(request.getProjectBillingAddress2());
         quotation.setProjectBillingAddress3(request.getProjectBillingAddress3());
-        quotation.setOffererId(principal.getId());
-        quotation.setOfferedBy(principal.getName());
+        quotation.setOffererId(user.getId());
+        quotation.setOfferedBy(user.getName());
         quotation.setContractorId(request.getContractorId());
         quotation.setContractorName(request.getContractorName());
         quotation.setOrganizationId(request.getOrganizationId());
@@ -463,7 +462,7 @@ public class OrderManagementController {
         return quotation;
     }
 
-    private OrderPlacementEntity buildOrderPlacement(final UUID issueId, final UUID quotationId,
+    private OrderPlacementEntity buildOrderPlacement(final UserModel user, final UUID issueId, final UUID quotationId,
         final QuotationEntity quotation) {
         OrderPlacementEntity orderPlacement = new OrderPlacementEntity();
         orderPlacement.generateId();
@@ -475,8 +474,8 @@ public class OrderManagementController {
         orderPlacement.setProjectBillingAddress1(quotation.getProjectBillingAddress1());
         orderPlacement.setProjectBillingAddress2(quotation.getProjectBillingAddress2());
         orderPlacement.setProjectBillingAddress3(quotation.getProjectBillingAddress3());
-        orderPlacement.setOrdererId(principal.getId());
-        orderPlacement.setOrderedBy(principal.getName());
+        orderPlacement.setOrdererId(user.getId());
+        orderPlacement.setOrderedBy(user.getName());
         orderPlacement.setContractorId(quotation.getContractorId());
         orderPlacement.setContractorName(quotation.getContractorName());
         orderPlacement.setOrganizationId(quotation.getOrganizationId());

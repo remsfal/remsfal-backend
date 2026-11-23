@@ -14,7 +14,6 @@ import org.junit.jupiter.api.Test;
 
 import com.datastax.oss.quarkus.test.CassandraTestResource;
 
-import de.remsfal.common.authentication.RemsfalPrincipal;
 import de.remsfal.core.model.UserContext;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.ticketing.IssueModel;
@@ -27,19 +26,14 @@ import de.remsfal.ticketing.entity.dao.IssueRepository;
 import de.remsfal.ticketing.entity.dto.IssueEntity;
 import de.remsfal.ticketing.entity.dto.TenantTimelineEntity;
 import de.remsfal.ticketing.entity.filter.IssueFilter;
-import io.quarkus.test.InjectMock;
 import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 
 /**
  * Covers {@link IssueController} against a real Cassandra instance (see {@link AbstractTicketingTest}).
- * {@link RemsfalPrincipal} is the only mocked dependency here, since it only resolves a real identity
- * from a JWT-authenticated HTTP request ({@code RemsfalPrincipal.getId()}/{@code getName()} read the
- * current {@code JsonWebToken}), which a bare CDI-injected controller call doesn't have. Everything
- * else (repository, timeline controller, event producer) is the real bean, same as
- * {@code de.remsfal.ticketing.boundary.OcrTest} for a comparable
- * {@code @InjectMock RemsfalPrincipal} + real-DB combination.
+ * The acting user is passed as a mocked {@link UserModel}, as the boundary passes the principal of the request.
+ * Everything else (repository, timeline controller, event producer) is the real bean.
  */
 @QuarkusTest
 @QuarkusTestResource(CassandraTestResource.class)
@@ -54,8 +48,7 @@ class IssueControllerTest extends AbstractTicketingTest {
     @Inject
     TenantTimelineController timelineController;
 
-    @InjectMock
-    RemsfalPrincipal principal;
+    private final UserModel user = mock(UserModel.class);
 
     @Test
     void getTenancyIssues_mergesAndSortsAcrossAgreementsByIssueIdDescending() {
@@ -232,13 +225,13 @@ class IssueControllerTest extends AbstractTicketingTest {
         existing.setLocation("Keller");
         issueRepository.update(existing);
 
-        when(principal.getId()).thenReturn(UUID.randomUUID());
-        when(principal.getName()).thenReturn("Max Manager");
+        when(user.getId()).thenReturn(UUID.randomUUID());
+        when(user.getName()).thenReturn("Max Manager");
 
         final IssueModel patch = mock(IssueModel.class);
         when(patch.getLocation()).thenReturn("Dachgeschoss");
 
-        final IssueModel updated = controller.updateIssue(issueId, patch);
+        final IssueModel updated = controller.updateIssue(user, issueId, patch);
 
         assertEquals("Dachgeschoss", updated.getLocation());
     }
@@ -253,12 +246,12 @@ class IssueControllerTest extends AbstractTicketingTest {
         existing.setLocation("Keller");
         issueRepository.update(existing);
 
-        when(principal.getId()).thenReturn(UUID.randomUUID());
-        when(principal.getName()).thenReturn("Max Manager");
+        when(user.getId()).thenReturn(UUID.randomUUID());
+        when(user.getName()).thenReturn("Max Manager");
 
         final IssueModel patch = mock(IssueModel.class);
 
-        final IssueModel updated = controller.updateIssue(issueId, patch);
+        final IssueModel updated = controller.updateIssue(user, issueId, patch);
 
         assertEquals("Keller", updated.getLocation());
     }
@@ -268,24 +261,24 @@ class IssueControllerTest extends AbstractTicketingTest {
         final UUID projectId = UUID.randomUUID();
         final UUID issueId = UUID.randomUUID();
         final UUID agreementId = UUID.randomUUID();
-        final UUID principalId = UUID.randomUUID();
+        final UUID userId = UUID.randomUUID();
 
         insertIssue(projectId, issueId, "Issue", IssueType.DEFECT, IssueStatus.OPEN, IssuePriority.MEDIUM,
             UUID.randomUUID(), agreementId, null, "Issue");
 
-        when(principal.getId()).thenReturn(principalId);
-        when(principal.getName()).thenReturn("Max Manager");
+        when(user.getId()).thenReturn(userId);
+        when(user.getName()).thenReturn("Max Manager");
 
         final IssueModel patch = mock(IssueModel.class);
         when(patch.getStatus()).thenReturn(IssueStatus.IN_PROGRESS);
 
-        controller.updateIssue(issueId, patch);
+        controller.updateIssue(user, issueId, patch);
 
         final List<TenantTimelineEntity> entries = timelineController.getTimelineEntries(agreementId, issueId, projectId);
         assertEquals(1, entries.size());
         assertEquals(MessagePurpose.STATUS_CHANGED, entries.get(0).getPurpose());
         assertEquals("IN_PROGRESS", entries.get(0).getMessage());
-        assertEquals(principalId, entries.get(0).getSenderId());
+        assertEquals(userId, entries.get(0).getSenderId());
         assertEquals("Max Manager", entries.get(0).getSenderName());
         assertEquals(UserContext.MANAGER, entries.get(0).getSenderRole());
     }
@@ -299,13 +292,13 @@ class IssueControllerTest extends AbstractTicketingTest {
         insertIssue(projectId, issueId, "Issue", IssueType.DEFECT, IssueStatus.OPEN, IssuePriority.MEDIUM,
             UUID.randomUUID(), agreementId, null, "Issue");
 
-        when(principal.getId()).thenReturn(UUID.randomUUID());
-        when(principal.getName()).thenReturn("Max Manager");
+        when(user.getId()).thenReturn(UUID.randomUUID());
+        when(user.getName()).thenReturn("Max Manager");
 
         final IssueModel patch = mock(IssueModel.class);
         when(patch.getStatus()).thenReturn(IssueStatus.OPEN);
 
-        controller.updateIssue(issueId, patch);
+        controller.updateIssue(user, issueId, patch);
 
         assertTrue(timelineController.getTimelineEntries(agreementId, issueId, projectId).isEmpty());
     }
@@ -323,13 +316,13 @@ class IssueControllerTest extends AbstractTicketingTest {
         existing.setVisibleToTenants(false);
         issueRepository.update(existing);
 
-        when(principal.getId()).thenReturn(UUID.randomUUID());
-        when(principal.getName()).thenReturn("Max Manager");
+        when(user.getId()).thenReturn(UUID.randomUUID());
+        when(user.getName()).thenReturn("Max Manager");
 
         final IssueModel patch = mock(IssueModel.class);
         when(patch.getStatus()).thenReturn(IssueStatus.IN_PROGRESS);
 
-        controller.updateIssue(issueId, patch);
+        controller.updateIssue(user, issueId, patch);
 
         assertTrue(timelineController.getTimelineEntries(agreementId, issueId, projectId).isEmpty());
     }
@@ -342,13 +335,13 @@ class IssueControllerTest extends AbstractTicketingTest {
         insertIssue(projectId, issueId, "Issue", IssueType.DEFECT, IssueStatus.OPEN, IssuePriority.MEDIUM,
             UUID.randomUUID(), null, null, "Issue");
 
-        when(principal.getId()).thenReturn(UUID.randomUUID());
-        when(principal.getName()).thenReturn("Max Manager");
+        when(user.getId()).thenReturn(UUID.randomUUID());
+        when(user.getName()).thenReturn("Max Manager");
 
         final IssueModel patch = mock(IssueModel.class);
         when(patch.getStatus()).thenReturn(IssueStatus.IN_PROGRESS);
 
-        controller.updateIssue(issueId, patch);
+        controller.updateIssue(user, issueId, patch);
 
         assertEquals(0L, cqlSession.execute("SELECT COUNT(*) FROM tenant_timelines").one().getLong(0));
     }
@@ -358,21 +351,21 @@ class IssueControllerTest extends AbstractTicketingTest {
         final UUID projectId = UUID.randomUUID();
         final UUID issueId = UUID.randomUUID();
         final UUID agreementId = UUID.randomUUID();
-        final UUID principalId = UUID.randomUUID();
+        final UUID userId = UUID.randomUUID();
 
         insertIssue(projectId, issueId, "Issue", IssueType.DEFECT, IssueStatus.OPEN, IssuePriority.MEDIUM,
             UUID.randomUUID(), agreementId, null, "Issue");
 
-        when(principal.getId()).thenReturn(principalId);
-        when(principal.getName()).thenReturn("Tina Tenant");
+        when(user.getId()).thenReturn(userId);
+        when(user.getName()).thenReturn("Tina Tenant");
 
-        controller.closeIssue(issueId, UserContext.TENANT);
+        controller.closeIssue(user, issueId, UserContext.TENANT);
 
         final List<TenantTimelineEntity> entries = timelineController.getTimelineEntries(agreementId, issueId, projectId);
         assertEquals(1, entries.size());
         assertEquals(MessagePurpose.STATUS_CHANGED, entries.get(0).getPurpose());
         assertEquals("CLOSED", entries.get(0).getMessage());
-        assertEquals(principalId, entries.get(0).getSenderId());
+        assertEquals(userId, entries.get(0).getSenderId());
         assertEquals("Tina Tenant", entries.get(0).getSenderName());
         assertEquals(UserContext.TENANT, entries.get(0).getSenderRole());
     }
@@ -386,7 +379,7 @@ class IssueControllerTest extends AbstractTicketingTest {
         insertIssue(projectId, issueId, "Issue", IssueType.DEFECT, IssueStatus.CLOSED, IssuePriority.MEDIUM,
             UUID.randomUUID(), agreementId, null, "Issue");
 
-        controller.closeIssue(issueId, UserContext.TENANT);
+        controller.closeIssue(user, issueId, UserContext.TENANT);
 
         assertTrue(timelineController.getTimelineEntries(agreementId, issueId, projectId).isEmpty());
     }

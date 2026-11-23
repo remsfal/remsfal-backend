@@ -1,12 +1,14 @@
 package de.remsfal.ticketing.boundary.eventing;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletionStage;
 
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.jboss.logging.Logger;
 
+import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.eventing.AffectedContractorJson;
 import de.remsfal.core.json.eventing.OrganizationEventJson;
 import de.remsfal.core.json.eventing.OrganizationEventJson.OrganizationEventType;
@@ -45,9 +47,12 @@ public class OrganizationEventConsumer {
             return;
         }
 
+        final UserJson changedBy = event.getActingUser();
+        final UUID changedByUserId = changedBy != null ? changedBy.getId() : null;
+        final String changedByName = changedBy != null ? changedBy.getName() : null;
         for (final AffectedContractorJson affectedContractor : affectedContractors) {
-            selfServiceIssueController.createIssueForAffectedContractor(event.getChangedByUserId(),
-                event.getChangedByName(), event.getOrganization(), affectedContractor);
+            selfServiceIssueController.createIssueForAffectedContractor(changedByUserId, changedByName,
+                event.getOrganization(), affectedContractor);
         }
         logger.infov("Processed organization update event (organizationId={0}, createdIssues={1})",
             event.getOrganizationId(), affectedContractors.size());

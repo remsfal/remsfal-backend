@@ -56,7 +56,7 @@ public class ProjectEventProducer {
                 .projectId(deleted.projectId())
                 .agreementId(deleted.agreement().getId())
                 .agreement(deleted.agreement())
-                .actingUserId(deleted.actingUserId()));
+                .actingUser(deleted.actingUser()));
         }
     }
 
@@ -64,7 +64,7 @@ public class ProjectEventProducer {
         sendEvent(builder
             .projectId(event.projectId())
             .project(event.project())
-            .actingUserId(event.actingUserId()));
+            .actingUser(event.actingUser()));
     }
 
     private void sendEvent(final ImmutableProjectEventJson.Builder builder) {

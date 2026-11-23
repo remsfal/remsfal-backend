@@ -24,7 +24,7 @@ public class SiteResource extends AbstractProjectResource implements SiteEndpoin
     @Override
     public Response createSite(final UUID projectId, final UUID propertyId, final SiteJson site) {
         checkPropertyWritePermissions(projectId);
-        final SiteModel model = controller.createSite(projectId, propertyId, site);
+        final SiteModel model = controller.createSite(principal, projectId, propertyId, site);
         return getCreatedResponseBuilder(model.getId())
             .type(MediaType.APPLICATION_JSON)
             .entity(SiteJson.valueOf(model))
@@ -41,13 +41,13 @@ public class SiteResource extends AbstractProjectResource implements SiteEndpoin
     @Override
     public SiteJson updateSite(final UUID projectId, final UUID siteId, final SiteJson site) {
         checkPropertyWritePermissions(projectId);
-        return SiteJson.valueOf(controller.updateSite(projectId, siteId, site));
+        return SiteJson.valueOf(controller.updateSite(principal, projectId, siteId, site));
     }
 
     @Override
     public void deleteSite(final UUID projectId, final UUID siteId) {
         checkPropertyWritePermissions(projectId);
-        controller.deleteSite(projectId, siteId);
+        controller.deleteSite(principal, projectId, siteId);
     }
 
 }

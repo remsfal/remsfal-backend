@@ -48,7 +48,7 @@ class UserEventProducerTest extends AbstractKafkaTest {
 
     @Test
     void onUserDeleted_publishesEventWithUser() {
-        userEvent.fire(new UserEvent.Deleted(user(), TestData.USER_ID));
+        userEvent.fire(new UserEvent.Deleted(user(), user()));
 
         given()
             .topic(UserEventJson.TOPIC)
@@ -60,7 +60,7 @@ class UserEventProducerTest extends AbstractKafkaTest {
 
     @Test
     void onContactDataChanged_publishesUserUpdated() {
-        userEvent.fire(new UserEvent.ContactDataChanged(user(), TestData.USER_ID));
+        userEvent.fire(new UserEvent.ContactDataChanged(user(), user()));
 
         given()
             .topic(UserEventJson.TOPIC)
@@ -68,12 +68,12 @@ class UserEventProducerTest extends AbstractKafkaTest {
             .json("userId", Matchers.equalTo(TestData.USER_ID.toString()))
             .json("userEventType", Matchers.equalTo("USER_UPDATED"))
             .json("user.firstName", Matchers.equalTo(TestData.USER_FIRST_NAME))
-            .json("actingUserId", Matchers.equalTo(TestData.USER_ID.toString()));
+            .json("actingUser.id", Matchers.equalTo(TestData.USER_ID.toString()));
     }
 
     @Test
     void onUserUpdated_publishesNoEvent() {
-        userEvent.fire(new UserEvent.Updated(user(), TestData.USER_ID));
+        userEvent.fire(new UserEvent.Updated(user(), user()));
 
         final List<?> records = companion.consumeStrings()
             .fromTopics(UserEventJson.TOPIC)

@@ -1,7 +1,7 @@
 package de.remsfal.service.control;
 
-import de.remsfal.core.json.project.TenantJson;
 import de.remsfal.core.json.project.ImmutableTenantJson;
+import de.remsfal.core.json.project.TenantJson;
 import de.remsfal.core.model.project.TenantModel;
 import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.control.exception.AlreadyExistsException;
@@ -49,7 +49,7 @@ public class TenantControllerTest extends AbstractServiceTest {
                 .build();
 
         assertThrows(NotFoundException.class,
-                () -> tenantController.updateTenant(PROJECT_ID, NON_PROJECT_TENANT_ID, dummyJson),
+                () -> tenantController.updateTenant(ACTING_USER, PROJECT_ID, NON_PROJECT_TENANT_ID, dummyJson),
                 "Should fail because the tenant is not part of the project's tenancy.");
     }
 
@@ -78,7 +78,7 @@ public class TenantControllerTest extends AbstractServiceTest {
             .mobilePhoneNumber("+491701234567")
             .build();
 
-        final TenantEntity tenant = tenantController.resolveOrCreateTenant(TestData.PROJECT_ID_1, input);
+        final TenantEntity tenant = tenantController.resolveOrCreateTenant(ACTING_USER, TestData.PROJECT_ID_1, input);
 
         assertEquals(TestData.PROJECT_ID_1, tenant.getProjectId());
         assertNotNull(tenant.getId());
@@ -90,7 +90,7 @@ public class TenantControllerTest extends AbstractServiceTest {
             .lastName(TestData.TENANT_LAST_NAME_2)
             .email("  ")
             .build();
-        final TenantEntity tenantWithoutEmail = tenantController.resolveOrCreateTenant(
+        final TenantEntity tenantWithoutEmail = tenantController.resolveOrCreateTenant(ACTING_USER,
             TestData.PROJECT_ID_1, blankEmailInput);
         assertNotNull(tenantWithoutEmail.getId());
         assertNull(tenantWithoutEmail.getEmail());
@@ -104,7 +104,7 @@ public class TenantControllerTest extends AbstractServiceTest {
             .email("  " + TestData.USER_EMAIL_2.toUpperCase() + "  ")
             .build();
 
-        final TenantEntity tenant = tenantController.resolveOrCreateTenant(TestData.PROJECT_ID_1, input);
+        final TenantEntity tenant = tenantController.resolveOrCreateTenant(ACTING_USER, TestData.PROJECT_ID_1, input);
 
         assertEquals(TestData.PROJECT_ID_1, tenant.getProjectId());
         assertEquals(TestData.USER_EMAIL_2, tenant.getEmail());
@@ -121,7 +121,7 @@ public class TenantControllerTest extends AbstractServiceTest {
             .email(" TENANT@EXAMPLE.ORG ")
             .build();
 
-        final TenantEntity tenant = tenantController.resolveOrCreateTenant(TestData.PROJECT_ID_1, input);
+        final TenantEntity tenant = tenantController.resolveOrCreateTenant(ACTING_USER, TestData.PROJECT_ID_1, input);
 
         assertEquals(TestData.TENANT_ID_1, tenant.getId());
     }
@@ -137,7 +137,7 @@ public class TenantControllerTest extends AbstractServiceTest {
             .build();
 
         assertThrows(AlreadyExistsException.class,
-            () -> tenantController.resolveOrCreateTenant(TestData.PROJECT_ID_1, input));
+            () -> tenantController.resolveOrCreateTenant(ACTING_USER, TestData.PROJECT_ID_1, input));
     }
 
     @Test
@@ -151,7 +151,7 @@ public class TenantControllerTest extends AbstractServiceTest {
             .lastName(TestData.TENANT_LAST_NAME_2)
             .build();
 
-        final List<TenantEntity> tenants = tenantController.resolveOrCreateTenants(
+        final List<TenantEntity> tenants = tenantController.resolveOrCreateTenants(ACTING_USER,
             TestData.PROJECT_ID_1, List.of(first, second));
 
         assertEquals(2, tenants.size());
@@ -163,7 +163,7 @@ public class TenantControllerTest extends AbstractServiceTest {
         insertTenant(TestData.TENANT_ID_1, TestData.AGREEMENT_ID_1, TestData.PROJECT_ID_1,
             TestData.TENANT_FIRST_NAME_1, TestData.TENANT_LAST_NAME_1, "tenant@example.org");
 
-        final TenantModel updated = tenantController.updateTenant(TestData.PROJECT_ID_1, TestData.TENANT_ID_1,
+        final TenantModel updated = tenantController.updateTenant(ACTING_USER, TestData.PROJECT_ID_1, TestData.TENANT_ID_1,
             ImmutableTenantJson.builder()
                 .mobilePhoneNumber("+491701234567")
                 .businessPhoneNumber("+493012345678")
@@ -174,7 +174,7 @@ public class TenantControllerTest extends AbstractServiceTest {
         assertEquals("+493012345678", updated.getBusinessPhoneNumber());
         assertEquals("+491709876543", updated.getPrivatePhoneNumber());
 
-        final TenantModel cleared = tenantController.updateTenant(TestData.PROJECT_ID_1, TestData.TENANT_ID_1,
+        final TenantModel cleared = tenantController.updateTenant(ACTING_USER, TestData.PROJECT_ID_1, TestData.TENANT_ID_1,
             ImmutableTenantJson.builder()
                 .mobilePhoneNumber("")
                 .businessPhoneNumber("")
@@ -197,14 +197,14 @@ public class TenantControllerTest extends AbstractServiceTest {
     void updateTenant_SUCCESS_omittedPhoneNumbersRemainUnchanged() {
         insertTenant(TestData.TENANT_ID_1, TestData.AGREEMENT_ID_1, TestData.PROJECT_ID_1,
             TestData.TENANT_FIRST_NAME_1, TestData.TENANT_LAST_NAME_1, "tenant@example.org");
-        tenantController.updateTenant(TestData.PROJECT_ID_1, TestData.TENANT_ID_1,
+        tenantController.updateTenant(ACTING_USER, TestData.PROJECT_ID_1, TestData.TENANT_ID_1,
             ImmutableTenantJson.builder()
                 .mobilePhoneNumber("+491701234567")
                 .businessPhoneNumber("+493012345678")
                 .privatePhoneNumber("+491709876543")
                 .build());
 
-        final TenantModel updated = tenantController.updateTenant(TestData.PROJECT_ID_1, TestData.TENANT_ID_1,
+        final TenantModel updated = tenantController.updateTenant(ACTING_USER, TestData.PROJECT_ID_1, TestData.TENANT_ID_1,
             ImmutableTenantJson.builder().firstName("Updated").build());
 
         assertEquals("+491701234567", updated.getMobilePhoneNumber());
@@ -217,7 +217,7 @@ public class TenantControllerTest extends AbstractServiceTest {
         insertTenant(TestData.TENANT_ID_1, TestData.AGREEMENT_ID_1, TestData.PROJECT_ID_1,
             TestData.TENANT_FIRST_NAME_1, TestData.TENANT_LAST_NAME_1, "tenant@example.org");
 
-        final TenantModel updated = tenantController.updateTenant(TestData.PROJECT_ID_1, TestData.TENANT_ID_1,
+        final TenantModel updated = tenantController.updateTenant(ACTING_USER, TestData.PROJECT_ID_1, TestData.TENANT_ID_1,
             ImmutableTenantJson.builder()
                 .placeOfBirth("Berlin")
                 .dateOfBirth(LocalDate.of(1990, 1, 1))
@@ -240,7 +240,7 @@ public class TenantControllerTest extends AbstractServiceTest {
                 .email("unlinked@example.org")
                 .build();
 
-        TenantModel result = tenantController.updateTenant(TestData.PROJECT_ID_1, TestData.TENANT_ID_1, patch);
+        TenantModel result = tenantController.updateTenant(ACTING_USER, TestData.PROJECT_ID_1, TestData.TENANT_ID_1, patch);
 
         assertEquals("unlinked@example.org", result.getEmail());
         assertNull(result.getUserId(), "Stale user link must be cleared once the email no longer matches");
@@ -257,7 +257,7 @@ public class TenantControllerTest extends AbstractServiceTest {
                 .email(TestData.USER_EMAIL_2.toUpperCase())
                 .build();
 
-        TenantModel result = tenantController.updateTenant(TestData.PROJECT_ID_1, TestData.TENANT_ID_1, patch);
+        TenantModel result = tenantController.updateTenant(ACTING_USER, TestData.PROJECT_ID_1, TestData.TENANT_ID_1, patch);
 
         assertEquals(TestData.USER_ID_2, result.getUserId());
         assertEquals(TestData.USER_EMAIL_2, result.getEmail(), "Email must be stored lowercase regardless of PATCH casing");
@@ -277,7 +277,7 @@ public class TenantControllerTest extends AbstractServiceTest {
                 .build();
 
         assertThrows(AlreadyExistsException.class,
-                () -> tenantController.updateTenant(TestData.PROJECT_ID_1, TestData.TENANT_ID_2, patch),
+                () -> tenantController.updateTenant(ACTING_USER, TestData.PROJECT_ID_1, TestData.TENANT_ID_2, patch),
                 "Should fail because the matching user is already linked to another tenant in this project.");
     }
 
@@ -295,7 +295,7 @@ public class TenantControllerTest extends AbstractServiceTest {
                 .build();
 
         assertThrows(AlreadyExistsException.class,
-                () -> tenantController.updateTenant(TestData.PROJECT_ID_1, TestData.TENANT_ID_2, patch),
+                () -> tenantController.updateTenant(ACTING_USER, TestData.PROJECT_ID_1, TestData.TENANT_ID_2, patch),
                 "Should fail because the email is already used by another tenant in this project.");
     }
 
@@ -314,7 +314,7 @@ public class TenantControllerTest extends AbstractServiceTest {
                 .email("shared@example.org")
                 .build();
 
-        TenantModel result = tenantController.updateTenant(TestData.PROJECT_ID_1, TestData.TENANT_ID_2, patch);
+        TenantModel result = tenantController.updateTenant(ACTING_USER, TestData.PROJECT_ID_1, TestData.TENANT_ID_2, patch);
 
         assertEquals(TestData.TENANT_ID_2, result.getId(), "The edited tenant (URL tenantId) must remain the survivor");
         assertEquals("shared@example.org", result.getEmail());

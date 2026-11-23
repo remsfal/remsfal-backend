@@ -1,9 +1,11 @@
 package de.remsfal.service.control;
 
+import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.project.TenantJson;
+import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.TenantModel;
-import de.remsfal.service.control.exception.AlreadyExistsException;
 import de.remsfal.service.control.event.TenantEvent;
+import de.remsfal.service.control.exception.AlreadyExistsException;
 import de.remsfal.service.entity.dao.RentalAgreementRepository;
 import de.remsfal.service.entity.dao.TenantRepository;
 import de.remsfal.service.entity.dto.RentalAgreementEntity;
@@ -39,9 +41,6 @@ public class TenantController {
     AddressController addressController;
 
     @Inject
-    ActingUserController actingUser;
-
-    @Inject
     Event<TenantEvent> tenantEvent;
 
     public List<TenantModel> getTenants(final UUID projectId) {
@@ -66,7 +65,7 @@ public class TenantController {
      * @param tenantIds ids of the tenants that were removed from a rental agreement
      */
     @Transactional
-    public void deleteOrphanedTenants(final Collection<UUID> tenantIds) {
+    public void deleteOrphanedTenants(final UserModel user, final Collection<UUID> tenantIds) {
         for (final UUID tenantId : tenantIds) {
             if (rentalAgreementRepository.findRentalAgreementsByTenantId(tenantId).isEmpty()) {
                 tenantRepository.findByIdOptional(tenantId).ifPresent(tenant -> {
@@ -74,7 +73,7 @@ public class TenantController {
                         tenant.getProjectId(), tenantId);
                     final TenantJson snapshot = TenantJson.valueOf(tenant);
                     tenantRepository.delete(tenant);
-                    tenantEvent.fire(new TenantEvent.Deleted(tenant.getProjectId(), snapshot, actingUser.getId()));
+                    tenantEvent.fire(new TenantEvent.Deleted(tenant.getProjectId(), snapshot, UserJson.valueOf(user)));
                 });
             }
         }
@@ -93,7 +92,8 @@ public class TenantController {
      *         in the project
      */
     @Transactional
-    public TenantEntity resolveOrCreateTenant(final UUID projectId, final TenantModel tenantInput) {
+    public TenantEntity resolveOrCreateTenant(final UserModel user, final UUID projectId,
+        final TenantModel tenantInput) {
         if (tenantInput.getEmail() != null && !tenantInput.getEmail().isBlank()) {
             final String normalizedEmail = tenantInput.getEmail().trim().toLowerCase();
             final Optional<TenantEntity> existing = tenantRepository
@@ -116,7 +116,7 @@ public class TenantController {
             tenantUserLinker.relinkByEmail(tenant, normalizedEmail);
             logger.infov("Creating new tenant {0} {1} in project {2}",
                 tenantInput.getFirstName(), tenantInput.getLastName(), projectId);
-            return fireCreated(tenant);
+            return fireCreated(user, tenant);
         }
 
         final TenantEntity tenant = mergeTenantFields(tenantInput, new TenantEntity());
@@ -124,15 +124,15 @@ public class TenantController {
         tenant.setProjectId(projectId);
         logger.infov("Creating new tenant {0} {1} in project {2}",
             tenantInput.getFirstName(), tenantInput.getLastName(), projectId);
-        return fireCreated(tenant);
+        return fireCreated(user, tenant);
     }
 
     /**
      * Fires {@link TenantEvent.Created} for a new tenant, which is persisted together with its rental agreement.
      */
-    private TenantEntity fireCreated(final TenantEntity tenant) {
+    private TenantEntity fireCreated(final UserModel user, final TenantEntity tenant) {
         tenantEvent.fire(new TenantEvent.Created(tenant.getProjectId(), TenantJson.valueOf(tenant),
-            actingUser.getId()));
+            UserJson.valueOf(user)));
         return tenant;
     }
 
@@ -142,17 +142,18 @@ public class TenantController {
      * @param projectId the project ID
      * @param tenantsInput the tenant input models
      * @return list of resolved tenant entities
-     * @see #resolveOrCreateTenant(UUID, TenantModel)
+     * @see #resolveOrCreateTenant(UserModel, UUID, TenantModel)
      */
-    public List<TenantEntity> resolveOrCreateTenants(final UUID projectId,
+    public List<TenantEntity> resolveOrCreateTenants(final UserModel user, final UUID projectId,
             final List<? extends TenantModel> tenantsInput) {
         return tenantsInput.stream()
-            .map(tenantInput -> resolveOrCreateTenant(projectId, tenantInput))
+            .map(tenantInput -> resolveOrCreateTenant(user, projectId, tenantInput))
             .collect(Collectors.toList());
     }
 
     @Transactional
-    public TenantModel updateTenant(final UUID projectId, final UUID tenantId, final TenantJson tenantJson) {
+    public TenantModel updateTenant(final UserModel user, final UUID projectId, final UUID tenantId,
+        final TenantJson tenantJson) {
         logger.infov("Updating tenant (projectId={0}, tenantId={1})", projectId, tenantId);
 
         final TenantEntity entity = tenantRepository.findTenantByProjectId(projectId, tenantId)
@@ -171,7 +172,7 @@ public class TenantController {
                     .findAny()
                     .ifPresent(other -> {
                         if (namesMatch(postUpdateFirstName, postUpdateLastName, other)) {
-                            mergeTenants(entity, other);
+                            mergeTenants(user, entity, other);
                         } else {
                             throw new AlreadyExistsException(
                                 "Email " + normalizedEmail + " is already used by another tenant in this project");
@@ -189,7 +190,7 @@ public class TenantController {
         tenantRepository.getEntityManager().refresh(entity);
 
         final TenantModel updated = getTenant(projectId, tenantId);
-        tenantEvent.fire(new TenantEvent.Updated(projectId, TenantJson.valueOf(updated), actingUser.getId()));
+        tenantEvent.fire(new TenantEvent.Updated(projectId, TenantJson.valueOf(updated), UserJson.valueOf(user)));
         return updated;
     }
 
@@ -216,7 +217,7 @@ public class TenantController {
      * @param survivor the tenant entity to keep
      * @param loser the tenant entity to merge away and delete
      */
-    private void mergeTenants(final TenantEntity survivor, final TenantEntity loser) {
+    private void mergeTenants(final UserModel user, final TenantEntity survivor, final TenantEntity loser) {
         logger.infov("Merging tenant {0} into {1} (email conflict, same name)", loser.getId(), survivor.getId());
         final List<RentalAgreementEntity> agreements =
             rentalAgreementRepository.findRentalAgreementsByTenantId(loser.getId());
@@ -227,7 +228,7 @@ public class TenantController {
         }
         final TenantJson snapshot = TenantJson.valueOf(loser);
         tenantRepository.delete(loser);
-        tenantEvent.fire(new TenantEvent.Deleted(loser.getProjectId(), snapshot, actingUser.getId()));
+        tenantEvent.fire(new TenantEvent.Deleted(loser.getProjectId(), snapshot, UserJson.valueOf(user)));
         // Flush the deletion now: Hibernate's default flush ordering runs updates before deletes,
         // so without an explicit flush here, the survivor's email update (applied right after this
         // call returns) would race the loser's deletion and trip the per-project unique email index.

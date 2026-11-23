@@ -53,7 +53,8 @@ public class RentalAgreementResource extends AbstractProjectResource implements 
     @Override
     public Response createRentalAgreement(final UUID projectId, final RentalAgreementJson agreement) {
         checkRentalAgreementWritePermissions(projectId);
-        final RentalAgreementModel model = rentalAgreementController.createRentalAgreement(projectId, agreement);
+        final RentalAgreementModel model = rentalAgreementController.createRentalAgreement(principal, projectId,
+            agreement);
         return getCreatedResponseBuilder(model.getId())
             .type(MediaType.APPLICATION_JSON)
             .entity(RentalAgreementJson.valueOf(model))
@@ -65,14 +66,14 @@ public class RentalAgreementResource extends AbstractProjectResource implements 
             final RentalAgreementJson agreement) {
         checkRentalAgreementWritePermissions(projectId);
         final RentalAgreementModel model =
-            rentalAgreementController.updateRentalAgreement(projectId, agreementId, agreement);
+            rentalAgreementController.updateRentalAgreement(principal, projectId, agreementId, agreement);
         return RentalAgreementJson.valueOf(model);
     }
 
     @Override
     public void deleteRentalAgreement(final UUID projectId, final UUID agreementId) {
         checkRentalAgreementWritePermissions(projectId);
-        if (!rentalAgreementController.deleteRentalAgreement(projectId, agreementId)) {
+        if (!rentalAgreementController.deleteRentalAgreement(principal, projectId, agreementId)) {
             throw new NotFoundException("Rental agreement not exist");
         }
     }
@@ -80,7 +81,7 @@ public class RentalAgreementResource extends AbstractProjectResource implements 
     @Override
     public Response addTenant(final UUID projectId, final UUID agreementId, final TenantJson tenant) {
         checkRentalAgreementWritePermissions(projectId);
-        final TenantModel model = rentalAgreementController.addTenant(projectId, agreementId, tenant);
+        final TenantModel model = rentalAgreementController.addTenant(principal, projectId, agreementId, tenant);
         return getCreatedResponseBuilder(model.getId())
             .type(MediaType.APPLICATION_JSON)
             .entity(TenantJson.valueOf(model))
@@ -90,7 +91,7 @@ public class RentalAgreementResource extends AbstractProjectResource implements 
     @Override
     public void removeTenant(final UUID projectId, final UUID agreementId, final UUID tenantId) {
         checkRentalAgreementWritePermissions(projectId);
-        rentalAgreementController.removeTenant(projectId, agreementId, tenantId);
+        rentalAgreementController.removeTenant(principal, projectId, agreementId, tenantId);
     }
 
     @Override
@@ -99,7 +100,7 @@ public class RentalAgreementResource extends AbstractProjectResource implements 
         checkRentalAgreementWritePermissions(projectId);
         final UnitType unitType = UnitType.valueOf(rentalUnitType.toUpperCase());
         final RentalAgreementModel model =
-            rentalAgreementController.addRent(projectId, agreementId, unitType, rentalUnitId, rent);
+            rentalAgreementController.addRent(principal, projectId, agreementId, unitType, rentalUnitId, rent);
         return Response.status(Response.Status.CREATED)
             .type(MediaType.APPLICATION_JSON)
             .entity(RentalAgreementJson.valueOf(model))
@@ -111,7 +112,7 @@ public class RentalAgreementResource extends AbstractProjectResource implements 
             final UUID rentalUnitId) {
         checkRentalAgreementWritePermissions(projectId);
         final UnitType unitType = UnitType.valueOf(rentalUnitType.toUpperCase());
-        rentalAgreementController.deleteRents(projectId, agreementId, unitType, rentalUnitId);
+        rentalAgreementController.deleteRents(principal, projectId, agreementId, unitType, rentalUnitId);
     }
 
 }

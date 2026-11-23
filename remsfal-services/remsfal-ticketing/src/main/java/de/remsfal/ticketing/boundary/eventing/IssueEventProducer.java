@@ -178,7 +178,7 @@ public class IssueEventProducer {
             .issueEventType(type)
             .issueId(issue.getId())
             .issue(IssueJson.valueOf(issue))
-            .principal(UserJson.valueOf(actor))
+            .actingUser(UserJson.valueOf(actor))
             .assignee(ImmutableUserJson.builder().id(issue.getAssigneeId()).build())
             .reporter(ImmutableUserJson.builder().id(issue.getReporterId()).build());
     }

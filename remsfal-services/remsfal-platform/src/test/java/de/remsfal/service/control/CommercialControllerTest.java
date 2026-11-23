@@ -35,12 +35,12 @@ class CommercialControllerTest extends AbstractServiceTest {
 
     private UUID createBuildingForCommercial() {
         final UUID propertyId = propertyController
-                .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
+                .createProperty(ACTING_USER, TestData.PROJECT_ID, TestData.propertyBuilder().build())
                 .getId();
         assertNotNull(propertyId);
 
         return buildingController
-                .createBuilding(TestData.PROJECT_ID, propertyId,
+                .createBuilding(ACTING_USER, TestData.PROJECT_ID, propertyId,
                         TestData.buildingBuilder()
                                 .id(null)
                                 .address(TestData.addressBuilder().build())
@@ -51,12 +51,12 @@ class CommercialControllerTest extends AbstractServiceTest {
     @Test
     void createCommercial_SUCCESS_getCommercial() {
         final UUID propertyId = propertyController
-                .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
+                .createProperty(ACTING_USER, TestData.PROJECT_ID, TestData.propertyBuilder().build())
                 .getId();
         assertNotNull(propertyId);
 
         final UUID buildingId = buildingController
-                .createBuilding(TestData.PROJECT_ID, propertyId,
+                .createBuilding(ACTING_USER, TestData.PROJECT_ID, propertyId,
                         TestData.buildingBuilder()
                                 .id(null)
                                 .address(TestData.addressBuilder().build())
@@ -66,7 +66,7 @@ class CommercialControllerTest extends AbstractServiceTest {
 
         final CommercialModel commercial = TestData.commercialBuilder().build();
         final CommercialModel result = commercialController
-                .createCommercial(TestData.PROJECT_ID, buildingId, commercial);
+                .createCommercial(ACTING_USER, TestData.PROJECT_ID, buildingId, commercial);
 
         assertNotEquals(commercial.getId(), result.getId());
         assertEquals(commercial.getTitle(), result.getTitle());
@@ -89,12 +89,12 @@ class CommercialControllerTest extends AbstractServiceTest {
     @Test
     void createCommercial_SUCCESS_deleteCommercial() {
         final UUID propertyId = propertyController
-                .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
+                .createProperty(ACTING_USER, TestData.PROJECT_ID, TestData.propertyBuilder().build())
                 .getId();
         assertNotNull(propertyId);
 
         final UUID buildingId = buildingController
-                .createBuilding(TestData.PROJECT_ID, propertyId,
+                .createBuilding(ACTING_USER, TestData.PROJECT_ID, propertyId,
                         TestData.buildingBuilder()
                                 .id(null)
                                 .address(TestData.addressBuilder().build())
@@ -104,7 +104,7 @@ class CommercialControllerTest extends AbstractServiceTest {
 
         final CommercialModel commercial = TestData.commercialBuilder().build();
         final CommercialModel result = commercialController
-                .createCommercial(TestData.PROJECT_ID, buildingId, commercial);
+                .createCommercial(ACTING_USER, TestData.PROJECT_ID, buildingId, commercial);
 
         final UUID commercialId = entityManager
                 .createQuery("SELECT c.id FROM CommercialEntity c where c.title = :title", UUID.class)
@@ -112,19 +112,19 @@ class CommercialControllerTest extends AbstractServiceTest {
                 .getSingleResult();
         assertEquals(result.getId(), commercialId);
 
-        commercialController.deleteCommercial(TestData.PROJECT_ID, commercialId);
+        commercialController.deleteCommercial(ACTING_USER, TestData.PROJECT_ID, commercialId);
         assertThrows(NotFoundException.class, () -> commercialController.getCommercial(TestData.PROJECT_ID, commercialId));
     }
 
     @Test
     void createCommercial_SUCCESS_updateCommercial() {
         final UUID propertyId = propertyController
-                .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
+                .createProperty(ACTING_USER, TestData.PROJECT_ID, TestData.propertyBuilder().build())
                 .getId();
         assertNotNull(propertyId);
 
         final UUID buildingId = buildingController
-                .createBuilding(TestData.PROJECT_ID, propertyId,
+                .createBuilding(ACTING_USER, TestData.PROJECT_ID, propertyId,
                         TestData.buildingBuilder()
                                 .id(null)
                                 .address(TestData.addressBuilder().build())
@@ -134,7 +134,7 @@ class CommercialControllerTest extends AbstractServiceTest {
 
         final CommercialModel commercial = TestData.commercialBuilder().build();
         final CommercialModel result = commercialController
-                .createCommercial(TestData.PROJECT_ID, buildingId, commercial);
+                .createCommercial(ACTING_USER, TestData.PROJECT_ID, buildingId, commercial);
 
         assertNotNull(result.getId());
         assertEquals(commercial.getTitle(), result.getTitle());
@@ -157,7 +157,7 @@ class CommercialControllerTest extends AbstractServiceTest {
         final UUID buildingId = createBuildingForCommercial();
 
         final CommercialModel created = commercialController
-                .createCommercial(TestData.PROJECT_ID, buildingId, TestData.commercialBuilder().build());
+                .createCommercial(ACTING_USER, TestData.PROJECT_ID, buildingId, TestData.commercialBuilder().build());
 
         final CommercialModel update = ImmutableCommercialJson.builder()
                 .usableFloorArea(TestData.COMMERCIAL_USABLE_FLOOR_AREA_2)
@@ -166,7 +166,7 @@ class CommercialControllerTest extends AbstractServiceTest {
                 .build();
 
         final CommercialModel result = commercialController
-                .updateCommercial(TestData.PROJECT_ID, created.getId(), update);
+                .updateCommercial(ACTING_USER, TestData.PROJECT_ID, created.getId(), update);
 
         assertEquals(TestData.COMMERCIAL_USABLE_FLOOR_AREA_2, result.getUsableFloorArea());
         assertEquals(TestData.COMMERCIAL_TECHNICAL_SERVICE_AREA_2, result.getTechnicalServicesArea());
@@ -178,7 +178,7 @@ class CommercialControllerTest extends AbstractServiceTest {
         final UUID buildingId = createBuildingForCommercial();
 
         final CommercialModel created = commercialController
-                .createCommercial(TestData.PROJECT_ID, buildingId,
+                .createCommercial(ACTING_USER, TestData.PROJECT_ID, buildingId,
                         TestData.commercialBuilder2().build());
 
         final CommercialModel update = ImmutableCommercialJson.builder()
@@ -188,7 +188,7 @@ class CommercialControllerTest extends AbstractServiceTest {
                 .build();
 
         final CommercialModel result = commercialController
-                .updateCommercial(TestData.PROJECT_ID, created.getId(), update);
+                .updateCommercial(ACTING_USER, TestData.PROJECT_ID, created.getId(), update);
 
         assertEquals(TestData.COMMERCIAL_USABLE_FLOOR_AREA_2, result.getUsableFloorArea());
         assertEquals(TestData.COMMERCIAL_TECHNICAL_SERVICE_AREA_2, result.getTechnicalServicesArea());
@@ -200,7 +200,7 @@ class CommercialControllerTest extends AbstractServiceTest {
         final UUID buildingId = createBuildingForCommercial();
 
         final CommercialModel created = commercialController
-                .createCommercial(TestData.PROJECT_ID, buildingId,
+                .createCommercial(ACTING_USER, TestData.PROJECT_ID, buildingId,
                         TestData.commercialBuilder2().build());
         assertEquals(TestData.COMMERCIAL_USABLE_FLOOR_AREA_2, created.getUsableFloorArea());
 
@@ -212,7 +212,7 @@ class CommercialControllerTest extends AbstractServiceTest {
                 .build();
 
         final CommercialModel result = commercialController
-                .updateCommercial(TestData.PROJECT_ID, created.getId(), update);
+                .updateCommercial(ACTING_USER, TestData.PROJECT_ID, created.getId(), update);
 
         assertEquals(TestData.COMMERCIAL_NET_FLOOR_AREA_1, result.getNetFloorArea());
         assertNull(result.getUsableFloorArea());
@@ -225,7 +225,7 @@ class CommercialControllerTest extends AbstractServiceTest {
         final UUID buildingId = createBuildingForCommercial();
 
         final CommercialModel created = commercialController
-                .createCommercial(TestData.PROJECT_ID, buildingId,
+                .createCommercial(ACTING_USER, TestData.PROJECT_ID, buildingId,
                         TestData.commercialBuilder2().build());
 
         final CommercialModel update = ImmutableCommercialJson.builder()
@@ -236,7 +236,7 @@ class CommercialControllerTest extends AbstractServiceTest {
                 .build();
 
         final CommercialModel result = commercialController
-                .updateCommercial(TestData.PROJECT_ID, created.getId(), update);
+                .updateCommercial(ACTING_USER, TestData.PROJECT_ID, created.getId(), update);
 
         assertEquals(TestData.COMMERCIAL_NET_FLOOR_AREA_1, result.getNetFloorArea());
         assertEquals(TestData.COMMERCIAL_USABLE_FLOOR_AREA_2, result.getUsableFloorArea());

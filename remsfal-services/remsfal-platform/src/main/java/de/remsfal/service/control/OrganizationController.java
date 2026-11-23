@@ -1,9 +1,10 @@
 package de.remsfal.service.control;
 
+import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.organization.ClientProjectListJson;
 import de.remsfal.core.json.organization.OrganizationJson;
-import de.remsfal.core.model.OrganizationEmployeeModel;
 import de.remsfal.core.model.OrganizationEmployeeModel.EmployeeRole;
+import de.remsfal.core.model.OrganizationEmployeeModel;
 import de.remsfal.core.model.OrganizationModel;
 import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.ProjectMemberModel.MemberRole;
@@ -58,9 +59,6 @@ public class OrganizationController {
     UserController userController;
 
     @Inject
-    ActingUserController actingUser;
-
-    @Inject
     Event<OrganizationEvent> organizationEvent;
 
     @Inject
@@ -106,7 +104,7 @@ public class OrganizationController {
             organization.getName(), organization.getEmail(), organization.getPhone(), organization.getTrade(),
             organization.getVatIdentificationNumber(), organization.getAddress());
 
-        UserEntity userEntity = userController.findOrCreateUser(user);
+        UserEntity userEntity = userController.findOrCreateUser(user, user);
 
         OrganizationEntity organizationEntity = mergeOrganizationFields(organization, new OrganizationEntity());
         organizationEntity.generateId();
@@ -129,7 +127,7 @@ public class OrganizationController {
             contractorOrganizationLinker.linkContractorsForNewOrganization(organizationEntity);
         }
         organizationEvent.fire(
-            new OrganizationEvent.Created(OrganizationJson.valueOf(organizationEntity), user.getId()));
+            new OrganizationEvent.Created(OrganizationJson.valueOf(organizationEntity), UserJson.valueOf(user)));
 
         return organizationEntity;
     }
@@ -229,9 +227,9 @@ public class OrganizationController {
         final OrganizationEntity mergedEntity = organizationRepository.mergeAndFlush(organizationEntity);
 
         final OrganizationJson snapshot = OrganizationJson.valueOf(mergedEntity);
-        organizationEvent.fire(new OrganizationEvent.Updated(snapshot, user.getId()));
+        organizationEvent.fire(new OrganizationEvent.Updated(snapshot, UserJson.valueOf(user)));
         if (contractorRelevantChange) {
-            organizationEvent.fire(new OrganizationEvent.ContactDataChanged(snapshot, user.getId()));
+            organizationEvent.fire(new OrganizationEvent.ContactDataChanged(snapshot, UserJson.valueOf(user)));
         }
 
         return mergedEntity;
@@ -267,7 +265,7 @@ public class OrganizationController {
      * @throws ProprietorRequiredException if the organization is still required by a project
      */
     @Transactional
-    public boolean deleteOrganization(final UUID id) {
+    public boolean deleteOrganization(final UserModel user, final UUID id) {
 
         logger.infov("Deleting Organization (id={0})", id);
 
@@ -293,7 +291,7 @@ public class OrganizationController {
         final OrganizationJson snapshot = OrganizationJson.valueOf(organization);
         final boolean deleted = organizationRepository.deleteById(organization.getId());
         if (deleted) {
-            organizationEvent.fire(new OrganizationEvent.Deleted(snapshot, actingUser.getId()));
+            organizationEvent.fire(new OrganizationEvent.Deleted(snapshot, UserJson.valueOf(user)));
         }
         return deleted;
     }
@@ -341,14 +339,14 @@ public class OrganizationController {
             .findOrganizationByUserId(user.getId(), organizationId)
             .orElseThrow(() -> new NotFoundException("Organization not exist or user is not an employee"));
 
-        UserEntity userEntity = userController.findOrCreateUser(employee);
+        UserEntity userEntity = userController.findOrCreateUser(employee, user);
         organization.addEmployee(userEntity, employee.getEmployeeRole());
         organizationRepository.mergeAndFlush(organization);
         final OrganizationEmployeeEntity added = organizationRepository
             .findOrganizationEmployeeByOrganizationIdAndUserId(organizationId, userEntity.getId())
             .orElseThrow(() -> new NotFoundException("Organization not exist or user is not an employee"));
         organizationEmployeeEvent.fire(new OrganizationEmployeeEvent.Added(organizationId,
-            OrganizationEmployeeJson.valueOf(added), user.getId()));
+            OrganizationEmployeeJson.valueOf(added), UserJson.valueOf(user)));
         return added;
     }
 
@@ -358,7 +356,8 @@ public class OrganizationController {
      * @throws OrganizationAdminRequiredException if no active OWNER or MANAGER would remain
      */
     @Transactional
-    public OrganizationEmployeeModel updateEmployeeRole(final UUID organizationId, final UUID employeeId,
+    public OrganizationEmployeeModel updateEmployeeRole(final UserModel user, final UUID organizationId,
+        final UUID employeeId,
         final EmployeeRole role) {
         OrganizationEmployeeEntity entity = organizationRepository
             .findOrganizationEmployeeByOrganizationIdAndUserId(organizationId, employeeId)
@@ -371,7 +370,7 @@ public class OrganizationController {
 
         final OrganizationEmployeeEntity merged = organizationRepository.merge(entity);
         organizationEmployeeEvent.fire(new OrganizationEmployeeEvent.RoleChanged(organizationId,
-            OrganizationEmployeeJson.valueOf(merged), actingUser.getId()));
+            OrganizationEmployeeJson.valueOf(merged), UserJson.valueOf(user)));
         return merged;
     }
 
@@ -382,7 +381,7 @@ public class OrganizationController {
      * @throws OrganizationAdminRequiredException if no active OWNER or MANAGER would remain
      */
     @Transactional
-    public void removeEmployee(final UUID organizationId, final UUID employeeId) {
+    public void removeEmployee(final UserModel user, final UUID organizationId, final UUID employeeId) {
         final Optional<OrganizationEmployeeEntity> employee = organizationRepository
             .findOrganizationEmployeeByOrganizationIdAndUserId(organizationId, employeeId);
         if (employee.isEmpty()) {
@@ -394,7 +393,7 @@ public class OrganizationController {
         final OrganizationEmployeeJson snapshot = OrganizationEmployeeJson.valueOf(employee.get());
         organizationRepository.deleteOrganizationEmployeesByOrganizationIdAndUserId(organizationId, employeeId);
         organizationEmployeeEvent.fire(
-            new OrganizationEmployeeEvent.Removed(organizationId, snapshot, actingUser.getId()));
+            new OrganizationEmployeeEvent.Removed(organizationId, snapshot, UserJson.valueOf(user)));
     }
 
     private static boolean isAdmin(final EmployeeRole role) {

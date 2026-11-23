@@ -48,7 +48,7 @@ public class IssueQuotationResource extends AbstractTicketingResource implements
     @Override
     public Response placeOrder(final UUID issueId, final UUID quotationId) {
         checkProjectIssueOrderPermissions(issueId);
-        final OrderPlacementEntity placement = orderManagementController.placeOrder(issueId, quotationId);
+        final OrderPlacementEntity placement = orderManagementController.placeOrder(principal, issueId, quotationId);
         final URI location = uri.getBaseUriBuilder()
             .path(IssueEndpoint.class)
             .path(issueId.toString())

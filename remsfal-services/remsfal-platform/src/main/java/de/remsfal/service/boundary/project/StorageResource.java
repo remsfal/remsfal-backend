@@ -23,7 +23,7 @@ public class StorageResource extends AbstractProjectResource implements StorageE
     @Override
     public Response createStorage(final UUID projectId, final UUID buildingId, final StorageJson storage) {
         checkPropertyWritePermissions(projectId);
-        final StorageModel model = controller.createStorage(projectId, buildingId, storage);
+        final StorageModel model = controller.createStorage(principal, projectId, buildingId, storage);
         return getCreatedResponseBuilder(model.getId())
                 .type(MediaType.APPLICATION_JSON)
                 .entity(StorageJson.valueOf(model))
@@ -40,14 +40,14 @@ public class StorageResource extends AbstractProjectResource implements StorageE
     @Override
     public StorageJson updateStorage(final UUID projectId, final UUID storageId, final StorageJson storage) {
         checkPropertyWritePermissions(projectId);
-        final StorageModel model = controller.updateStorage(projectId, storageId, storage);
+        final StorageModel model = controller.updateStorage(principal, projectId, storageId, storage);
         return StorageJson.valueOf(model);
     }
 
     @Override
     public void deleteStorage(final UUID projectId, final UUID storageId) {
         checkPropertyWritePermissions(projectId);
-        controller.deleteStorage(projectId, storageId);
+        controller.deleteStorage(principal, projectId, storageId);
     }
 
 }

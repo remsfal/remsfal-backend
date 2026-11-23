@@ -1,8 +1,5 @@
 package de.remsfal.service.control;
 
-import de.remsfal.core.json.project.ImmutablePropertyJson;
-import de.remsfal.core.json.project.RentalUnitTreeNodeJson;
-import de.remsfal.core.model.RentalUnitModel.UnitType;
 import io.quarkus.test.junit.QuarkusTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,6 +16,9 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import de.remsfal.core.json.project.ImmutablePropertyJson;
+import de.remsfal.core.json.project.RentalUnitTreeNodeJson;
+import de.remsfal.core.model.RentalUnitModel.UnitType;
 import de.remsfal.core.model.project.PropertyModel;
 import de.remsfal.service.AbstractServiceTest;
 import de.remsfal.service.entity.dto.PropertyEntity;
@@ -44,14 +44,14 @@ class PropertyControllerTest extends AbstractServiceTest {
         final PropertyModel property = TestData.propertyBuilder().build();
         
         assertThrows(ConstraintViolationException.class,
-            () -> propertyController.createProperty(null, property));
+            () -> propertyController.createProperty(ACTING_USER, null, property));
     }
     
     @Test
     void createProperty_SUCCESS_idGenerated() {
         final PropertyModel property = TestData.propertyBuilder().build();
         
-        final PropertyModel result = propertyController.createProperty(TestData.PROJECT_ID, property);
+        final PropertyModel result = propertyController.createProperty(ACTING_USER, TestData.PROJECT_ID, property);
         
         assertNotEquals(property.getId(), result.getId());
         assertEquals(property.getTitle(), result.getTitle());
@@ -70,10 +70,10 @@ class PropertyControllerTest extends AbstractServiceTest {
     void deleteProperty_SUCCESS_correctlyDeleted() {
         // Arrange
         final PropertyModel property = TestData.propertyBuilder().build();
-        final PropertyModel createdProperty = propertyController.createProperty(TestData.PROJECT_ID, property);
+        final PropertyModel createdProperty = propertyController.createProperty(ACTING_USER, TestData.PROJECT_ID, property);
         final UUID propertyId = createdProperty.getId();
         // Act
-        boolean deleted = propertyController.deleteProperty(TestData.PROJECT_ID, propertyId);
+        boolean deleted = propertyController.deleteProperty(ACTING_USER, TestData.PROJECT_ID, propertyId);
         // Assert
         assertTrue(deleted);
         assertThrows(NoResultException.class, () -> findPropertyById(propertyId));
@@ -91,7 +91,7 @@ class PropertyControllerTest extends AbstractServiceTest {
         // Arrange
         UUID notExistingPropertyId = UUID.fromString("bfbada15-d3d5-4925-a438-260821532b54");
         // Act
-        boolean deleted = propertyController.deleteProperty(TestData.PROJECT_ID, notExistingPropertyId);
+        boolean deleted = propertyController.deleteProperty(ACTING_USER, TestData.PROJECT_ID, notExistingPropertyId);
         // Assert
         assertFalse(deleted);
     }
@@ -100,7 +100,7 @@ class PropertyControllerTest extends AbstractServiceTest {
     void updateProperty_SUCCESS_correctlyUpdated() {
         // Arrange
         final PropertyModel property = TestData.propertyBuilder().build();
-        final PropertyModel createdProperty = propertyController.createProperty(TestData.PROJECT_ID, property);
+        final PropertyModel createdProperty = propertyController.createProperty(ACTING_USER, TestData.PROJECT_ID, property);
         // Act
         PropertyModel newPropertyValues = ImmutablePropertyJson.builder()
             .title(TestData.PROPERTY_TITLE_2)
@@ -108,7 +108,7 @@ class PropertyControllerTest extends AbstractServiceTest {
             .description(TestData.PROPERTY_DESCRIPTION_2)
             .plotArea(TestData.PROPERTY_PLOT_AREA_2)
             .build();
-        PropertyModel updatedProperty = propertyController.updateProperty(TestData.PROJECT_ID, createdProperty.getId(), newPropertyValues);
+        PropertyModel updatedProperty = propertyController.updateProperty(ACTING_USER, TestData.PROJECT_ID, createdProperty.getId(), newPropertyValues);
         // Assert
         PropertyModel updatedPropertyFromDb = entityManager
             .createQuery("SELECT p FROM PropertyEntity p where p.id = :id", PropertyEntity.class)
@@ -130,7 +130,7 @@ class PropertyControllerTest extends AbstractServiceTest {
             .plotArea(999)
             .build();
         assertThrows(NotFoundException.class,
-            () -> propertyController.updateProperty(TestData.PROJECT_ID, notExistingPropertyId, newPropertyValues));
+            () -> propertyController.updateProperty(ACTING_USER, TestData.PROJECT_ID, notExistingPropertyId, newPropertyValues));
     }
 
     @Test
@@ -149,8 +149,8 @@ class PropertyControllerTest extends AbstractServiceTest {
             .plotArea(999)
             .build();
 
-        final PropertyModel createdProperty1 = propertyController.createProperty(TestData.PROJECT_ID, property1);
-        final PropertyModel createdProperty2 = propertyController.createProperty(TestData.PROJECT_ID, property2);
+        final PropertyModel createdProperty1 = propertyController.createProperty(ACTING_USER, TestData.PROJECT_ID, property1);
+        final PropertyModel createdProperty2 = propertyController.createProperty(ACTING_USER, TestData.PROJECT_ID, property2);
         // Act
         List<RentalUnitTreeNodeJson> properties = propertyController.getPropertyTree(TestData.PROJECT_ID);
         // Assert

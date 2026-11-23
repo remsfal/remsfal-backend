@@ -1,9 +1,5 @@
 package de.remsfal.service.control;
 
-import de.remsfal.core.json.AddressJson;
-import de.remsfal.core.json.project.BuildingJson;
-import de.remsfal.core.json.project.ImmutableBuildingJson;
-import de.remsfal.service.entity.dto.AddressEntity;
 import io.quarkus.test.junit.QuarkusTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -18,9 +14,13 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import de.remsfal.core.json.AddressJson;
+import de.remsfal.core.json.project.BuildingJson;
+import de.remsfal.core.json.project.ImmutableBuildingJson;
 import de.remsfal.core.model.project.BuildingModel;
 import de.remsfal.core.model.project.PropertyModel;
 import de.remsfal.service.AbstractServiceTest;
+import de.remsfal.service.entity.dto.AddressEntity;
 import de.remsfal.service.entity.dto.BuildingEntity;
 import de.remsfal.test.TestData;
 
@@ -44,7 +44,7 @@ class BuildingControllerTest extends AbstractServiceTest {
     @Test
     void createBuilding_FAILED_noProjectNoProperty() {
         final UUID buildingId = propertyController
-            .createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build())
+            .createProperty(ACTING_USER, TestData.PROJECT_ID, TestData.propertyBuilder().build())
             .getId();
         assertNotNull(buildingId);
 
@@ -54,14 +54,14 @@ class BuildingControllerTest extends AbstractServiceTest {
             .build();
         
         assertThrows(ConstraintViolationException.class,
-            () -> buildingController.createBuilding(null, buildingId, building));
+            () -> buildingController.createBuilding(ACTING_USER, null, buildingId, building));
         assertThrows(ConstraintViolationException.class,
-            () -> buildingController.createBuilding(TestData.PROJECT_ID, null, building));
+            () -> buildingController.createBuilding(ACTING_USER, TestData.PROJECT_ID, null, building));
     }
     
     @Test
     void createBuilding_SUCCESS_idGenerated() {
-        final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
+        final PropertyModel property = propertyController.createProperty(ACTING_USER, TestData.PROJECT_ID, TestData.propertyBuilder().build());
         assertNotNull(property.getId());
 
         final BuildingModel building = TestData.buildingBuilder()
@@ -69,7 +69,7 @@ class BuildingControllerTest extends AbstractServiceTest {
             .address(TestData.addressBuilder().build())
             .build();
         
-        final BuildingModel result = buildingController.createBuilding(TestData.PROJECT_ID, property.getId(), building);
+        final BuildingModel result = buildingController.createBuilding(ACTING_USER, TestData.PROJECT_ID, property.getId(), building);
         
         assertNotEquals(building.getId(), result.getId());
         assertEquals(building.getTitle(), result.getTitle());
@@ -97,9 +97,9 @@ class BuildingControllerTest extends AbstractServiceTest {
     @Test
     void getBuilding_SUCCESS_buildingRetrieved() {
         assertNotNull(TestData.propertyBuilder().build());
-        final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
+        final PropertyModel property = propertyController.createProperty(ACTING_USER, TestData.PROJECT_ID, TestData.propertyBuilder().build());
         assertNotNull(property.getId());
-        final BuildingModel building = buildingController.createBuilding(TestData.PROJECT_ID, property.getId(),
+        final BuildingModel building = buildingController.createBuilding(ACTING_USER, TestData.PROJECT_ID, property.getId(),
             TestData.buildingBuilder().id(null).address(TestData.addressBuilder().build()).build());
         assertNotNull(building.getId());
 
@@ -119,11 +119,11 @@ class BuildingControllerTest extends AbstractServiceTest {
     @Test
     void getBuilding_FAILED_wrongProjectId() {
         final UUID propertyId = propertyController
-            .createProperty(TestData.PROJECT_ID_1, TestData.propertyBuilder().build())
+            .createProperty(ACTING_USER, TestData.PROJECT_ID_1, TestData.propertyBuilder().build())
             .getId();
         assertNotNull(propertyId);
         final UUID buildingId = buildingController
-            .createBuilding(TestData.PROJECT_ID, propertyId,
+            .createBuilding(ACTING_USER, TestData.PROJECT_ID, propertyId,
             TestData.buildingBuilder().id(null).address(TestData.addressBuilder().build()).build())
             .getId();
         assertNotNull(buildingId);
@@ -135,9 +135,9 @@ class BuildingControllerTest extends AbstractServiceTest {
     @Test
     void updateBuilding_SUCCESS() {
         assertNotNull(TestData.propertyBuilder().build());
-        final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
+        final PropertyModel property = propertyController.createProperty(ACTING_USER, TestData.PROJECT_ID, TestData.propertyBuilder().build());
         assertNotNull(property.getId());
-        final BuildingModel building = buildingController.createBuilding(TestData.PROJECT_ID, property.getId(),
+        final BuildingModel building = buildingController.createBuilding(ACTING_USER, TestData.PROJECT_ID, property.getId(),
                 TestData.buildingBuilder().id(null).address(TestData.addressBuilder().build()).build());
         assertNotNull(building.getId());
 
@@ -164,7 +164,7 @@ class BuildingControllerTest extends AbstractServiceTest {
 
         logger.infov("country: " + updatedBuildingJson.getAddress().getCountry());
 
-        final BuildingModel buildingModel = buildingController.updateBuilding(property.getId(), building.getId(), updatedBuildingJson);
+        final BuildingModel buildingModel = buildingController.updateBuilding(ACTING_USER, property.getId(), building.getId(), updatedBuildingJson);
 
         assertEquals(building.getId(), buildingModel.getId());
         assertEquals(building.getTitle(), buildingModel.getTitle());
@@ -177,9 +177,9 @@ class BuildingControllerTest extends AbstractServiceTest {
     @Test
     void updateBuilding_FAILED_wrongBuildingId() {
         assertNotNull(TestData.propertyBuilder().build());
-        final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
+        final PropertyModel property = propertyController.createProperty(ACTING_USER, TestData.PROJECT_ID, TestData.propertyBuilder().build());
         assertNotNull(property.getId());
-        final BuildingModel building = buildingController.createBuilding(TestData.PROJECT_ID, property.getId(),
+        final BuildingModel building = buildingController.createBuilding(ACTING_USER, TestData.PROJECT_ID, property.getId(),
                 TestData.buildingBuilder().id(null).address(TestData.addressBuilder().build()).build());
         assertNotNull(building.getId());
 
@@ -205,13 +205,13 @@ class BuildingControllerTest extends AbstractServiceTest {
         BuildingJson updatedBuildingJson = BuildingJson.valueOf(model);
 
         assertThrows(NotFoundException.class,
-                () -> buildingController.updateBuilding(property.getId(), TestData.BUILDING_ID_1, updatedBuildingJson));
+                () -> buildingController.updateBuilding(ACTING_USER, property.getId(), TestData.BUILDING_ID_1, updatedBuildingJson));
 
     }
 
     @Test
     void deleteBuilding_SUCCESS() {
-        final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
+        final PropertyModel property = propertyController.createProperty(ACTING_USER, TestData.PROJECT_ID, TestData.propertyBuilder().build());
         assertNotNull(property.getId());
 
         final BuildingModel building = TestData.buildingBuilder()
@@ -219,9 +219,9 @@ class BuildingControllerTest extends AbstractServiceTest {
                 .address(TestData.addressBuilder().build())
                 .build();
 
-        final BuildingModel result = buildingController.createBuilding(TestData.PROJECT_ID, property.getId(), building);
+        final BuildingModel result = buildingController.createBuilding(ACTING_USER, TestData.PROJECT_ID, property.getId(), building);
 
-        buildingController.deleteBuilding(property.getId(), result.getId());
+        buildingController.deleteBuilding(ACTING_USER, property.getId(), result.getId());
 
         assertThrows(NotFoundException.class,
                 () -> buildingController.getBuilding(TestData.PROJECT_ID, result.getId()));
@@ -230,7 +230,7 @@ class BuildingControllerTest extends AbstractServiceTest {
 
     @Test
     void deleteBuilding_FAILED() {
-        final PropertyModel property = propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
+        final PropertyModel property = propertyController.createProperty(ACTING_USER, TestData.PROJECT_ID, TestData.propertyBuilder().build());
 
         assertNotNull(property.getId());
 
@@ -239,9 +239,9 @@ class BuildingControllerTest extends AbstractServiceTest {
                 .address(TestData.addressBuilder().build())
                 .build();
 
-        buildingController.createBuilding(TestData.PROJECT_ID, property.getId(), building);
+        buildingController.createBuilding(ACTING_USER, TestData.PROJECT_ID, property.getId(), building);
 
-        buildingController.deleteBuilding(property.getId(), TestData.BUILDING_ID_1);
+        buildingController.deleteBuilding(ACTING_USER, property.getId(), TestData.BUILDING_ID_1);
 
         Long entity = entityManager
                 .createQuery("SELECT count (b) FROM BuildingEntity b where b.title = :title", Long.class)

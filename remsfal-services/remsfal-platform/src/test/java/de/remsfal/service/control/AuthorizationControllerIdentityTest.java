@@ -140,7 +140,7 @@ class AuthorizationControllerIdentityTest extends AbstractServiceTest {
     @Test
     void authenticateUser_FAILED_unverifiedEmailDoesNotReclaimPlaceholder() {
         final UserEntity placeholder = runInTransaction(() -> userController.findOrCreateUser(
-            ImmutableUserJson.builder().email(TestData.USER_EMAIL_1).build()));
+            ImmutableUserJson.builder().email(TestData.USER_EMAIL_1).build(), ACTING_USER));
 
         assertThrows(AlreadyExistsException.class, () -> controller.authenticateUser(IdentityProvider.GOOGLE,
             TestData.USER_TOKEN_1, TestData.USER_EMAIL_1, false, null));
@@ -151,7 +151,7 @@ class AuthorizationControllerIdentityTest extends AbstractServiceTest {
     @Test
     void authenticateUser_SUCCESS_reclaimsPlaceholderWithVerifiedEmail() {
         final UserEntity placeholder = runInTransaction(() -> userController.findOrCreateUser(
-            ImmutableUserJson.builder().email(TestData.USER_EMAIL_1).build()));
+            ImmutableUserJson.builder().email(TestData.USER_EMAIL_1).build(), ACTING_USER));
         assertFalse(placeholder.isActive());
 
         final UserModel user = controller.authenticateUser(IdentityProvider.APPLE, APPLE_SUBJECT,

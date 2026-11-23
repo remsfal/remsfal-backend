@@ -137,23 +137,23 @@ public class DevDataSeedController {
         final ProjectModel project = projectController.createProject(manager,
             ImmutableProjectJson.builder().title(PROJECT_TITLE).build());
 
-        final PropertyModel property = propertyController.createProperty(project.getId(),
+        final PropertyModel property = propertyController.createProperty(manager, project.getId(),
             ImmutablePropertyJson.builder()
                 .title("Grundstück Musterstraße 1")
                 .description("Seeded dev property")
                 .build());
-        final BuildingModel building = buildingController.createBuilding(project.getId(), property.getId(),
+        final BuildingModel building = buildingController.createBuilding(manager, project.getId(), property.getId(),
             ImmutableBuildingJson.builder()
                 .title("Vorderhaus")
                 .address(address())
                 .build());
-        final ApartmentModel apartment = apartmentController.createApartment(project.getId(), building.getId(),
+        final ApartmentModel apartment = apartmentController.createApartment(manager, project.getId(), building.getId(),
             ImmutableApartmentJson.builder()
                 .title("WE 01")
                 .location("1. OG links")
                 .build());
 
-        rentalAgreementController.createRentalAgreement(project.getId(), ImmutableRentalAgreementJson.builder()
+        rentalAgreementController.createRentalAgreement(manager, project.getId(), ImmutableRentalAgreementJson.builder()
             .startOfRental(START_OF_RENTAL)
             .tenants(List.of(ImmutableTenantJson.builder()
                 .firstName(TENANT.firstName())
@@ -194,7 +194,7 @@ public class DevDataSeedController {
     private UserModel createUser(final SeedUser seedUser) {
         final UserModel user = authorizationController.authenticateUser(IdentityProvider.GOOGLE,
             seedUser.subject(), seedUser.email(), true, "de");
-        userController.updateUser(user.getId(), ImmutableUserJson.builder()
+        userController.updateUser(user, ImmutableUserJson.builder()
             .firstName(seedUser.firstName())
             .lastName(seedUser.lastName())
             .build());

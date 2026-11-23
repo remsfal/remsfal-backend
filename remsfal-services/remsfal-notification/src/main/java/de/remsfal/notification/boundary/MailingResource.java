@@ -249,7 +249,7 @@ public class MailingResource {
             .issue(issue)
             .project(project)
             .link("https://remsfal.de/projects/bf9f-5bf1-4fd7-9ba4-2a6cb/issueedit/5507-d8a7-41a7-848c-77e81")
-            .principal(actor)
+            .actingUser(actor)
             .assignee(assignee)
             .build();
     }

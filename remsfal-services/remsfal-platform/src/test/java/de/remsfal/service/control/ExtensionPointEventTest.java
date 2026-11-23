@@ -77,15 +77,15 @@ class ExtensionPointEventTest extends AbstractServiceTest {
     }
 
     private PropertyModel createProperty() {
-        return propertyController.createProperty(TestData.PROJECT_ID, TestData.propertyBuilder().build());
+        return propertyController.createProperty(ACTING_USER, TestData.PROJECT_ID, TestData.propertyBuilder().build());
     }
 
     @Test
     void rentalUnit_createUpdateDelete_firesEvents() {
         final PropertyModel property = createProperty();
-        propertyController.updateProperty(TestData.PROJECT_ID, property.getId(),
+        propertyController.updateProperty(ACTING_USER, TestData.PROJECT_ID, property.getId(),
             ImmutablePropertyJson.builder().title("new title").build());
-        assertTrue(propertyController.deleteProperty(TestData.PROJECT_ID, property.getId()));
+        assertTrue(propertyController.deleteProperty(ACTING_USER, TestData.PROJECT_ID, property.getId()));
 
         final List<RentalUnitEvent> events = recorder.getEvents(RentalUnitEvent.class);
         assertEquals(3, events.size());
@@ -97,6 +97,7 @@ class ExtensionPointEventTest extends AbstractServiceTest {
         assertEquals(UnitType.PROPERTY, events.get(2).unitType());
         assertTrue(events.get(2).unit() instanceof PropertyJson);
         events.forEach(event -> assertEquals(TestData.PROJECT_ID, event.projectId()));
+        events.forEach(event -> assertEquals(ACTING_USER.getId(), event.actingUser().getId()));
     }
 
     @Test
@@ -113,7 +114,7 @@ class ExtensionPointEventTest extends AbstractServiceTest {
 
     @Test
     void rentalAgreement_createAndDelete_firesAgreementAndTenantEvents() {
-        final RentalAgreementEntity agreement = rentalAgreementController.createRentalAgreement(
+        final RentalAgreementEntity agreement = rentalAgreementController.createRentalAgreement(ACTING_USER,
             TestData.PROJECT_ID, ImmutableRentalAgreementJson.builder()
                 .startOfRental(LocalDate.now())
                 .addTenants(ImmutableTenantJson.builder()
@@ -123,7 +124,7 @@ class ExtensionPointEventTest extends AbstractServiceTest {
                 .build());
         final UUID tenantId = agreement.getTenants().get(0).getId();
 
-        assertTrue(rentalAgreementController.deleteRentalAgreement(TestData.PROJECT_ID, agreement.getId()));
+        assertTrue(rentalAgreementController.deleteRentalAgreement(ACTING_USER, TestData.PROJECT_ID, agreement.getId()));
 
         final List<RentalAgreementEvent> agreementEvents = recorder.getEvents(RentalAgreementEvent.class);
         assertEquals(2, agreementEvents.size());
@@ -135,6 +136,9 @@ class ExtensionPointEventTest extends AbstractServiceTest {
         assertTrue(tenantEvents.get(0) instanceof TenantEvent.Created);
         assertTrue(tenantEvents.get(1) instanceof TenantEvent.Deleted);
         assertEquals(tenantId, tenantEvents.get(1).tenant().getId());
+        agreementEvents.forEach(event -> assertEquals(ACTING_USER.getId(), event.actingUser().getId()));
+        tenantEvents.forEach(event -> assertEquals(ACTING_USER.getId(), event.actingUser().getId()));
+        assertEquals(TestData.USER_EMAIL, tenantEvents.get(1).actingUser().getEmail());
     }
 
     @Test
@@ -150,7 +154,7 @@ class ExtensionPointEventTest extends AbstractServiceTest {
         assertTrue(events.get(0) instanceof ContractorEvent.Created);
         assertTrue(events.get(1) instanceof ContractorEvent.Deleted);
         assertEquals("Contractor", events.get(1).contractor().getName());
-        assertEquals(user.getId(), events.get(1).actingUserId());
+        assertEquals(user.getId(), events.get(1).actingUser().getId());
     }
 
     @Test
@@ -170,12 +174,12 @@ class ExtensionPointEventTest extends AbstractServiceTest {
         assertEquals(1, events.size());
         assertEquals(TestData.ORGANIZATION_ID, events.get(0).organizationId());
         assertEquals("new-employee@example.org", events.get(0).employee().getEmail());
-        assertEquals(owner.getId(), events.get(0).actingUserId());
+        assertEquals(owner.getId(), events.get(0).actingUser().getId());
     }
 
     @Test
     void updateUser_withAdditionalEmail_firesAdditionalEmailAdded() {
-        userController.updateUser(TestData.USER_ID_1, ImmutableUserJson.builder()
+        userController.updateUser(actingUser(TestData.USER_ID_1), ImmutableUserJson.builder()
             .additionalEmails(List.of("additional@example.org"))
             .build());
 

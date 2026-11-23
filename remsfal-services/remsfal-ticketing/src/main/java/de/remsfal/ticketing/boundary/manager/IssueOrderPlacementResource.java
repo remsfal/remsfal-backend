@@ -42,7 +42,7 @@ public class IssueOrderPlacementResource extends AbstractTicketingResource imple
     @Override
     public void withdrawOrderPlacement(final UUID issueId, final UUID orderId) {
         checkProjectIssueOrderPermissions(issueId);
-        orderManagementController.withdrawOrderPlacement(issueId, orderId);
+        orderManagementController.withdrawOrderPlacement(principal, issueId, orderId);
     }
 
 }

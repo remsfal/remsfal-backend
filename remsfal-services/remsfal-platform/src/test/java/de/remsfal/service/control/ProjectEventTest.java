@@ -64,7 +64,7 @@ class ProjectEventTest extends AbstractServiceTest {
         final List<ProjectEvent.Created> events = recorder.getEvents(ProjectEvent.Created.class);
         assertEquals(1, events.size());
         assertEquals(project.getId(), events.get(0).projectId());
-        assertEquals(user.getId(), events.get(0).actingUserId());
+        assertEquals(user.getId(), events.get(0).actingUser().getId());
         assertNull(events.get(0).project().getManagingOrganizationId());
     }
 
@@ -110,7 +110,7 @@ class ProjectEventTest extends AbstractServiceTest {
         assertEquals(project.getId(), events.get(0).projectId());
         assertEquals(previousId, events.get(0).previousOrganizationId());
         assertEquals(newId, events.get(0).project().getManagingOrganizationId());
-        assertEquals(user.getId(), events.get(0).actingUserId());
+        assertEquals(user.getId(), events.get(0).actingUser().getId());
         assertEquals(1, recorder.getEvents(ProjectEvent.Updated.class).size());
     }
 
@@ -134,7 +134,7 @@ class ProjectEventTest extends AbstractServiceTest {
         final ProjectModel project = createProject(managingId);
         addProprietorOrganization(project.getId(), otherId);
 
-        projectController.changeProjectOrganizationRole(project.getId(), managingId, MemberRole.MANAGER);
+        projectController.changeProjectOrganizationRole(ACTING_USER, project.getId(), managingId, MemberRole.MANAGER);
 
         final List<ProjectEvent.ManagingOrganizationChanged> events = managingOrganizationEvents();
         assertEquals(1, events.size());
@@ -150,7 +150,7 @@ class ProjectEventTest extends AbstractServiceTest {
         final ProjectModel project = createProject(managingId);
         addProprietorOrganization(project.getId(), otherId);
 
-        projectController.removeProjectOrganization(project.getId(), managingId);
+        projectController.removeProjectOrganization(ACTING_USER, project.getId(), managingId);
 
         final List<ProjectEvent.ManagingOrganizationChanged> events = managingOrganizationEvents();
         assertEquals(1, events.size());
@@ -166,7 +166,7 @@ class ProjectEventTest extends AbstractServiceTest {
         final ProjectModel project = createProject(managingId);
         addProprietorOrganization(project.getId(), otherId);
 
-        assertThrows(ProprietorRequiredException.class, () -> organizationController.deleteOrganization(managingId));
+        assertThrows(ProprietorRequiredException.class, () -> organizationController.deleteOrganization(ACTING_USER, managingId));
 
         assertTrue(managingOrganizationEvents().isEmpty());
         assertEquals(managingId, projectController.findProject(project.getId()).getManagingOrganizationId());

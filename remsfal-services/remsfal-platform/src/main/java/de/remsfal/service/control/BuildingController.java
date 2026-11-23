@@ -1,6 +1,8 @@
 package de.remsfal.service.control;
 
+import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.project.BuildingJson;
+import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.BuildingModel;
 import de.remsfal.service.control.event.RentalUnitEvent;
 import de.remsfal.service.entity.dao.BuildingRepository;
@@ -25,9 +27,6 @@ public class BuildingController {
     Logger logger;
 
     @Inject
-    ActingUserController actingUser;
-
-    @Inject
     Event<RentalUnitEvent> rentalUnitEvent;
 
     @Inject
@@ -37,7 +36,8 @@ public class BuildingController {
     AddressController addressController;
 
     @Transactional
-    public BuildingModel createBuilding(final UUID projectId, final UUID propertyId, final BuildingModel building) {
+    public BuildingModel createBuilding(final UserModel user, final UUID projectId, final UUID propertyId,
+        final BuildingModel building) {
         logger.infov("Creating a building (projectId={0}, propertyId={1}, building={2})",
             projectId, propertyId, building);
         final BuildingEntity entity = mergeBuildingFields(building, new BuildingEntity());
@@ -47,7 +47,8 @@ public class BuildingController {
         buildingRepository.persistAndFlush(entity);
         buildingRepository.getEntityManager().refresh(entity);
         final BuildingModel created = getBuilding(projectId, entity.getId());
-        rentalUnitEvent.fire(new RentalUnitEvent.Created(projectId, BuildingJson.valueOf(created), actingUser.getId()));
+        rentalUnitEvent.fire(new RentalUnitEvent.Created(projectId, BuildingJson.valueOf(created),
+            UserJson.valueOf(user)));
         return created;
     }
 
@@ -65,13 +66,15 @@ public class BuildingController {
     }
 
     @Transactional
-    public BuildingModel updateBuilding(final UUID projectId, final UUID buildingId, final BuildingModel building) {
+    public BuildingModel updateBuilding(final UserModel user, final UUID projectId, final UUID buildingId,
+        final BuildingModel building) {
         logger.infov("Update a building (projectId={0}, buildingId={1}, building={2})",
             projectId, buildingId, building);
         final BuildingEntity entity = buildingRepository.findByIdOptional(buildingId)
             .orElseThrow(() -> new NotFoundException("Building not exist"));
         final BuildingModel updated = buildingRepository.merge(mergeBuildingFields(building, entity));
-        rentalUnitEvent.fire(new RentalUnitEvent.Updated(projectId, BuildingJson.valueOf(updated), actingUser.getId()));
+        rentalUnitEvent.fire(new RentalUnitEvent.Updated(projectId, BuildingJson.valueOf(updated),
+            UserJson.valueOf(user)));
         return updated;
     }
 
@@ -113,13 +116,13 @@ public class BuildingController {
     }
 
     @Transactional
-    public void deleteBuilding(final UUID projectId, final UUID buildingId) {
+    public void deleteBuilding(final UserModel user, final UUID projectId, final UUID buildingId) {
         logger.infov("Delete a building (projectId={0}, buildingId={1})",
             projectId, buildingId);
         final Optional<BuildingJson> snapshot = buildingRepository.findByIdOptional(buildingId)
             .map(BuildingJson::valueOf);
         if (snapshot.isPresent() && buildingRepository.deleteById(buildingId)) {
-            rentalUnitEvent.fire(new RentalUnitEvent.Deleted(projectId, snapshot.get(), actingUser.getId()));
+            rentalUnitEvent.fire(new RentalUnitEvent.Deleted(projectId, snapshot.get(), UserJson.valueOf(user)));
         }
     }
 

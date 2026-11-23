@@ -2,6 +2,7 @@ package de.remsfal.service.control.event;
 
 import java.util.UUID;
 
+import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.project.RentalAgreementJson;
 
 /**
@@ -15,15 +16,15 @@ public sealed interface RentalAgreementEvent {
     /** Snapshot of the rental agreement, taken within the transaction (for a deletion the last state). */
     RentalAgreementJson agreement();
 
-    UUID actingUserId();
+    UserJson actingUser();
 
-    record Created(UUID projectId, RentalAgreementJson agreement, UUID actingUserId) implements RentalAgreementEvent {
+    record Created(UUID projectId, RentalAgreementJson agreement, UserJson actingUser) implements RentalAgreementEvent {
     }
 
-    record Updated(UUID projectId, RentalAgreementJson agreement, UUID actingUserId) implements RentalAgreementEvent {
+    record Updated(UUID projectId, RentalAgreementJson agreement, UserJson actingUser) implements RentalAgreementEvent {
     }
 
-    record Deleted(UUID projectId, RentalAgreementJson agreement, UUID actingUserId) implements RentalAgreementEvent {
+    record Deleted(UUID projectId, RentalAgreementJson agreement, UserJson actingUser) implements RentalAgreementEvent {
     }
 
 }

@@ -1,6 +1,8 @@
 package de.remsfal.service.control;
 
+import de.remsfal.core.json.UserJson;
 import de.remsfal.core.json.project.SiteJson;
+import de.remsfal.core.model.UserModel;
 import de.remsfal.core.model.project.SiteModel;
 import de.remsfal.service.control.event.RentalUnitEvent;
 import de.remsfal.service.entity.dao.SiteRepository;
@@ -26,9 +28,6 @@ public class SiteController {
     Logger logger;
 
     @Inject
-    ActingUserController actingUser;
-
-    @Inject
     Event<RentalUnitEvent> rentalUnitEvent;
 
     @Inject
@@ -38,7 +37,8 @@ public class SiteController {
     AddressController addressController;
 
     @Transactional
-    public SiteModel createSite(final UUID projectId, final UUID propertyId, final SiteModel site) {
+    public SiteModel createSite(final UserModel user, final UUID projectId, final UUID propertyId,
+        final SiteModel site) {
         logger.infov("Creating a site (projectId={0}, propertyId={1}, site={2})", projectId, propertyId, site);
         final SiteEntity entity = mergeSiteFields(site, new SiteEntity());
         entity.generateId();
@@ -47,7 +47,7 @@ public class SiteController {
         repository.persistAndFlush(entity);
         repository.getEntityManager().refresh(entity);
         final SiteModel created = getSite(projectId, entity.getId());
-        rentalUnitEvent.fire(new RentalUnitEvent.Created(projectId, SiteJson.valueOf(created), actingUser.getId()));
+        rentalUnitEvent.fire(new RentalUnitEvent.Created(projectId, SiteJson.valueOf(created), UserJson.valueOf(user)));
         return created;
     }
 
@@ -59,13 +59,13 @@ public class SiteController {
     }
 
     @Transactional
-    public SiteModel updateSite(final UUID projectId, final UUID siteId, final SiteModel site) {
+    public SiteModel updateSite(final UserModel user, final UUID projectId, final UUID siteId, final SiteModel site) {
         logger.infov("Updating a site (projectId={0}, siteId={1}, site={2})",
             projectId, siteId, site);
         final SiteEntity entity = repository.findSiteById(projectId, siteId)
             .orElseThrow(() -> new NotFoundException("Site not exist or user has no membership"));
         final SiteModel updated = repository.merge(mergeSiteFields(site, entity));
-        rentalUnitEvent.fire(new RentalUnitEvent.Updated(projectId, SiteJson.valueOf(updated), actingUser.getId()));
+        rentalUnitEvent.fire(new RentalUnitEvent.Updated(projectId, SiteJson.valueOf(updated), UserJson.valueOf(user)));
         return updated;
     }
 
@@ -89,12 +89,12 @@ public class SiteController {
     }
 
     @Transactional
-    public boolean deleteSite(final UUID projectId, final UUID siteId) {
+    public boolean deleteSite(final UserModel user, final UUID projectId, final UUID siteId) {
         logger.infov("Deleting a site (projectId={0}, siteId={1})", projectId, siteId);
         final Optional<SiteJson> snapshot = repository.findSiteById(projectId, siteId).map(SiteJson::valueOf);
         final boolean deleted = repository.deleteSiteById(projectId, siteId) > 0;
         if (deleted && snapshot.isPresent()) {
-            rentalUnitEvent.fire(new RentalUnitEvent.Deleted(projectId, snapshot.get(), actingUser.getId()));
+            rentalUnitEvent.fire(new RentalUnitEvent.Deleted(projectId, snapshot.get(), UserJson.valueOf(user)));
         }
         return deleted;
     }

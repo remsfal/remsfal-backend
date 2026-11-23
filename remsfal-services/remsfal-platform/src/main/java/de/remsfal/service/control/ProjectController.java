@@ -8,6 +8,7 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.NotFoundException;
 
+import de.remsfal.core.json.UserJson;
 import de.remsfal.service.control.exception.AlreadyExistsException;
 import de.remsfal.service.control.exception.ProprietorRequiredException;
 import de.remsfal.service.control.event.ProjectEvent;
@@ -77,9 +78,6 @@ public class ProjectController {
     AuthorizationController authorizationController;
 
     @Inject
-    ActingUserController actingUser;
-
-    @Inject
     Event<ProjectEvent> projectEvent;
 
     @Inject
@@ -139,7 +137,7 @@ public class ProjectController {
             entity.addMember(userEntity, MemberRole.PROPRIETOR);
         }
         projectRepository.persistAndFlush(entity);
-        projectEvent.fire(new ProjectEvent.Created(ProjectJson.valueOf(entity), user.getId()));
+        projectEvent.fire(new ProjectEvent.Created(ProjectJson.valueOf(entity), UserJson.valueOf(user)));
         return entity;
     }
 
@@ -200,9 +198,9 @@ public class ProjectController {
         final ProjectJson snapshot = ProjectJson.valueOf(merged);
         if (managingOrganizationChanged) {
             projectEvent.fire(new ProjectEvent.ManagingOrganizationChanged(snapshot, previousOrganizationId,
-                user.getId()));
+                UserJson.valueOf(user)));
         }
-        projectEvent.fire(new ProjectEvent.Updated(snapshot, user.getId()));
+        projectEvent.fire(new ProjectEvent.Updated(snapshot, UserJson.valueOf(user)));
         return merged;
     }
 
@@ -234,7 +232,7 @@ public class ProjectController {
             final ProjectJson snapshot = ProjectJson.valueOf(entity);
             final boolean deleted = projectRepository.deleteById(projectId);
             if (deleted) {
-                projectEvent.fire(new ProjectEvent.Deleted(snapshot, user.getId()));
+                projectEvent.fire(new ProjectEvent.Deleted(snapshot, UserJson.valueOf(user)));
             }
             return deleted;
         } else {
@@ -292,7 +290,7 @@ public class ProjectController {
             user.getId(), projectId, member.getEmail(), member.getRole());
         final ProjectEntity projectEntity = findAccessibleProject(user, projectId);
 
-        UserEntity userEntity = userController.findOrCreateUser(member);
+        UserEntity userEntity = userController.findOrCreateUser(member, user);
         if (projectRepository.findMembershipByUserIdAndProjectId(userEntity.getId(), projectId).isPresent()) {
             throw new AlreadyExistsException("User is already a member of this project");
         }
@@ -302,12 +300,12 @@ public class ProjectController {
             .findMembershipByUserIdAndProjectId(userEntity.getId(), projectId)
             .orElseThrow(() -> new NotFoundException(NO_MEMBERSHIP_MESSAGE));
         projectMemberEvent.fire(
-            new ProjectMemberEvent.Added(projectId, ProjectMemberJson.valueOf(membership), user.getId()));
+            new ProjectMemberEvent.Added(projectId, ProjectMemberJson.valueOf(membership), UserJson.valueOf(user)));
         return membership;
     }
 
     @Transactional
-    public ProjectMemberModel changeProjectMemberRole(final UUID projectId, final UUID memberId,
+    public ProjectMemberModel changeProjectMemberRole(final UserModel user, final UUID projectId, final UUID memberId,
         final MemberRole memberRole) {
         logger.infov("Updating a project membership (projectId={0}, memberId={1}, memberRole={2})",
             projectId, memberId, memberRole);
@@ -319,12 +317,12 @@ public class ProjectController {
         entity.setRole(memberRole);
         final ProjectMembershipEntity merged = projectRepository.merge(entity);
         projectMemberEvent.fire(
-            new ProjectMemberEvent.RoleChanged(projectId, ProjectMemberJson.valueOf(merged), actingUser.getId()));
+            new ProjectMemberEvent.RoleChanged(projectId, ProjectMemberJson.valueOf(merged), UserJson.valueOf(user)));
         return merged;
     }
 
     @Transactional
-    public boolean removeProjectMember(final UUID projectId, final UUID memberId) {
+    public boolean removeProjectMember(final UserModel user, final UUID projectId, final UUID memberId) {
         logger.infov("Removing a project membership (projectId={0}, memberId={1})",
             projectId, memberId);
         final Optional<ProjectMembershipEntity> membership = projectRepository
@@ -338,7 +336,7 @@ public class ProjectController {
         final ProjectMemberJson snapshot = ProjectMemberJson.valueOf(membership.get());
         final boolean removed = projectRepository.removeMembershipByUserIdAndProjectId(memberId, projectId);
         if (removed) {
-            projectMemberEvent.fire(new ProjectMemberEvent.Removed(projectId, snapshot, actingUser.getId()));
+            projectMemberEvent.fire(new ProjectMemberEvent.Removed(projectId, snapshot, UserJson.valueOf(user)));
         }
         return removed;
     }
@@ -429,12 +427,14 @@ public class ProjectController {
             .findByProjectIdAndOrganizationId(projectId, organization.getOrganizationId())
             .orElseThrow(() -> new NotFoundException("Failed to add organization to project"));
         projectOrganizationEvent.fire(
-            new ProjectOrganizationEvent.Added(projectId, OrganizationMemberJson.valueOf(added), user.getId()));
+            new ProjectOrganizationEvent.Added(projectId, OrganizationMemberJson.valueOf(added),
+                UserJson.valueOf(user)));
         return added;
     }
 
     @Transactional
-    public OrganizationMemberModel changeProjectOrganizationRole(final UUID projectId, final UUID organizationId,
+    public OrganizationMemberModel changeProjectOrganizationRole(final UserModel user, final UUID projectId,
+        final UUID organizationId,
         final MemberRole role) {
         logger.infov("Updating a project organization role (projectId={0}, organizationId={1}, role={2})",
             projectId, organizationId, role);
@@ -444,17 +444,17 @@ public class ProjectController {
         if (entity.getRole() == MemberRole.PROPRIETOR && role != MemberRole.PROPRIETOR) {
             ensureProprietorRemains(projectId, null, organizationId);
             // the managing organization must be a proprietor of the project
-            clearManagingOrganization(projectId, organizationId);
+            clearManagingOrganization(user, projectId, organizationId);
         }
         entity.setRole(role);
         final ProjectOrganizationEntity merged = projectOrganizationRepository.merge(entity);
         projectOrganizationEvent.fire(new ProjectOrganizationEvent.RoleChanged(projectId,
-            OrganizationMemberJson.valueOf(merged), actingUser.getId()));
+            OrganizationMemberJson.valueOf(merged), UserJson.valueOf(user)));
         return merged;
     }
 
     @Transactional
-    public boolean removeProjectOrganization(final UUID projectId, final UUID organizationId) {
+    public boolean removeProjectOrganization(final UserModel user, final UUID projectId, final UUID organizationId) {
         logger.infov("Removing an organization from project (projectId={0}, organizationId={1})",
             projectId, organizationId);
         final Optional<ProjectOrganizationEntity> assignment = projectOrganizationRepository
@@ -466,17 +466,17 @@ public class ProjectController {
             ensureProprietorRemains(projectId, null, organizationId);
         }
         final OrganizationMemberJson snapshot = OrganizationMemberJson.valueOf(assignment.get());
-        clearManagingOrganization(projectId, organizationId);
+        clearManagingOrganization(user, projectId, organizationId);
         final boolean removed = projectOrganizationRepository
             .removeByProjectIdAndOrganizationId(projectId, organizationId);
         if (removed) {
             projectOrganizationEvent.fire(
-                new ProjectOrganizationEvent.Removed(projectId, snapshot, actingUser.getId()));
+                new ProjectOrganizationEvent.Removed(projectId, snapshot, UserJson.valueOf(user)));
         }
         return removed;
     }
 
-    private void clearManagingOrganization(final UUID projectId, final UUID organizationId) {
+    private void clearManagingOrganization(final UserModel user, final UUID projectId, final UUID organizationId) {
         final ProjectEntity project = projectRepository.findById(projectId);
         if (project != null && organizationId.equals(project.getManagingOrganizationId())) {
             logger.infov("Removing the managing organization of a project (projectId={0}, organizationId={1})",
@@ -484,7 +484,7 @@ public class ProjectController {
             project.setManagingOrganization(null);
             final ProjectEntity merged = projectRepository.merge(project);
             projectEvent.fire(new ProjectEvent.ManagingOrganizationChanged(ProjectJson.valueOf(merged),
-                organizationId, actingUser.getId()));
+                organizationId, UserJson.valueOf(user)));
         }
     }
 
