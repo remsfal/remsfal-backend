@@ -15,6 +15,7 @@ import de.remsfal.test.TestData;
 import static org.hamcrest.Matchers.containsString;
 
 import java.time.Duration;
+import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -310,6 +311,80 @@ class ProjectResourceTest extends AbstractResourceTest {
             .contentType(ContentType.JSON)
             .and().body("id", Matchers.equalTo(projectId))
             .and().body("title", Matchers.equalTo(TestData.PROJECT_TITLE_2));
+    }
+
+    @Test
+    void getProjects_SUCCESS_readOnlyFlag() {
+        final String projectId = given()
+            .when()
+            .cookie(buildManagerCookie())
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{ \"title\":\"" + TestData.PROJECT_TITLE_1 + "\"}")
+            .post(BASE_PATH)
+            .then()
+            .statusCode(Status.CREATED.getStatusCode())
+            .body("readOnly", Matchers.is(false))
+            .extract().path("id");
+
+        given()
+            .when()
+            .cookie(buildManagerCookie())
+            .get(BASE_PATH)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .body("projects.find { it.id == '" + projectId + "' }.readOnly", Matchers.is(false));
+
+        // the flag is set by extensions directly in the database
+        runInTransaction(() -> entityManager
+            .createNativeQuery("UPDATE projects SET read_only = true WHERE id = :id")
+            .setParameter("id", UUID.fromString(projectId))
+            .executeUpdate());
+
+        given()
+            .when()
+            .cookie(buildManagerCookie())
+            .get(BASE_PATH)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .body("projects.find { it.id == '" + projectId + "' }.readOnly", Matchers.is(true));
+
+        given()
+            .when()
+            .cookie(buildManagerCookie())
+            .get(BASE_PATH + "/" + projectId)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .body("readOnly", Matchers.is(true));
+    }
+
+    @Test
+    void updateProject_FAILED_readOnlyCanNotBeChanged() {
+        final String projectId = given()
+            .when()
+            .cookie(buildManagerCookie())
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{ \"title\":\"" + TestData.PROJECT_TITLE_1 + "\"}")
+            .post(BASE_PATH)
+            .then()
+            .statusCode(Status.CREATED.getStatusCode())
+            .extract().path("id");
+
+        given()
+            .when()
+            .cookie(buildManagerCookie())
+            .contentType(MediaType.APPLICATION_JSON)
+            .body("{ \"title\":\"" + TestData.PROJECT_TITLE_2 + "\", \"readOnly\": true }")
+            .patch(BASE_PATH + "/" + projectId)
+            .then()
+            .statusCode(Status.BAD_REQUEST.getStatusCode());
+
+        given()
+            .when()
+            .cookie(buildManagerCookie())
+            .get(BASE_PATH + "/" + projectId)
+            .then()
+            .statusCode(Status.OK.getStatusCode())
+            .body("readOnly", Matchers.is(false));
     }
 
     @Test

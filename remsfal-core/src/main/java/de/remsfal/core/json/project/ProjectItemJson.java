@@ -34,6 +34,11 @@ public abstract class ProjectItemJson {
     @NotNull
     public abstract MemberRole getMemberRole();
 
+    @NotNull
+    @Schema(readOnly = true, description = "Whether write access to the project is blocked, "
+        + "e.g. because of an unpaid invoice")
+    public abstract Boolean isReadOnly();
+
     /**
      * Create a project item with the effective role of the user in the project.
      *
@@ -46,6 +51,7 @@ public abstract class ProjectItemJson {
             .id(model.getId())
             .name(model.getTitle())
             .memberRole(memberRole)
+            .readOnly(model.isReadOnly())
             .build();
     }
 

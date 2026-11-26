@@ -40,4 +40,12 @@ public interface ProjectModel {
         return null;
     }
 
+    /**
+     * Whether write access to the project is blocked, e.g. by an extension because of an unpaid invoice. The flag
+     * is only read by the project API and can not be changed through it.
+     */
+    default Boolean isReadOnly() {
+        return Boolean.FALSE;
+    }
+
 }

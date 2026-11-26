@@ -85,6 +85,13 @@ public abstract class ProjectJson implements ProjectModel {
     @Override
     public abstract String getManagingOrganizationName();
 
+    @Null
+    @Nullable
+    @Schema(readOnly = true, description = "Whether write access to the project is blocked, "
+        + "e.g. because of an unpaid invoice")
+    @Override
+    public abstract Boolean isReadOnly();
+
     public static ProjectJson valueOf(final ProjectModel model) {
         final ImmutableProjectJson.Builder builder = ImmutableProjectJson.builder()
             .id(model.getId())
@@ -93,7 +100,8 @@ public abstract class ProjectJson implements ProjectModel {
             .careOf(model.getCareOf())
             .billingAddress(AddressJson.valueOf(model.getBillingAddress()))
             .managingOrganizationId(model.getManagingOrganizationId())
-            .managingOrganizationName(model.getManagingOrganizationName());
+            .managingOrganizationName(model.getManagingOrganizationName())
+            .readOnly(model.isReadOnly());
         if (model.getMembers() != null) {
             // a project created for an organization has no direct members
             for (ProjectMemberModel member : model.getMembers()) {

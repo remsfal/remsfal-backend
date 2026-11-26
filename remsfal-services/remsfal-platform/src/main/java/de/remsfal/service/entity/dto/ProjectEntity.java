@@ -51,6 +51,9 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
     @JoinColumn(name = "managing_organization_id", columnDefinition = "uuid")
     private OrganizationEntity managingOrganization;
 
+    @Column(name = "read_only", nullable = false)
+    private boolean readOnly;
+
     @Override
     public String getTitle() {
         return title;
@@ -170,6 +173,15 @@ public class ProjectEntity extends AbstractEntity implements ProjectModel {
     @Override
     public String getManagingOrganizationName() {
         return managingOrganization != null ? managingOrganization.getName() : null;
+    }
+
+    @Override
+    public Boolean isReadOnly() {
+        return readOnly;
+    }
+
+    public void setReadOnly(final boolean readOnly) {
+        this.readOnly = readOnly;
     }
 
     public void addOrganization(final OrganizationEntity organizationEntity, final MemberRole role) {
